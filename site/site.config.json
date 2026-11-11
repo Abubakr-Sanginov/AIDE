@@ -1,0 +1,4 @@
+{
+  "$comment": "Set url to the public https address of the site (e.g. https://example.com/) to get canonical links, sitemap.xml and robots.txt.",
+  "url": ""
+}

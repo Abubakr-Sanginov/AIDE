@@ -1,0 +1,43 @@
+[package]
+name = "tauri-app"
+version = "0.1.1"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "tauri_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["unstable", "protocol-asset", "image-png"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-updater = "2"
+notify = "8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json", "stream", "multipart"] }
+futures-util = "0.3"
+keyring = { version = "3", features = ["windows-native", "sync-secret-service"] }
+tokio = { version = "1", features = ["time", "net", "macros", "rt"] }
+url = "2"
+dirs-next = "2"
+base64 = "0.22"
+percent-encoding = "2"
+portable-pty = "=0.9.0"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+regex = "1.13"
+
+
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.39.1"
+windows-core = "0.62"

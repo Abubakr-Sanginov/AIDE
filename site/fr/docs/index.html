@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr" data-page-path="docs/" data-page-lang="fr"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="head.4">Documentation — AIDE</title>
+  <meta name="description" content="Travailler avec AIDE : installation, modes IDE, Vibe et Design, agent et autorisations, équipage, règles de projet, commandes personnalisées et raccourcis." data-i18n-attr="content:head.5">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#110e0c">
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="ru" href="../../docs/">
+  <link rel="alternate" hreflang="en" href="../../en/docs/">
+  <link rel="alternate" hreflang="de" href="../../de/docs/">
+  <link rel="alternate" hreflang="fr" href="../../fr/docs/">
+  <link rel="alternate" hreflang="es" href="../../es/docs/">
+  <link rel="alternate" hreflang="pt" href="../../pt/docs/">
+  <link rel="alternate" hreflang="it" href="../../it/docs/">
+  <link rel="alternate" hreflang="zh" href="../../zh/docs/">
+  <link rel="alternate" hreflang="ja" href="../../ja/docs/">
+  <link rel="alternate" hreflang="ko" href="../../ko/docs/">
+  <link rel="alternate" hreflang="tg" href="../../tg/docs/">
+  <link rel="alternate" hreflang="x-default" href="../../docs/">
+  <!-- /hreflang -->
+  <link rel="icon" href="../../img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../styles.css">
+  <script src="../../js/mode.js"></script>
+  <script type="module" src="../../js/app.js"></script>
+<script type="application/json" id="i18n-js">{"js.copy":"Copier","js.copied":"Copié","js.copyFail":"Échec","js.copyOk":"Commande copiée","js.copyErr":"Impossible de copier","js.liteOn":"Version légère : oui","js.liteOff":"Version légère : non","js.toast":"Version légère activée pour plus de fluidité","js.lang":"Langue"}</script></head>
+<body class="page">
+<a class="skip" href="#main" data-i18n="page.1">Aller au contenu</a>
+<div class="glow glow--static" aria-hidden="true"></div>
+
+<header class="nav glass">
+  <a class="wordmark" href="../" aria-label="AIDE — accueil" data-i18n-attr="aria-label:nav.8">AIDE</a>
+  <nav aria-label="Sections" data-i18n-attr="aria-label:nav.2">
+    <ul>
+      <li><a href="../#features" data-i18n="nav.4">Fonctions</a></li>
+      <li><a href="../#crew" data-i18n="nav.5">Équipage</a></li>
+      <li><a href="./" aria-current="page" data-i18n="foot.4">Documentation</a></li>
+      <li><a href="../changelog/" data-i18n="foot.5">Nouveautés</a></li>
+      <li class="lang">
+        <button class="lang__btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Langue" data-i18n-attr="aria-label:js.lang"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"></path></svg><span class="lang__code">RU</span></button>
+        <ul class="lang__menu" id="lang-menu" translate="no" hidden="">
+          <li><a href="../../docs/" hreflang="ru" lang="ru" data-lang="ru"><span class="lang__iso">RU</span>Русский</a></li>
+          <li><a href="../../en/docs/" hreflang="en" lang="en" data-lang="en"><span class="lang__iso">EN</span>English</a></li>
+          <li><a href="../../de/docs/" hreflang="de" lang="de" data-lang="de"><span class="lang__iso">DE</span>Deutsch</a></li>
+          <li><a href="../../fr/docs/" hreflang="fr" lang="fr" data-lang="fr" aria-current="true"><span class="lang__iso">FR</span>Français</a></li>
+          <li><a href="../../es/docs/" hreflang="es" lang="es" data-lang="es"><span class="lang__iso">ES</span>Español</a></li>
+          <li><a href="../../pt/docs/" hreflang="pt" lang="pt" data-lang="pt"><span class="lang__iso">PT</span>Português</a></li>
+          <li><a href="../../it/docs/" hreflang="it" lang="it" data-lang="it"><span class="lang__iso">IT</span>Italiano</a></li>
+          <li><a href="../../zh/docs/" hreflang="zh" lang="zh" data-lang="zh"><span class="lang__iso">ZH</span>中文</a></li>
+          <li><a href="../../ja/docs/" hreflang="ja" lang="ja" data-lang="ja"><span class="lang__iso">JA</span>日本語</a></li>
+          <li><a href="../../ko/docs/" hreflang="ko" lang="ko" data-lang="ko"><span class="lang__iso">KO</span>한국어</a></li>
+          <li><a href="../../tg/docs/" hreflang="tg" lang="tg" data-lang="tg"><span class="lang__iso">TG</span>Тоҷикӣ</a></li>
+        </ul>
+      </li>
+      <li><a class="nav__cta" href="../#start" data-i18n="nav.7">Démarrer</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main" class="doc wrap">
+  <aside class="doc__toc" aria-labelledby="toc-title">
+    <p class="mono" id="toc-title" data-i18n="toc-title.1">Sommaire</p>
+    <ol>
+      <li><a href="#doc-start" data-i18n="main.14">Premiers pas</a></li>
+      <li><a href="#doc-modes" data-i18n="main.15">Trois modes</a></li>
+      <li><a href="#doc-agent" data-i18n="features.1">Agent</a></li>
+      <li><a href="#doc-crew" data-i18n="nav.5">Équipage</a></li>
+      <li><a href="#doc-rules" data-i18n="main.16">Règles et commandes</a></li>
+      <li><a href="#doc-keys" data-i18n="main.17">Raccourcis clavier</a></li>
+    </ol>
+  </aside>
+
+  <article class="doc__body">
+    <header class="doc__head">
+      <p class="kicker mono"><span>AIDE</span> <span data-i18n="foot.4">Documentation</span></p>
+      <h1 class="display display--md" data-i18n="nav.9">Travailler<br>avec AIDE</h1>
+      <p class="doc__lead" data-i18n="nav.10">De courts guides sur l'essentiel : du premier lancement à vos propres commandes pour l'agent.</p>
+    </header>
+
+    <section id="doc-start" aria-labelledby="h-start">
+      <h2 id="h-start" data-i18n="main.14">Premiers pas</h2>
+      <ol class="doc__steps">
+        <li data-i18n="doc-start.1">Installez <code>Node.js 20+</code>, <code>Rust</code> et les prérequis de Tauri 2 pour Windows.</li>
+        <li data-i18n="doc-start.2">Dans le dossier du projet, lancez <code>npm install</code>, puis <code>npm run tauri dev</code>.</li>
+        <li data-i18n="doc-start.3">Ouvrez votre dossier de code : <kbd>Ctrl</kbd>+<kbd>O</kbd>.</li>
+        <li data-i18n="doc-start.4">Connectez un modèle dans les réglages. La clé d'API est stockée dans le gestionnaire d'identifiants de Windows, pas dans des fichiers.</li>
+      </ol>
+    </section>
+
+    <section id="doc-modes" aria-labelledby="h-modes">
+      <h2 id="h-modes" data-i18n="main.15">Trois modes</h2>
+      <p data-i18n="doc-modes.1">L'interrupteur dans l'en-tête de la fenêtre change toute l'interface. Le projet, l'historique et l'agent restent les mêmes.</p>
+      <dl class="doc__defs">
+        <div><dt>IDE</dt><dd data-i18n="doc-modes.2">Un éditeur basé sur CodeMirror 6, l'arborescence, des terminaux en onglets, Git et la recherche. L'agent est dans le chat à droite.</dd></div>
+        <div><dt>Vibe</dt><dd data-i18n="doc-modes.3">Décrivez le résultat avec vos mots. Le chef d'équipe découpe la tâche en étapes, les rôles les exécutent, la QA vérifie.</dd></div>
+        <div><dt data-i18n="tab-design.1">Design</dt><dd data-i18n="doc-modes.4">Assemblez une maquette sur le canevas, puis cliquez sur « Créer dans le projet » et choisissez un stack : HTML, React, Vue, Svelte, Next.js ou Astro.</dd></div>
+      </dl>
+    </section>
+
+    <section id="doc-agent" aria-labelledby="h-agent">
+      <h2 id="h-agent" data-i18n="features.1">Agent</h2>
+      <ul class="doc__list">
+        <li data-i18n="doc-agent.1"><b>Autorisations.</b> Écrire des fichiers et lancer des commandes dans le terminal : seulement après votre « Autoriser ».</li>
+        <li data-i18n="doc-agent.2"><b>Rapport.</b> Chaque réponse se termine par la liste des actions, par exemple « Terminé : 6 actions › », et le nombre de tokens dépensés.</li>
+        <li data-i18n="doc-agent.3"><b>Annulation.</b> Un point de restauration est créé avant toute modification. Le bouton « Annuler » rétablit les fichiers modifiés.</li>
+        <li data-i18n="doc-agent.4"><b>Stop.</b> Coupe instantanément la requête au modèle.</li>
+        <li data-i18n="doc-agent.5"><b>Modifier une sélection.</b> Sélectionnez du code et appuyez sur <kbd>Ctrl</kbd>+<kbd>K</kbd> : les changements s'affichent en diff, à accepter ou refuser.</li>
+      </ul>
+    </section>
+
+    <section id="doc-crew" aria-labelledby="h-crew">
+      <h2 id="h-crew" data-i18n="nav.5">Équipage</h2>
+      <p data-i18n="doc-crew.1">Douze rôles avec visages, voix et compétences : chef d'équipe, design, front, back, QA, DevOps, analyste, juriste, comptable, marketing, stagiaire et blagueur. Vous êtes le CEO : vous posez la tâche, les rôles en discutent et se partagent le travail.</p>
+      <p data-i18n="doc-crew.2">Seuls les rôles qui ont des « mains » peuvent modifier des fichiers et lancer des commandes — les autres conseillent et vérifient. Leurs actions passent par les mêmes autorisations que celles de l'agent.</p>
+    </section>
+
+    <section id="doc-rules" aria-labelledby="h-rules">
+      <h2 id="h-rules" data-i18n="main.16">Règles et commandes</h2>
+      <p data-i18n="doc-rules.1">Placez <code>AGENTS.md</code> ou <code>CLAUDE.md</code> à la racine du projet — l'agent lit ces règles avant de commencer.</p>
+      <p data-i18n="doc-rules.2">Vos propres commandes de chat : créez un fichier <code>.aide/commands/nom.md</code> avec le prompt. Il apparaît dans le chat comme <code>/nom</code>, et <code>$ARGUMENTS</code> est remplacé par ce que vous écrivez après la commande.</p>
+    </section>
+
+    <section id="doc-keys" aria-labelledby="h-keys">
+      <h2 id="h-keys" data-i18n="main.17">Raccourcis clavier</h2>
+      <table class="doc__keys">
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td data-i18n="doc-keys.1">Ouvrir un dossier de projet</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td data-i18n="doc-keys.2">Enregistrer le fichier</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>W</kbd></td><td data-i18n="doc-keys.3">Fermer l'onglet</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td data-i18n="doc-keys.4">Palette de commandes</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>R</kbd></td><td data-i18n="doc-keys.5">Projets récents</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td data-i18n="doc-keys.6">Afficher ou masquer la barre latérale</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>J</kbd></td><td data-i18n="doc-keys.7">Afficher ou masquer le terminal</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td data-i18n="doc-keys.8">Rechercher dans le projet</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd></td><td data-i18n="doc-keys.9">Panneau Git</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td data-i18n="doc-keys.10">Faire modifier le code sélectionné par l'agent</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td data-i18n="doc-keys.11">Fermer la palette, les réglages ou la modification</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </article>
+</main>
+
+<footer class="foot foot--page">
+  <div class="foot__row mono">
+    <span data-i18n="foot.2">Un studio d'IA dans votre éditeur</span>
+    <span>v0.1.1 · Windows</span>
+    <a href="../changelog/" data-i18n="foot.5">Nouveautés</a>
+    <a href="#main" data-i18n="foot.3">Haut de page ↑</a>
+  </div>
+</footer>
+
+
+</body></html>

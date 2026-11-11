@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html><head>
+
+
+<title>Sharrowkin</title>
+<style>
+  :root{
+    --canvas:#111110;
+    --editor:#151514;
+    --raised:#1B1A18;
+    --ink:#F2F1EC;
+    --ash:#75746F;
+    --peach:#FBC89D;
+
+    --ink-soft:#cfcec9;
+    --ink-mid:#b0afaa;
+    --hover:#232220;
+    --press:#2a2927;
+    --line:rgba(255,255,255,0.06);
+    --line-strong:rgba(255,255,255,0.11);
+
+    --font:Manrope, "Segoe UI", system-ui, sans-serif;
+    --mono:ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    --t-xs:11px; --t-sm:12px; --t-base:13px; --t-md:14px; --t-lg:18px; --t-xl:24px;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+    --gap:6px;
+    --r-island:16px; --r-ctl:9px; --r-pill:999px;
+    --shadow:0 1px 0 rgba(255,255,255,0.03) inset, 0 12px 32px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font);font-size:var(--t-base);line-height:1.45;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--peach);outline-offset:2px;border-radius:6px}
+  .mono{font-family:var(--mono);font-size:var(--t-sm)}
+  .ash{color:var(--ash)}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* ---------- shell ---------- */
+  .screen{min-height:100vh;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:var(--gap);padding:0 var(--gap)}
+  .screen + .screen{border-top:1px solid var(--line-strong)}
+
+  .topbar{display:flex;align-items:center;gap:var(--s4);height:48px;padding:0 var(--s2)}
+  .brand{display:flex;align-items:center;gap:var(--s2);font-weight:700;font-size:var(--t-md);letter-spacing:-0.01em}
+  .crumb{display:flex;align-items:center;gap:var(--s2);color:var(--ash);min-width:0}
+  .crumb b{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nav{display:flex;gap:2px;margin-left:var(--s3)}
+  .nav a{padding:6px 10px;border-radius:var(--r-ctl);color:var(--ash);font-weight:500;white-space:nowrap}
+  .nav a:hover{color:var(--ink);background:var(--raised)}
+  .nav a[aria-current="page"]{color:var(--ink);background:var(--raised)}
+  .spacer{flex:1}
+  .modes{display:flex;padding:3px;background:var(--raised);border-radius:var(--r-ctl);gap:2px}
+  .modes button{border:0;background:transparent;color:var(--ash);padding:4px 12px;border-radius:7px;cursor:pointer;font-weight:500;white-space:nowrap}
+  .modes button:hover{color:var(--ink)}
+  .modes button[aria-pressed="true"]{background:var(--press);color:var(--ink)}
+  .avatar{width:28px;height:28px;border-radius:50%;background:var(--press);display:grid;place-items:center;font-size:var(--t-xs);font-weight:700;color:var(--ink-soft);flex:none}
+
+  .island{background:var(--raised);border-radius:var(--r-island);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-width:0;min-height:0}
+  .island.editor{background:var(--editor)}
+  .island-head{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);min-height:48px}
+  .island-head h2{margin:0;font-size:var(--t-md);font-weight:650}
+
+  .statusbar{display:flex;align-items:center;gap:var(--s4);height:28px;padding:0 var(--s2);font-family:var(--mono);font-size:var(--t-xs);color:var(--ash);white-space:nowrap;overflow:hidden}
+  .statusbar .saved{display:flex;align-items:center;gap:6px;color:var(--ink-mid)}
+  .statusbar .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-mid)}
+
+  .field{display:flex;align-items:center;gap:var(--s2);background:var(--canvas);border-radius:var(--r-ctl);padding:0 10px;height:32px;color:var(--ash)}
+  .field input{flex:1;min-width:0;border:0;background:transparent;outline:none;color:var(--ink)}
+  .field input::placeholder{color:var(--ash)}
+  .field:focus-within{box-shadow:0 0 0 2px var(--peach)}
+  .kbd{font-family:var(--mono);font-size:10px;color:var(--ash);padding:1px 5px;border-radius:4px;background:var(--raised)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 14px;border-radius:var(--r-ctl);border:0;cursor:pointer;font-weight:600;white-space:nowrap}
+  .btn-primary{background:var(--peach);color:#111110}
+  .btn-primary:hover{background:#ffd6b2}
+  .btn-ghost{background:transparent;color:var(--ink-soft)}
+  .btn-ghost:hover{background:var(--hover);color:var(--ink)}
+  .icon-btn{width:28px;height:28px;display:grid;place-items:center;border:0;background:transparent;color:var(--ash);border-radius:7px;cursor:pointer}
+  .icon-btn:hover{background:var(--hover);color:var(--ink)}
+
+  /* ---------- workspace ---------- */
+  [data-screen="Рабочее пространство"]{height:100vh}
+  .work{display:grid;grid-template-columns:248px minmax(0,1fr) 340px;gap:var(--gap);min-height:0}
+
+  .tree{flex:1;overflow:auto;padding:0 var(--s2) var(--s3);list-style:none;margin:0}
+  .tree ul{list-style:none;margin:0;padding:0 0 0 14px}
+  .tree a{display:flex;align-items:center;gap:var(--s2);height:28px;padding:0 var(--s2);border-radius:7px;color:var(--ink-mid);white-space:nowrap}
+  .tree a:hover{background:var(--hover);color:var(--ink)}
+  .tree .dir{color:var(--ink-soft);font-weight:500}
+  .tree svg{flex:none;color:var(--ash)}
+  .tree a[aria-current="true"]{background:var(--press);color:var(--ink)}
+  .tree a[aria-current="true"]::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--peach);margin-left:auto}
+
+  .tabs{display:flex;gap:2px;padding:var(--s2) var(--s2) 0}
+  .tab{display:flex;align-items:center;gap:var(--s2);height:32px;padding:0 12px;border-radius:var(--r-ctl);color:var(--ash);font-family:var(--mono);font-size:var(--t-sm)}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:var(--raised);color:var(--ink)}
+  .code{flex:1;overflow:auto;margin:0;padding:var(--s4) 0 var(--s5);font-family:var(--mono);font-size:13px;line-height:22px;color:var(--ink-mid)}
+  .code ol{margin:0;padding:0;list-style:none;counter-reset:ln}
+  .code li{counter-increment:ln;display:grid;grid-template-columns:56px minmax(0,1fr);white-space:pre}
+  .code li::before{content:counter(ln);color:#3d3c39;text-align:right;padding-right:20px;user-select:none}
+  .code li.cur{background:rgba(255,255,255,0.025)}
+  .code li.cur::before{color:var(--ink-mid)}
+  .c-sel{color:var(--ink)}
+  .c-prop{color:var(--ink-soft)}
+  .c-val{color:var(--ink)}
+  .c-com{color:var(--ash);font-style:italic}
+
+  .chat{flex:1;overflow:auto;padding:0 var(--s4) var(--s4);display:flex;flex-direction:column;gap:var(--s4)}
+  .msg{max-width:100%}
+  .msg.user{align-self:flex-end;background:var(--press);padding:10px 12px;border-radius:12px 12px 4px 12px;max-width:88%;color:var(--ink)}
+  .msg.bot p{margin:0 0 var(--s2);color:var(--ink-soft)}
+  .changes{list-style:none;margin:var(--s2) 0 0;padding:0;background:var(--canvas);border-radius:10px}
+  .changes li{display:flex;justify-content:space-between;gap:var(--s3);padding:7px 10px;font-family:var(--mono);font-size:var(--t-sm);color:var(--ink-mid)}
+  .changes li + li{border-top:1px solid var(--line)}
+  .changes .diff{color:var(--ash);white-space:nowrap}
+  .msg-time{font-family:var(--mono);font-size:var(--t-xs);color:var(--ash)}
+  .composer{margin:0 var(--s3) var(--s3);background:var(--canvas);border-radius:12px;padding:var(--s3)}
+  .composer:focus-within{box-shadow:0 0 0 2px var(--peach)}
+  .composer textarea{width:100%;border:0;background:transparent;resize:none;outline:none;min-height:44px;color:var(--ink)}
+  .composer textarea::placeholder{color:var(--ash)}
+  .composer-row{display:flex;align-items:center;gap:var(--s2)}
+  .composer-row .ctx{font-family:var(--mono);font-size:var(--t-xs);color:var(--ash);padding:3px 7px;background:var(--raised);border-radius:6px}
+  .send{width:32px;height:32px;border-radius:var(--r-ctl);border:0;background:var(--peach);color:#111110;display:grid;place-items:center;cursor:pointer;margin-left:auto}
+  .send:hover{background:#ffd6b2}
+
+  /* ---------- projects ---------- */
+  .projects{display:grid;grid-template-columns:220px minmax(0,1fr);gap:var(--gap);min-height:0}
+  .filters{list-style:none;margin:0;padding:0 var(--s2) var(--s3)}
+  .filters a{display:flex;justify-content:space-between;align-items:center;height:32px;padding:0 10px;border-radius:7px;color:var(--ink-mid)}
+  .filters a:hover{background:var(--hover);color:var(--ink)}
+  .filters a[aria-current="true"]{background:var(--press);color:var(--ink)}
+  .filters .count{font-family:var(--mono);font-size:var(--t-xs);color:var(--ash)}
+  .list-head{display:flex;align-items:center;gap:var(--s3);padding:var(--s5) var(--s5) var(--s4);flex-wrap:wrap}
+  .list-head h1{margin:0;font-size:var(--t-xl);font-weight:650;letter-spacing:-0.02em;margin-right:auto}
+  .list-head .field{width:280px;max-width:100%}
+  .rows{flex:1;overflow:auto;padding:0 var(--s3) var(--s4)}
+  .row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.5fr) 120px 130px;align-items:center;gap:var(--s4);padding:0 var(--s3);min-height:52px;border-radius:10px}
+  .row + .row{box-shadow:0 -1px 0 var(--line)}
+  a.row:hover{background:var(--hover)}
+  .row.head{min-height:32px;color:var(--ash);font-size:var(--t-sm)}
+  .row .name{display:flex;align-items:center;gap:var(--s2);font-weight:600;color:var(--ink);min-width:0}
+  .row .name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .open{font-weight:500;font-size:var(--t-xs);color:var(--peach);display:flex;align-items:center;gap:5px;flex:none}
+  .row .open::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--peach)}
+  .row .path,.row .branch{font-family:var(--mono);font-size:var(--t-sm);color:var(--ash);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .when{color:var(--ink-mid);text-align:right;white-space:nowrap}
+
+  /* ---------- settings ---------- */
+  .settings-wrap{display:flex;justify-content:center;align-items:flex-start;padding:var(--s4) 0 var(--s5);min-height:0}
+  .settings{width:100%;max-width:720px}
+  .settings > header{padding:var(--s5) var(--s5) var(--s3)}
+  .settings h1{margin:0 0 4px;font-size:var(--t-xl);font-weight:650;letter-spacing:-0.02em}
+  .settings > header p{margin:0;color:var(--ash)}
+  .group{padding:var(--s4) var(--s5)}
+  .group + .group{border-top:1px solid var(--line)}
+  .group h2{margin:0 0 var(--s3);font-size:var(--t-md);font-weight:650}
+  .set{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,280px);gap:var(--s4);align-items:center;padding:10px 0}
+  .set label,.set .lbl{font-weight:500;color:var(--ink)}
+  .set .hint{display:block;font-weight:400;color:var(--ash);font-size:var(--t-sm);margin-top:2px}
+  .set .field{justify-self:stretch}
+  .select{appearance:none;height:32px;border:0;border-radius:var(--r-ctl);background:var(--canvas) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2375746F' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 12px center;padding:0 32px 0 10px;width:100%;color:var(--ink)}
+  .seg{display:flex;padding:3px;background:var(--canvas);border-radius:var(--r-ctl);gap:2px}
+  .seg label{flex:1;text-align:center;padding:5px 8px;border-radius:7px;color:var(--ash);cursor:pointer;font-weight:500}
+  .seg input{position:absolute;opacity:0}
+  .seg input:checked + span{color:var(--ink)}
+  .seg label:has(input:checked){background:var(--press);color:var(--ink)}
+  .seg label:has(input:focus-visible){outline:2px solid var(--peach)}
+  .toggle{justify-self:end;appearance:none;width:36px;height:20px;border-radius:var(--r-pill);background:var(--press);position:relative;cursor:pointer;margin:0;transition:background .15s}
+  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--ash);transition:transform .15s, background .15s}
+  .toggle:checked{background:#5b5a56}
+  .toggle:checked::after{transform:translateX(16px);background:var(--ink)}
+  .settings > footer{display:flex;justify-content:flex-end;gap:var(--s2);padding:var(--s4) var(--s5) var(--s5);border-top:1px solid var(--line)}
+  .settings > footer .note{margin-right:auto;align-self:center;color:var(--ash);font-size:var(--t-sm)}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:1100px){
+    .work{grid-template-columns:220px minmax(0,1fr) 300px}
+    .modes button{padding:4px 8px}
+    .row{grid-template-columns:minmax(0,1.3fr) minmax(0,1.2fr) 110px}
+    .row .when{display:none}
+  }
+  @media (max-width:860px){
+    [data-screen="Рабочее пространство"]{height:auto}
+    .work{grid-template-columns:minmax(0,1fr)}
+    .work .files{max-height:260px}
+    .work .editor{height:420px}
+    .work .assistant{min-height:460px}
+    .projects{grid-template-columns:minmax(0,1fr)}
+    .filters{display:flex;gap:4px;overflow-x:auto;padding-bottom:var(--s3)}
+    .filters a{gap:8px}
+    .nav-filters .island-head{display:none}
+    .topbar{gap:var(--s2);height:auto;min-height:48px;flex-wrap:wrap;padding:6px var(--s1)}
+    .nav{order:5;width:100%;margin:0;overflow-x:auto}
+    .modes{display:none}
+  }
+  @media (max-width:560px){
+    .crumb .proj-sep,.crumb b{display:none}
+    .list-head{padding:var(--s4)}
+    .list-head .field{width:100%;order:3}
+    .row{grid-template-columns:minmax(0,1fr) auto;row-gap:2px;padding:var(--s2) var(--s3)}
+    .row.head{display:none}
+    .row .path{grid-column:1 / -1;order:3}
+    .row .branch{text-align:right}
+    .set{grid-template-columns:minmax(0,1fr)}
+    .set:has(.toggle){grid-template-columns:minmax(0,1fr) auto}
+    .settings > header,.group{padding-left:var(--s4);padding-right:var(--s4)}
+    .settings > footer{padding:var(--s4);flex-wrap:wrap}
+    .settings > footer .note{width:100%}
+    .settings > footer .btn{flex:1}
+    .statusbar .hide-sm{display:none}
+    .code{font-size:12px}
+    .code li{grid-template-columns:40px minmax(0,1fr)}
+    .code li::before{padding-right:12px}
+  }
+</style>
+</head>
+<body>
+
+
+<main data-screen="Рабочее пространство" id="workspace" class="screen">
+  <header class="topbar">
+    <a class="brand" href="#workspace" aria-label="Sharrowkin">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="8" height="8" rx="2.5" fill="#F2F1EC"></rect><rect x="11" y="1" width="8" height="8" rx="2.5" fill="#75746F"></rect><rect x="1" y="11" width="8" height="8" rx="2.5" fill="#75746F"></rect><rect x="11" y="11" width="8" height="8" rx="2.5" fill="#F2F1EC"></rect></svg>
+      Sharrowkin
+    </a>
+    <div class="crumb"><span class="proj-sep">/</span><b>sharrowkin-studio</b></div>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#workspace" aria-current="page">Рабочее пространство</a>
+      <a href="#projects">Проекты</a>
+      <a href="#settings">Настройки</a>
+    </nav>
+    <span class="spacer"></span>
+    <div class="modes" role="group" aria-label="Режим">
+      <button type="button" aria-pressed="false">Vibe</button>
+      <button type="button" aria-pressed="true">Код</button>
+      <button type="button" aria-pressed="false">Дизайн</button>
+      <button type="button" aria-pressed="false">Design Skills</button>
+      <button type="button" aria-pressed="false">Превью</button>
+    </div>
+    <span class="avatar" aria-label="Аккаунт: Мария Орлова">МО</span>
+  </header>
+
+  <div class="work">
+    
+    <section class="island files" aria-label="Файлы проекта">
+      <div class="island-head">
+        <label class="field" style="flex:1">
+          <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+          <span class="sr">Найти файл</span>
+          <input type="search" placeholder="Найти файл">
+          <span class="kbd">⌘P</span>
+        </label>
+      </div>
+      <ul class="tree">
+        <li><a class="dir" href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"></path></svg>src</a>
+          <ul>
+            <li><a class="dir" href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"></path></svg>components</a>
+              <ul>
+                <li><a href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>Assistant.tsx</a></li>
+                <li><a href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>FileTree.tsx</a></li>
+                <li><a href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>Island.tsx</a></li>
+                <li><a href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>StatusBar.tsx</a></li>
+              </ul>
+            </li>
+            <li><a class="dir" href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"></path></svg>styles</a>
+              <ul>
+                <li><a href="#workspace" aria-current="true"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>index.css</a></li>
+              </ul>
+            </li>
+            <li><a href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>App.tsx</a></li>
+            <li><a href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>main.tsx</a></li>
+          </ul>
+        </li>
+        <li><a href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>package.json</a></li>
+        <li><a href="#workspace"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h5l3 3v9H4z" fill="none" stroke="currentColor" stroke-width="1.3"></path></svg>README.md</a></li>
+      </ul>
+    </section>
+
+    
+    <section class="island editor" aria-label="Редактор">
+      <div class="tabs" role="tablist">
+        <a class="tab" role="tab" aria-selected="true" href="#workspace">index.css</a>
+        <a class="tab" role="tab" aria-selected="false" href="#workspace">Island.tsx</a>
+      </div>
+      <pre class="code"><ol>
+<li><span class="c-com">/* Тёплый графит: холст и поверхности */</span></li>
+<li><span class="c-sel">:root</span> {</li>
+<li>  <span class="c-prop">--color-canvas</span>: <span class="c-val">#111110</span>;</li>
+<li>  <span class="c-prop">--color-editor</span>: <span class="c-val">#151514</span>;</li>
+<li>  <span class="c-prop">--color-raised</span>: <span class="c-val">#1b1a18</span>;</li>
+<li>  <span class="c-prop">--color-overlay</span>: <span class="c-val">#1d1c1a</span>;</li>
+<li></li>
+<li>  <span class="c-com">/* Текст */</span></li>
+<li>  <span class="c-prop">--color-ink</span>: <span class="c-val">#f2f1ec</span>;</li>
+<li>  <span class="c-prop">--color-ash</span>: <span class="c-val">#75746f</span>;</li>
+<li></li>
+<li>  <span class="c-com">/* Единственный акцент */</span></li>
+<li>  <span class="c-prop">--color-accent</span>: <span class="c-val">#fbc89d</span>;</li>
+<li></li>
+<li>  <span class="c-prop">--color-line</span>: <span class="c-val">rgba(255, 255, 255, 0.06)</span>;</li>
+<li>  <span class="c-prop">--color-line-strong</span>: <span class="c-val">rgba(255, 255, 255, 0.11)</span>;</li>
+<li></li>
+<li>  <span class="c-prop">--font-sans</span>: <span class="c-val">Manrope, system-ui, sans-serif</span>;</li>
+<li>  <span class="c-prop">--font-mono</span>: <span class="c-val">ui-monospace, Menlo, monospace</span>;</li>
+<li></li>
+<li>  <span class="c-com">/* Острова отделены воздухом, а не рамками */</span></li>
+<li>  <span class="c-prop">--radius-island</span>: <span class="c-val">16px</span>;</li>
+<li>  <span class="c-prop">--aide-gap</span>: <span class="c-val">6px</span>;</li>
+<li class="cur">  <span class="c-prop">--shadow-island</span>: <span class="c-val">0 12px 32px rgba(0, 0, 0, 0.35)</span>;</li>
+<li>}</li>
+<li></li>
+<li><span class="c-sel">.island</span> {</li>
+<li>  <span class="c-prop">background</span>: <span class="c-val">var(--color-raised)</span>;</li>
+<li>  <span class="c-prop">border-radius</span>: <span class="c-val">var(--radius-island)</span>;</li>
+<li>  <span class="c-prop">box-shadow</span>: <span class="c-val">var(--shadow-island)</span>;</li>
+<li>}</li>
+</ol></pre>
+    </section>
+
+    
+    <section class="island assistant" aria-label="Помощник">
+      <div class="island-head">
+        <h2>Помощник</h2>
+        <span class="spacer"></span>
+        <button class="icon-btn" type="button" aria-label="Новый диалог"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg></button>
+      </div>
+      <div class="chat">
+        <div class="msg user">Сделай полный редизайн проекта, чтобы выглядело как Sharrowkin</div>
+        <div class="msg bot">
+          <p>Перевёл палитру на тёплый графит и разнёс панели на острова с зазором 6px. Бордеры между панелями убрал, акцент остался один.</p>
+          <ul class="changes">
+            <li><span>styles/index.css</span><span class="diff">+24 −31</span></li>
+            <li><span>components/Island.tsx</span><span class="diff">+18 −4</span></li>
+            <li><span>App.tsx</span><span class="diff">+9 −22</span></li>
+          </ul>
+        </div>
+        <div class="msg user">Строку статуса сделай тише</div>
+        <div class="msg bot">
+          <p>Убрал у строки статуса фон и перевёл её на моноширинный шрифт 11px в цвете Ash. Теперь она лежит прямо на холсте.</p>
+          <ul class="changes">
+            <li><span>components/StatusBar.tsx</span><span class="diff">+6 −11</span></li>
+          </ul>
+          <span class="msg-time">14:32</span>
+        </div>
+      </div>
+      <div class="composer">
+        <label class="sr" for="prompt">Сообщение помощнику</label>
+        <textarea id="prompt" rows="2" placeholder="Опишите, что изменить"></textarea>
+        <div class="composer-row">
+          <span class="ctx">index.css</span>
+          <button class="send" type="button" aria-label="Отправить">
+            <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="statusbar">
+    <span class="saved"><span class="dot"></span>Сохранено</span>
+    <span>main</span>
+    <span class="hide-sm">Стр. 24, кол. 18</span>
+    <span class="spacer"></span>
+    <span class="hide-sm">UTF-8</span>
+    <span>v0.14.2</span>
+  </footer>
+</main>
+
+
+<main data-screen="Проекты" id="projects" class="screen">
+  <header class="topbar">
+    <a class="brand" href="#workspace" aria-label="Sharrowkin">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="8" height="8" rx="2.5" fill="#F2F1EC"></rect><rect x="11" y="1" width="8" height="8" rx="2.5" fill="#75746F"></rect><rect x="1" y="11" width="8" height="8" rx="2.5" fill="#75746F"></rect><rect x="11" y="11" width="8" height="8" rx="2.5" fill="#F2F1EC"></rect></svg>
+      Sharrowkin
+    </a>
+    <div class="crumb"><span class="proj-sep">/</span><b>sharrowkin-studio</b></div>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#workspace">Рабочее пространство</a>
+      <a href="#projects" aria-current="page">Проекты</a>
+      <a href="#settings">Настройки</a>
+    </nav>
+    <span class="spacer"></span>
+    <span class="avatar" aria-label="Аккаунт: Мария Орлова">МО</span>
+  </header>
+
+  <div class="projects">
+    <aside class="island nav-filters" aria-label="Фильтры">
+      <div class="island-head"><h2>Показать</h2></div>
+      <ul class="filters">
+        <li><a href="#projects" aria-current="true">Все проекты <span class="count">6</span></a></li>
+        <li><a href="#projects">Недавние <span class="count">3</span></a></li>
+        <li><a href="#projects">С изменениями <span class="count">2</span></a></li>
+        <li><a href="#projects">Архив <span class="count">4</span></a></li>
+      </ul>
+    </aside>
+
+    <section class="island editor" aria-labelledby="projects-title">
+      <div class="list-head">
+        <h1 id="projects-title">Проекты</h1>
+        <label class="field">
+          <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+          <span class="sr">Найти проект</span>
+          <input type="search" placeholder="Найти проект">
+          <span class="kbd">⌘K</span>
+        </label>
+        <button class="btn btn-primary" type="button">
+          <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+          Новый проект
+        </button>
+      </div>
+      <div class="rows" role="table" aria-label="Список проектов">
+        <div class="row head" role="row">
+          <span role="columnheader">Название</span>
+          <span role="columnheader">Папка</span>
+          <span role="columnheader">Ветка</span>
+          <span role="columnheader" class="when">Изменён</span>
+        </div>
+        <a class="row" role="row" href="#workspace">
+          <span class="name" role="cell"><span>sharrowkin-studio</span><span class="open">открыт</span></span>
+          <span class="path" role="cell">~/code/sharrowkin-studio</span>
+          <span class="branch" role="cell">main</span>
+          <span class="when" role="cell">2 мин назад</span>
+        </a>
+        <a class="row" role="row" href="#workspace">
+          <span class="name" role="cell"><span>marketing-site</span></span>
+          <span class="path" role="cell">~/code/marketing-site</span>
+          <span class="branch" role="cell">redesign</span>
+          <span class="when" role="cell">вчера, 18:40</span>
+        </a>
+        <a class="row" role="row" href="#workspace">
+          <span class="name" role="cell"><span>docs-portal</span></span>
+          <span class="path" role="cell">~/code/docs-portal</span>
+          <span class="branch" role="cell">main</span>
+          <span class="when" role="cell">12 мая</span>
+        </a>
+        <a class="row" role="row" href="#workspace">
+          <span class="name" role="cell"><span>billing-api</span></span>
+          <span class="path" role="cell">~/work/billing-api</span>
+          <span class="branch" role="cell">fix/invoices</span>
+          <span class="when" role="cell">9 мая</span>
+        </a>
+        <a class="row" role="row" href="#workspace">
+          <span class="name" role="cell"><span>mobile-shell</span></span>
+          <span class="path" role="cell">~/work/mobile-shell</span>
+          <span class="branch" role="cell">main</span>
+          <span class="when" role="cell">28 апреля</span>
+        </a>
+        <a class="row" role="row" href="#workspace">
+          <span class="name" role="cell"><span>design-tokens</span></span>
+          <span class="path" role="cell">~/code/design-tokens</span>
+          <span class="branch" role="cell">v2</span>
+          <span class="when" role="cell">3 апреля</span>
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <footer class="statusbar">
+    <span class="saved"><span class="dot"></span>Все изменения сохранены</span>
+    <span class="hide-sm">6 проектов</span>
+    <span class="spacer"></span>
+    <span>v0.14.2</span>
+  </footer>
+</main>
+
+
+<main data-screen="Настройки" id="settings" class="screen">
+  <header class="topbar">
+    <a class="brand" href="#workspace" aria-label="Sharrowkin">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="8" height="8" rx="2.5" fill="#F2F1EC"></rect><rect x="11" y="1" width="8" height="8" rx="2.5" fill="#75746F"></rect><rect x="1" y="11" width="8" height="8" rx="2.5" fill="#75746F"></rect><rect x="11" y="11" width="8" height="8" rx="2.5" fill="#F2F1EC"></rect></svg>
+      Sharrowkin
+    </a>
+    <div class="crumb"><span class="proj-sep">/</span><b>sharrowkin-studio</b></div>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#workspace">Рабочее пространство</a>
+      <a href="#projects">Проекты</a>
+      <a href="#settings" aria-current="page">Настройки</a>
+    </nav>
+    <span class="spacer"></span>
+    <span class="avatar" aria-label="Аккаунт: Мария Орлова">МО</span>
+  </header>
+
+  <div class="settings-wrap">
+    <section class="island settings" aria-labelledby="settings-title">
+      <header>
+        <h1 id="settings-title">Настройки</h1>
+        <p>Изменения применяются ко всем проектам на этом устройстве.</p>
+      </header>
+
+      <div class="group">
+        <h2>Аккаунт</h2>
+        <div class="set">
+          <label for="s-name">Имя</label>
+          <span class="field"><input id="s-name" type="text" value="Мария Орлова"></span>
+        </div>
+        <div class="set">
+          <label for="s-mail">Почта<span class="hint">Сюда приходят уведомления</span></label>
+          <span class="field"><input id="s-mail" type="email" value="maria@example.com"></span>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Интерфейс</h2>
+        <div class="set">
+          <label for="s-size">Размер шрифта в редакторе</label>
+          <select id="s-size" class="select">
+            <option>12 px</option>
+            <option selected="">13 px</option>
+            <option>14 px</option>
+            <option>16 px</option>
+          </select>
+        </div>
+        <div class="set">
+          <span class="lbl" id="s-density">Плотность<span class="hint">Высота строк в дереве и списках</span></span>
+          <div class="seg" role="radiogroup" aria-labelledby="s-density">
+            <label><input type="radio" name="density" checked=""><span>Компактно</span></label>
+            <label><input type="radio" name="density"><span>Свободно</span></label>
+          </div>
+        </div>
+        <div class="set">
+          <label for="s-lines">Номера строк</label>
+          <input id="s-lines" class="toggle" type="checkbox" checked="">
+        </div>
+        <div class="set">
+          <label for="s-motion">Анимации интерфейса<span class="hint">Плавное открытие панелей и меню</span></label>
+          <input id="s-motion" class="toggle" type="checkbox" checked="">
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Помощник</h2>
+        <div class="set">
+          <label for="s-apply">Применять правки сразу<span class="hint">Без подтверждения каждого изменения</span></label>
+          <input id="s-apply" class="toggle" type="checkbox">
+        </div>
+        <div class="set">
+          <label for="s-ctx">Показывать открытый файл в контексте</label>
+          <input id="s-ctx" class="toggle" type="checkbox" checked="">
+        </div>
+      </div>
+
+      <footer>
+        <span class="note">Есть несохранённые изменения</span>
+        <button class="btn btn-ghost" type="button">Отменить</button>
+        <button class="btn btn-primary" type="button">Сохранить изменения</button>
+      </footer>
+    </section>
+  </div>
+
+  <footer class="statusbar">
+    <span class="saved"><span class="dot"></span>Не сохранено</span>
+    <span class="hide-sm">maria@example.com</span>
+    <span class="spacer"></span>
+    <span>v0.14.2</span>
+  </footer>
+</main>
+
+
+</body></html>

@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="es" data-page-lang="es"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="head.1">AIDE: más que un editor</title>
+  <meta name="description" content="AIDE es un editor de código de escritorio con un estudio de IA dentro: un agente, un lienzo de diseño y un equipo de 12 roles en una sola ventana. Tauri 2, Rust, React. Tus claves se quedan contigo." data-i18n-attr="content:head.2">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#110e0c">
+  <meta property="og:title" content="AIDE: más que un editor" data-i18n-attr="content:head.1">
+  <meta property="og:description" content="Un editor de código con todo un estudio de IA dentro: agente, diseño y un equipo con caras." data-i18n-attr="content:head.3">
+  <meta property="og:type" content="website">
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="ru" href="../">
+  <link rel="alternate" hreflang="en" href="../en/">
+  <link rel="alternate" hreflang="de" href="../de/">
+  <link rel="alternate" hreflang="fr" href="../fr/">
+  <link rel="alternate" hreflang="es" href="../es/">
+  <link rel="alternate" hreflang="pt" href="../pt/">
+  <link rel="alternate" hreflang="it" href="../it/">
+  <link rel="alternate" hreflang="zh" href="../zh/">
+  <link rel="alternate" hreflang="ja" href="../ja/">
+  <link rel="alternate" hreflang="ko" href="../ko/">
+  <link rel="alternate" hreflang="tg" href="../tg/">
+  <link rel="alternate" hreflang="x-default" href="../">
+  <!-- /hreflang -->
+  <link rel="icon" href="../img/logo.svg" type="image/svg+xml">
+  <link rel="preload" href="../fonts/inter-tight-cyrillic-800-normal.woff2" as="font" type="font/woff2" crossorigin="">
+  <link rel="preload" href="../fonts/jetbrains-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin="">
+  <link rel="stylesheet" href="../styles.css">
+  <script src="../js/mode.js"></script>
+  <script type="module" src="../js/app.js"></script>
+<script type="application/json" id="i18n-js">{"js.copy":"Copiar","js.copied":"Copiado","js.copyFail":"Error","js.copyOk":"Comando copiado","js.copyErr":"No se pudo copiar","js.liteOn":"Versión ligera: sí","js.liteOff":"Versión ligera: no","js.toast":"Versión ligera activada para mayor fluidez","js.lang":"Idioma"}</script></head>
+<body>
+<a class="skip" href="#main" data-i18n="page.1">Ir al contenido</a>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="glow" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><span></span></div>
+
+<header class="nav glass">
+  <a class="wordmark" href="#top" aria-label="AIDE: volver al inicio" data-i18n-attr="aria-label:nav.1">AIDE</a>
+  <nav aria-label="Secciones" data-i18n-attr="aria-label:nav.2">
+    <ul>
+      <li><a href="#hero" data-i18n="nav.3">Intro</a></li>
+      <li><a href="#features" data-i18n="nav.4">Funciones</a></li>
+      <li><a href="#crew" data-i18n="nav.5">Tripulación</a></li>
+      <li><a href="#modes" data-i18n="nav.6">Modos</a></li>
+      <li class="lang">
+        <button class="lang__btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Idioma" data-i18n-attr="aria-label:js.lang"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"></path></svg><span class="lang__code">RU</span></button>
+        <ul class="lang__menu" id="lang-menu" translate="no" hidden="">
+          <li><a href="../" hreflang="ru" lang="ru" data-lang="ru"><span class="lang__iso">RU</span>Русский</a></li>
+          <li><a href="../en/" hreflang="en" lang="en" data-lang="en"><span class="lang__iso">EN</span>English</a></li>
+          <li><a href="../de/" hreflang="de" lang="de" data-lang="de"><span class="lang__iso">DE</span>Deutsch</a></li>
+          <li><a href="../fr/" hreflang="fr" lang="fr" data-lang="fr"><span class="lang__iso">FR</span>Français</a></li>
+          <li><a href="../es/" hreflang="es" lang="es" data-lang="es" aria-current="true"><span class="lang__iso">ES</span>Español</a></li>
+          <li><a href="../pt/" hreflang="pt" lang="pt" data-lang="pt"><span class="lang__iso">PT</span>Português</a></li>
+          <li><a href="../it/" hreflang="it" lang="it" data-lang="it"><span class="lang__iso">IT</span>Italiano</a></li>
+          <li><a href="../zh/" hreflang="zh" lang="zh" data-lang="zh"><span class="lang__iso">ZH</span>中文</a></li>
+          <li><a href="../ja/" hreflang="ja" lang="ja" data-lang="ja"><span class="lang__iso">JA</span>日本語</a></li>
+          <li><a href="../ko/" hreflang="ko" lang="ko" data-lang="ko"><span class="lang__iso">KO</span>한국어</a></li>
+          <li><a href="../tg/" hreflang="tg" lang="tg" data-lang="tg"><span class="lang__iso">TG</span>Тоҷикӣ</a></li>
+        </ul>
+      </li>
+      <li><a class="nav__cta" href="#start" data-i18n="nav.7">Empezar</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- 0. Blueprint intro -->
+  <section class="intro" id="top" aria-label="Plano del logo de AIDE" data-i18n-attr="aria-label:top.1">
+    <div class="intro__stage">
+      <svg class="bp" viewBox="0 0 512 512" aria-hidden="true">
+        <g class="bp__guides">
+          <line x1="-200" y1="128" x2="712" y2="128" pathLength="1"></line>
+          <line x1="-200" y1="388" x2="712" y2="388" pathLength="1"></line>
+          <line x1="142" y1="-200" x2="142" y2="712" pathLength="1"></line>
+          <line x1="370" y1="-200" x2="370" y2="712" pathLength="1"></line>
+          <line x1="256" y1="-200" x2="256" y2="712" pathLength="1"></line>
+          <line x1="-200" y1="300" x2="712" y2="300" pathLength="1"></line>
+        </g>
+        <rect class="bp__tile" x="16" y="16" width="480" height="480" rx="116" pathLength="1"></rect>
+        <circle class="bp__circle" cx="256" cy="300" r="50" pathLength="1"></circle>
+        <circle class="bp__circle bp__circle--big" cx="256" cy="268" r="182" pathLength="1"></circle>
+        <path class="bp__a" d="M142 388 L256 128 L370 388" pathLength="1"></path>
+        <path class="bp__spark" d="M256 250 C261 283 273 295 306 300 C273 305 261 317 256 350 C251 317 239 305 206 300 C239 295 251 283 256 250 Z" pathLength="1"></path>
+        <g class="bp__handles">
+          <line x1="261" y1="283" x2="273" y2="295"></line><line x1="261" y1="317" x2="273" y2="305"></line>
+          <line x1="251" y1="283" x2="239" y2="295"></line><line x1="251" y1="317" x2="239" y2="305"></line>
+          <line x1="226" y1="128" x2="286" y2="128"></line><line x1="112" y1="388" x2="172" y2="388"></line><line x1="340" y1="388" x2="400" y2="388"></line>
+          <line x1="16" y1="226" x2="16" y2="286"></line><line x1="496" y1="226" x2="496" y2="286"></line>
+        </g>
+        <g class="bp__nodes">
+          <rect x="252" y="124" width="8" height="8"></rect><rect x="138" y="384" width="8" height="8"></rect><rect x="366" y="384" width="8" height="8"></rect>
+          <rect x="252" y="246" width="8" height="8"></rect><rect x="302" y="296" width="8" height="8"></rect><rect x="252" y="346" width="8" height="8"></rect><rect x="202" y="296" width="8" height="8"></rect>
+          <rect x="12" y="252" width="8" height="8"></rect><rect x="492" y="252" width="8" height="8"></rect>
+          <circle cx="226" cy="128" r="3.5"></circle><circle cx="286" cy="128" r="3.5"></circle><circle cx="112" cy="388" r="3.5"></circle><circle cx="172" cy="388" r="3.5"></circle><circle cx="340" cy="388" r="3.5"></circle><circle cx="400" cy="388" r="3.5"></circle>
+          <circle cx="261" cy="283" r="3"></circle><circle cx="273" cy="295" r="3"></circle><circle cx="261" cy="317" r="3"></circle><circle cx="273" cy="305" r="3"></circle><circle cx="251" cy="283" r="3"></circle><circle cx="239" cy="295" r="3"></circle><circle cx="251" cy="317" r="3"></circle><circle cx="239" cy="305" r="3"></circle>
+          <circle cx="16" cy="226" r="3.5"></circle><circle cx="16" cy="286" r="3.5"></circle><circle cx="496" cy="226" r="3.5"></circle><circle cx="496" cy="286" r="3.5"></circle>
+        </g>
+        <g class="bp__notes">
+          <text x="384" y="120">66.3°</text>
+          <text x="318" y="338">SPARK · 4 PT</text>
+          <text x="28" y="40">R 116</text>
+          <text x="400" y="412">46 PX</text>
+        </g>
+      </svg>
+      <div class="intro__copy">
+        <p class="mono" data-i18n="top.2">Plano n.º 01 — AIDE</p>
+        <h1 class="intro__title" data-i18n="top.3">Un editor de código.<br>Hecho desde cero.</h1>
+      </div>
+      <p class="intro__hint mono"><span class="intro__dot" aria-hidden="true"></span><span data-i18n="top.4">Desliza</span></p>
+      <dl class="intro__meta mono">
+        <div><dt data-i18n="top.5">Versión</dt><dd>0.1.1</dd></div>
+        <div><dt data-i18n="top.6">Plataforma</dt><dd>Windows</dd></div>
+        <div><dt data-i18n="top.7">Base</dt><dd>Tauri 2 · Rust</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 1. Hero with the 3D mark -->
+  <section class="hero" id="hero" aria-labelledby="hero-title">
+    <div class="sticky hero__stage">
+      <h2 class="hero__title display" id="hero-title" data-lines="" data-i18n="hero-title.1">Más que<br>un editor.</h2>
+      <p class="hero__lead" data-words="" data-i18n="hero.1">AIDE es un estudio. Un agente, un lienzo de diseño y un equipo de doce roles trabajan en una sola ventana, y tú decides qué llega al código.</p>
+      <p class="footnote mono glass">* Tauri 2 · Rust · React 19</p>
+    </div>
+  </section>
+
+  <!-- 2. Feature chapters -->
+  <div id="features">
+    <section class="chapter chapter--left" data-chapter="1" aria-labelledby="ch1">
+      <div class="sticky chapter__stage">
+        <div class="chapter__copy">
+          <p class="kicker mono"><span>01</span> <span data-i18n="features.1">Agente</span></p>
+          <h2 class="display" id="ch1" data-lines="" data-i18n="ch1.1">Un agente que<br>rinde cuentas</h2>
+          <p class="chapter__text" data-words="" data-i18n="features.2">Ves cada acción, lo que costó en tokens, y puedes deshacerlo todo con un botón. Escribir archivos y ejecutar comandos, solo después de tu «Permitir».</p>
+          <ul class="stats">
+            <li><b data-count="6">6</b><span data-i18n="features.3">acciones<br>en una respuesta</span></li>
+            <li><b data-count="12480">12 480</b><span data-i18n="features.4">tokens,<br>a la vista</span></li>
+            <li><b data-count="1">1</b><span data-i18n="features.5">botón para<br>deshacer</span></li>
+          </ul>
+        </div>
+        <div class="chapter__ui" aria-label="Ejemplo de respuesta del agente" data-i18n-attr="aria-label:features.6">
+          <div class="ui-chip ui-chip--me glass" data-i18n="features.7">Conecta los pagos y ejecuta los tests</div>
+          <div class="ui-perm glass">
+            <p class="mono" data-i18n="features.8">El agente quiere ejecutar</p>
+            <code>npm test -- --run</code>
+            <div><span class="ui-btn ui-btn--y" data-i18n="features.9">Permitir</span><span class="ui-btn" data-i18n="features.10">Denegar</span></div>
+          </div>
+          <div class="ui-chip glass" data-i18n="features.11">Hecho: <b>6 acciones</b> ›</div>
+          <div class="ui-chip glass" data-i18n="features.12">Cambiado: <b>3 archivos</b> · <em>Deshacer</em></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter chapter--right" data-chapter="2" aria-labelledby="ch2">
+      <div class="sticky chapter__stage">
+        <div class="chapter__copy">
+          <p class="kicker mono"><span>02</span> <span data-i18n="nav.6">Modos</span></p>
+          <h2 class="display" id="ch2" data-lines="" data-i18n="ch2.1">Tres modos.<br>Una ventana.</h2>
+          <p class="chapter__text" data-words="" data-i18n="features.13">Escribe código en el IDE, describe una tarea con palabras en Vibe o arma una maqueta en el lienzo, y conviértela en un proyecto con React, Vue, Svelte, Next.js, Astro o HTML puro.</p>
+          <ol class="modes-list">
+            <li><span class="mono">IDE</span><span data-i18n="features.14">CodeMirror 6, terminales, Git, diff</span></li>
+            <li><span class="mono">VIBE</span><span data-i18n="features.15">Un equipo de roles lleva la tarea paso a paso</span></li>
+            <li><span class="mono" data-i18n="features.16">DISEÑO</span><span data-i18n="features.17">Lienzo, capas y «Crear en el proyecto»</span></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter chapter--left" data-chapter="3" aria-labelledby="ch3">
+      <div class="sticky chapter__stage">
+        <div class="chapter__copy">
+          <p class="kicker mono"><span>03</span> <span data-i18n="features.18">Control</span></p>
+          <h2 class="display" id="ch3" data-lines="" data-i18n="ch3.1">Tus claves no salen<br>de la máquina</h2>
+          <p class="chapter__text" data-words="" data-i18n="features.19">Las claves de API viven en el almacén de credenciales de Windows. Las acciones peligrosas esperan tu confirmación, antes de cada cambio del agente se crea un punto de control y «Detener» corta la petición al instante.</p>
+          <ul class="stats">
+            <li><b data-count="0">0</b><span data-i18n="features.20">bytes de claves<br>en el repositorio</span></li>
+            <li><b>100%</b><span data-i18n="features.21">en local,<br>salvo tu modelo</span></li>
+            <li><b data-i18n="features.22">1 clic</b><span data-i18n="features.23">para pararlo<br>todo</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 3. Inside: interactive app mock -->
+  <section class="section inside" id="inside" aria-labelledby="inside-title">
+    <div class="wrap">
+      <div class="section__head">
+        <p class="kicker mono"><span>04</span> <span data-i18n="inside.1">Por dentro</span></p>
+        <h2 class="display display--md" id="inside-title" data-lines="" data-i18n="inside-title.1">Echa un vistazo dentro</h2>
+      </div>
+      <div class="window" role="group" aria-label="Interfaz de AIDE (demo)" data-i18n-attr="aria-label:inside.2">
+        <div class="window__bar">
+          <div class="window__title mono"><img src="../img/logo.svg" alt="" width="18" height="18"><span>pizzeria — AIDE</span></div>
+          <div class="modes" role="tablist" aria-label="Modo de trabajo" data-i18n-attr="aria-label:inside.3">
+            <span class="modes__pill" aria-hidden="true"></span>
+            <button type="button" role="tab" id="tab-ide" aria-selected="true" aria-controls="view-ide">IDE</button>
+            <button type="button" role="tab" id="tab-vibe" aria-selected="false" aria-controls="view-vibe" tabindex="-1">Vibe</button>
+            <button type="button" role="tab" id="tab-design" aria-selected="false" aria-controls="view-design" tabindex="-1" data-i18n="tab-design.1">Diseño</button>
+          </div>
+          <div class="window__ctl" aria-hidden="true"><span></span><span></span><span></span></div>
+        </div>
+        <div class="window__body">
+          <div class="view is-on" id="view-ide" role="tabpanel" aria-labelledby="tab-ide">
+            <div class="pane tree-pane">
+              <div class="pane__h mono" data-i18n="view-ide.1">Explorador</div>
+              <ul class="tree" aria-label="Archivos del proyecto" data-i18n-attr="aria-label:view-ide.2">
+                <li class="dir"><i aria-hidden="true"></i>src</li>
+                <li class="sub on"><i class="ts" aria-hidden="true"></i>Menu.tsx</li>
+                <li class="sub"><i class="ts" aria-hidden="true"></i>Hero.tsx</li>
+                <li class="sub"><i class="css" aria-hidden="true"></i>styles.css</li>
+                <li class="dir"><i aria-hidden="true"></i>public</li>
+                <li><i class="md" aria-hidden="true"></i>AGENTS.md</li>
+                <li><i aria-hidden="true"></i>package.json</li>
+              </ul>
+            </div>
+            <div class="pane editor">
+              <div class="tabs" aria-hidden="true"><span class="on">Menu.tsx</span><span>Hero.tsx</span></div>
+<pre class="code" aria-label="Ejemplo de código" data-i18n-attr="aria-label:view-ide.12"><span class="ln" data-n="1"><span class="k">import</span> { pizzas } <span class="k">from</span> <span class="s">"./data"</span>;</span><span class="ln" data-n="2"> </span><span class="ln" data-n="3"><span class="k">export function</span> <span class="f">Menu</span>() {</span><span class="ln" data-n="4">  <span class="k">return</span> (</span><span class="ln add" data-n="5">    &lt;<span class="t">ul</span> className=<span class="s">"menu"</span>&gt;</span><span class="ln add" data-n="6">      {pizzas.<span class="f">map</span>((p) =&gt; (</span><span class="ln add" data-n="7">        &lt;<span class="t">Card</span> key={p.id} {...p} /&gt;</span><span class="ln add" data-n="8">      ))}</span><span class="ln add" data-n="9">    &lt;/<span class="t">ul</span>&gt;</span><span class="ln" data-n="10">  );</span><span class="ln" data-n="11">}</span></pre>
+              <div class="term mono" aria-label="Terminal" data-i18n-attr="aria-label:view-ide.3"><b>➜</b> npm run dev<br>VITE ready · <b>http://localhost:5173</b></div>
+            </div>
+            <div class="pane chat-pane">
+              <div class="pane__h mono" data-i18n="features.1">Agente</div>
+              <div class="chat">
+                <div class="msg msg--me" data-i18n="view-ide.4">Hazme una web de pizzería</div>
+                <div class="msg msg--ai" data-i18n="view-ide.5">Listo: menú, tarjetas y una cuadrícula adaptable. Servidor de desarrollo en marcha.</div>
+                <div class="chip chip--ok"><span data-i18n="view-ide.6">Hecho: <b>6 acciones</b></span><span aria-hidden="true">›</span></div>
+                <div class="chip"><span data-i18n="view-ide.7">Cambiado: <b>3 archivos</b></span><span class="undo" data-i18n="view-ide.8">Deshacer</span></div>
+                <div class="tokens mono" data-i18n="view-ide.9">Tokens: 12.480</div>
+                <div class="chat__input"><span data-i18n="view-ide.10">Pregunta al agente…</span><span class="stop" data-i18n="view-ide.11">Detener</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="view" id="view-vibe" role="tabpanel" aria-labelledby="tab-vibe" hidden="">
+            <div class="vibe">
+              <div class="vibe__prompt" data-i18n="view-vibe.1">Hazme una web de pizzería con menú y entrega a domicilio</div>
+              <ol class="vibe__steps">
+                <li class="done"><span class="st" aria-hidden="true"></span><span data-i18n="view-vibe.2">Dividir la tarea en pasos</span><span class="who mono" data-i18n="view-vibe.3">Team lead</span></li>
+                <li class="done"><span class="st" aria-hidden="true"></span><span data-i18n="view-vibe.4">Maqueta de inicio y menú</span><span class="who mono" data-i18n="tab-design.1">Diseño</span></li>
+                <li class="run"><span class="st" aria-hidden="true"></span><span data-i18n="view-vibe.5">Maquetar las pantallas</span><span class="who mono" data-i18n="view-vibe.6">Front</span></li>
+                <li><span class="st" aria-hidden="true"></span><span data-i18n="view-vibe.7">Formulario de pedido y API</span><span class="who mono" data-i18n="view-vibe.8">Back</span></li>
+                <li><span class="st" aria-hidden="true"></span><span data-i18n="view-vibe.9">Revisar en el navegador</span><span class="who mono">QA</span></li>
+              </ol>
+            </div>
+          </div>
+          <div class="view" id="view-design" role="tabpanel" aria-labelledby="tab-design" hidden="">
+            <div class="design">
+              <div class="pane layers">
+                <div class="pane__h mono" data-i18n="view-design.1">Capas</div>
+                <ul class="tree"><li class="on"><i class="md" aria-hidden="true"></i><span data-i18n="view-design.2">Inicio</span></li><li class="sub"><i aria-hidden="true"></i>Hero</li><li class="sub"><i aria-hidden="true"></i><span data-i18n="view-design.3">Menú</span></li><li class="sub"><i aria-hidden="true"></i><span data-i18n="view-design.4">Pie</span></li></ul>
+              </div>
+              <div class="canvas">
+                <div class="frame" aria-label="Maqueta del sitio en el lienzo" data-i18n-attr="aria-label:view-design.5">
+                  <div class="frame__hero"><h4>Pizza Forno</h4><p data-i18n="view-design.6">Horno de leña. Entrega en 30 minutos.</p><span class="frame__btn" data-i18n="view-design.7">Pedir</span></div>
+                  <div class="frame__grid" aria-hidden="true"><span></span><span></span><span></span></div>
+                </div>
+              </div>
+              <div class="pane props-pane">
+                <div class="pane__h mono" data-i18n="view-design.8">Crear en el proyecto</div>
+                <div class="props">
+                  <div class="stacks"><span>HTML</span><span class="on">React</span><span>Vue</span><span>Svelte</span><span>Next.js</span><span>Astro</span></div>
+                  <div data-i18n="view-design.9">TypeScript <b>sí</b></div>
+                  <div data-i18n="view-design.10">Tailwind <b>sí</b></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4b. Live demos -->
+  <section class="section live" id="live" aria-labelledby="live-title">
+    <div class="wrap">
+      <div class="section__head">
+        <p class="kicker mono"><span>05</span> <span data-i18n="live.1">En vivo</span></p>
+        <h2 class="display display--md" id="live-title" data-lines="" data-i18n="live-title.1">Pruébalo tú mismo</h2>
+      </div>
+      <div class="live__grid">
+
+        <article class="demo demo--agent" data-demo="agent">
+          <h3 class="demo__t" data-i18n="live.2">El agente trabajando</h3>
+          <p class="demo__d" data-i18n="live.3">Pulsa «Ejecutar»: el agente encuentra el código, hace el cambio y comprueba el resultado él mismo, como en la aplicación.</p>
+          <div class="demo__screen" aria-live="polite">
+            <div class="msg msg--me" data-i18n="live.4">Añade tarjetas de pizzas al menú</div>
+            <ol class="steps">
+              <li class="step"><code>search_code</code><span class="arg">"pizzas"</span><span class="note" data-i18n="live.5">Encontré Menu.tsx</span></li>
+              <li class="step"><code>read_file</code><span class="arg">Menu.tsx</span><span class="note" data-i18n="live.6">Leyendo el archivo</span></li>
+              <li class="step"><code>apply_edit</code><span class="arg">Menu.tsx +5</span><span class="note" data-i18n="live.7">Añadiendo las tarjetas</span></li>
+              <li class="step"><code>get_diagnostics</code><span class="arg">Menu.tsx</span><span class="note" data-i18n="live.8">Sin errores</span></li>
+              <li class="step"><code>run_terminal_command</code><span class="arg">npm test</span><span class="note" data-i18n="live.9">Pruebas superadas: 12 de 12</span></li>
+            </ol>
+            <div class="msg msg--ai demo__final" data-i18n="live.10">Listo: las tarjetas están en el menú y las comprobaciones en verde. 1 archivo modificado.</div>
+          </div>
+          <button class="demo__btn" type="button" data-run="" data-i18n="live.11">Ejecutar</button>
+          <span hidden="" data-again="" data-i18n="live.12">Otra vez</span>
+        </article>
+
+        <article class="demo demo--search" data-demo="search">
+          <h3 class="demo__t" data-i18n="live.13">Búsqueda en el código</h3>
+          <p class="demo__d" data-i18n="live.14">El índice del proyecto busca en nombres y palabras, incluso pegadas en camelCase. Prueba una consulta.</p>
+          <label class="demo__field"><span class="sr-only" data-i18n="live.15">Consulta</span>
+            <input type="search" class="demo__input" placeholder="Por ejemplo: pizzas, Card, order" data-i18n-attr="placeholder:live.16" autocomplete="off" spellcheck="false" maxlength="40">
+          </label>
+          <div class="demo__chips" role="group" aria-label="Consultas de ejemplo" data-i18n-attr="aria-label:live.17">
+            <button type="button" data-q="pizzas">pizzas</button><button type="button" data-q="order">order</button><button type="button" data-q="card">card</button><button type="button" data-q="delivery">delivery</button>
+          </div>
+          <ul class="hits" aria-live="polite">
+            <li data-hit="" data-w="menu pizzas map list card"><b>Menu.tsx:3</b><code>export function Menu()</code></li>
+            <li data-hit="" data-w="card pizza item key price"><b>Card.tsx:1</b><code>export function Card({ title, price })</code></li>
+            <li data-hit="" data-w="order form submit cart total"><b>OrderForm.tsx:8</b><code>function submitOrder(data)</code></li>
+            <li data-hit="" data-w="delivery time minutes address order"><b>delivery.ts:14</b><code>export const deliveryMinutes = 30</code></li>
+            <li data-hit="" data-w="pizzas data list price name"><b>data.ts:1</b><code>export const pizzas = [</code></li>
+            <li data-hit="" data-w="hero title banner forno"><b>Hero.tsx:5</b><code>&lt;h1&gt;Pizza Forno&lt;/h1&gt;</code></li>
+          </ul>
+          <p class="hits__none" hidden="" data-i18n="live.18">No se encontró nada. Prueba otra palabra.</p>
+        </article>
+
+        <article class="demo demo--device" data-demo="device">
+          <h3 class="demo__t" data-i18n="live.19">Móvil y ordenador</h3>
+          <p class="demo__d" data-i18n="live.20">El agente comprueba cómo se ve el sitio en pantallas de distinto tamaño. Cambia el tamaño.</p>
+          <div class="demo__tabs" role="group" aria-label="Tamaño de pantalla" data-i18n-attr="aria-label:live.21">
+            <button type="button" data-w="390" data-h="844" aria-pressed="true" data-i18n="live.22">Móvil</button>
+            <button type="button" data-w="820" data-h="1180" aria-pressed="false" data-i18n="live.23">Tableta</button>
+            <button type="button" data-w="1440" data-h="900" aria-pressed="false" data-i18n="live.24">Ordenador</button>
+          </div>
+          <div class="stage" aria-hidden="true">
+            <div class="stage__page"><div class="site">
+              <div class="site__hero"><b>Pizza Forno</b><span data-i18n="view-design.6">Horno de leña. Entrega en 30 minutos.</span><i data-i18n="view-design.7">Pedir</i></div>
+              <div class="site__grid"><span></span><span></span><span></span><span></span></div>
+            </div></div>
+          </div>
+          <p class="demo__rep mono"><span data-size="">390×844</span> · <span data-i18n="live.25">sin scroll lateral</span> · <span data-i18n="live.26">botones desde 44 px</span></p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Crew: horizontal track -->
+  <section class="crew" id="crew" aria-labelledby="crew-title">
+    <div class="crew__pin">
+      <div class="crew__head wrap">
+        <p class="kicker mono"><span>06</span> <span data-i18n="nav.5">Tripulación</span></p>
+        <h2 class="display display--md" id="crew-title" data-lines="" data-i18n="crew-title.1">Doce roles.<br>Tú eres el CEO.</h2>
+      </div>
+      <ul class="crew__track" aria-label="Roles del equipo" data-i18n-attr="aria-label:crew.1">
+        <li class="mate"><span class="mate__i mono">01 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-lead-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#dcdcf5" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#dcdcf5" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-lead-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8a5a3c"></stop><stop offset="100%" stop-color="#6f4630"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-lead-glow)"></rect><g class="face-fig"><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#2b3150"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#1f2440" opacity="0.5"></path><path d="M43 75 L50 88 L57 75 Z" fill="#e7e7ee"></path><path d="M43 75 L50 88 L47 76 Z M57 75 L50 88 L53 76 Z" fill="#cfd0dc"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#6f4630"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#8a5a3c"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#8a5a3c"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-lead-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#8a5a3c" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#cfcfd6" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#6f4630" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M44 59 Q50 61.4 57.5 57.4" stroke="#8c3d33" stroke-width="2" fill="none" stroke-linecap="round"></path><path d="M31 45 C29 27 40 21 51 21 C62 21 71 27 69 45 C66 36 60 31 50 31 C42 31 35 36 31 45 Z" fill="#b5b6bf"></path><circle cx="66" cy="86" r="3.6" fill="#d9b44a"></circle><path d="M66 83.6 L67.2 86 L66 88.4 L64.8 86 Z" fill="#7a5a14"></path></g></svg></div><div class="mate__name" data-i18n="view-vibe.3">Team lead</div><p class="mate__blurb" data-i18n="crew.2">reparte el trabajo y revisa el resultado</p><span class="mate__tag mono" data-i18n="crew.3">Aconseja y revisa</span></li>
+        <li class="mate"><span class="mate__i mono">02 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-design-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#f1d9e8" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#f1d9e8" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-design-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f2cfb1"></stop><stop offset="100%" stop-color="#dcae8c"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-design-glow)"></rect><g class="face-fig"><path d="M28 52 C25 26 38 19 50 19 C62 19 75 26 72 52 L72 68 L65 68 L65 46 L35 46 L35 68 L28 68 Z" fill="#1c1a1f"></path><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#6b4f8f"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#52397a" opacity="0.5"></path><path d="M42 75 Q50 82 58 75" stroke="#51397a" stroke-width="2" fill="none"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#dcae8c"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#f2cfb1"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#f2cfb1"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-design-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#f2cfb1" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#1c1a1f" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#dcae8c" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M43 58 Q50 64 57 58" stroke="#8c3d33" stroke-width="2" fill="none" stroke-linecap="round"></path><g stroke="#b98a4e" stroke-width="1.8" fill="#ffffff" fill-opacity="0.08"><circle cx="42" cy="46.5" r="6.4"></circle><circle cx="58" cy="46.5" r="6.4"></circle><path d="M48.4 46 Q50 44.6 51.6 46 M35.6 45 L31 43.5 M64.4 45 L69 43.5" fill="none"></path></g><path d="M31 43 C34 29 44 25 54 27 C64 29 69 35 69 43 C62 35 50 33 40 38 C36 40 33 42 31 43 Z" fill="#1c1a1f"></path><path d="M33 41 C36 33 42 30 47 29.5 C42 32 38 36 35 42 Z" fill="#ec7fb0"></path><g transform="rotate(22 71 40)"><rect x="69.4" y="24" width="3.2" height="22" rx="1" fill="#f2c94c"></rect><path d="M69.4 46 L71 50.5 L72.6 46 Z" fill="#e8c9a0"></path><rect x="69.4" y="24" width="3.2" height="3.4" rx="1" fill="#e07a8e"></rect></g></g></svg></div><div class="mate__name" data-i18n="tab-design.1">Diseño</div><p class="mate__blurb" data-i18n="crew.4">maquetas e interfaz</p><span class="mate__tag mono" data-i18n="crew.5">Puede cambiar archivos</span></li>
+        <li class="mate"><span class="mate__i mono">03 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-front-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#cfeee3" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#cfeee3" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-front-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#c68e5b"></stop><stop offset="100%" stop-color="#a8723f"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-front-glow)"></rect><g class="face-fig"><g fill="#2b1b12"><circle cx="34" cy="33" r="8"></circle><circle cx="43" cy="25" r="8.5"></circle><circle cx="53" cy="23" r="8.5"></circle><circle cx="63" cy="27" r="8.5"></circle><circle cx="69" cy="37" r="7.5"></circle><circle cx="30" cy="43" r="6.5"></circle><circle cx="71" cy="46" r="5.5"></circle></g><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#3f7565"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#2f5c4f" opacity="0.5"></path><path d="M33 77 C36 70 64 70 67 77 C62 80 38 80 33 77 Z" fill="#2f5c4f"></path><path d="M45 78 L44 92 M55 78 L56 92" stroke="#e9efe9" stroke-width="1.6" stroke-linecap="round"></path><path d="M32 70 C34 86 66 86 68 70" stroke="#23232b" stroke-width="3" fill="none" stroke-linecap="round"></path><rect x="28" y="64" width="9" height="13" rx="4" fill="#23232b"></rect><rect x="63" y="64" width="9" height="13" rx="4" fill="#23232b"></rect><rect x="30" y="67" width="3" height="7" rx="1.5" fill="#5eead4" opacity="0.8"></rect><rect x="67" y="67" width="3" height="7" rx="1.5" fill="#5eead4" opacity="0.8"></rect><rect x="43" y="62" width="14" height="17" rx="5" fill="#a8723f"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#c68e5b"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#c68e5b"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-front-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#c68e5b" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#2b1b12" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#a8723f" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M41.5 56.5 Q50 69 58.5 56.5 Z" fill="#7a2a2a"></path><path d="M43 57 Q50 59.6 57 57 L56 59.6 Q50 62 44 59.6 Z" fill="#fff"></path><path d="M32 41 C34 30 42 27 50 27 C58 27 66 30 68 41 C64 34 58 32 50 32 C42 32 36 34 32 41 Z" fill="#2b1b12"></path></g></svg></div><div class="mate__name" data-i18n="view-vibe.6">Front</div><p class="mate__blurb" data-i18n="crew.6">pantallas y maquetación</p><span class="mate__tag mono" data-i18n="crew.5">Puede cambiar archivos</span></li>
+        <li class="mate"><span class="mate__i mono">04 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-back-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#e6dcef" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#e6dcef" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-back-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#a56b45"></stop><stop offset="100%" stop-color="#8a5636"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-back-glow)"></rect><g class="face-fig"><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#3a2e4a"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#2a2038" opacity="0.5"></path><path d="M42 75 Q50 83 58 75" stroke="#2a2038" stroke-width="2.4" fill="none"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#8a5636"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#a56b45"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#a56b45"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-back-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#a56b45" opacity="0.82"></ellipse><path d="M32.5 52 C32 68 40 72 50 72 C60 72 68 68 67.5 52 C64.5 60 58 63.5 50 63.5 C42 63.5 35.5 60 32.5 52 Z" fill="#1a1210"></path><g class="face-brows"><g stroke="#1a1210" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#8a5636" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M44.5 59.4 H55.5" stroke="#c98a73" stroke-width="2" stroke-linecap="round"></path><path d="M31 42 C30 28 40 22 50 22 C60 22 70 28 69 42 C66 35 59 31 50 31 C41 31 34 35 31 42 Z" fill="#1a1210"></path><ellipse cx="50" cy="48" rx="19" ry="22" fill="#5aa2ff" opacity="0.07"></ellipse></g></svg></div><div class="mate__name" data-i18n="view-vibe.8">Back</div><p class="mate__blurb" data-i18n="crew.7">servidor, base de datos, pagos</p><span class="mate__tag mono" data-i18n="crew.5">Puede cambiar archivos</span></li>
+        <li class="mate"><span class="mate__i mono">05 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-qa-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#ece6cf" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#ece6cf" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-qa-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f6d6c0"></stop><stop offset="100%" stop-color="#e0b49a"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-qa-glow)"></rect><g class="face-fig"><circle cx="50" cy="17" r="9" fill="#8a4b2b"></circle><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#c9b27a"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#a99358" opacity="0.5"></path><path d="M42 75 L50 83 L58 75" stroke="#a99358" stroke-width="2" fill="none"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#e0b49a"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#f6d6c0"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#f6d6c0"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-qa-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#f6d6c0" opacity="0.82"></ellipse><g fill="#e0b49a" opacity="0.75"><circle cx="38" cy="53" r="0.95"></circle><circle cx="41.5" cy="55" r="0.95"></circle><circle cx="36.5" cy="56" r="0.95"></circle><circle cx="62" cy="53" r="0.95"></circle><circle cx="58.5" cy="55" r="0.95"></circle><circle cx="63.5" cy="56" r="0.95"></circle></g><g class="face-brows"><g stroke="#7a3f22" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 36.5 Q58.5 33.5 63 37.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#e0b49a" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M44 59 Q50 61.4 57.5 57.4" stroke="#8c3d33" stroke-width="2" fill="none" stroke-linecap="round"></path><g stroke="#4a4a55" stroke-width="1.5" fill="#ffffff" fill-opacity="0.08"><rect x="35" y="42.4" width="14" height="9.6" rx="2.2"></rect><rect x="51" y="42.4" width="14" height="9.6" rx="2.2"></rect><path d="M49 46 H51 M35 44.5 L31 43.5 M65 44.5 L69 43.5" fill="none"></path></g><path d="M31 45 C29 27 40 21 51 21 C62 21 71 27 69 45 C66 36 60 31 50 31 C42 31 35 36 31 45 Z" fill="#8a4b2b"></path><path d="M43 76 L50 90 L57 76" stroke="#d8c98a" stroke-width="1.2" fill="none"></path><circle cx="50" cy="92" r="4.2" stroke="#e8d99a" stroke-width="1.8" fill="#e8d99a" fill-opacity="0.15"></circle><path d="M53 95 L56 98.5" stroke="#e8d99a" stroke-width="2" stroke-linecap="round"></path></g></svg></div><div class="mate__name">QA</div><p class="mate__blurb" data-i18n="crew.8">revisa cada tarea</p><span class="mate__tag mono" data-i18n="crew.5">Puede cambiar archivos</span></li>
+        <li class="mate"><span class="mate__i mono">06 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-devops-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#d7e6f2" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#d7e6f2" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-devops-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d9a273"></stop><stop offset="100%" stop-color="#bc8556"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-devops-glow)"></rect><g class="face-fig"><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#4b5a44"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#394634" opacity="0.5"></path><path d="M50 75 L50 100" stroke="#394634" stroke-width="1.6"></path><path d="M36 80 L36 100 M64 80 L64 100" stroke="#394634" stroke-width="1" opacity="0.6"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#bc8556"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#d9a273"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#d9a273"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-devops-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#d9a273" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#3a2a1c" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#bc8556" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M41.5 56.5 Q50 69 58.5 56.5 Z" fill="#7a2a2a"></path><path d="M43 57 Q50 59.6 57 57 L56 59.6 Q50 62 44 59.6 Z" fill="#fff"></path><path d="M30 42 C29 22 40 14 50 14 C60 14 71 22 70 42 Z" fill="#4a6fa5"></path><path d="M30 37 H70 V45 H30 Z" fill="#6c8fc4"></path><path d="M33 37 V45 M38 37 V45 M43 37 V45 M48 37 V45 M53 37 V45 M58 37 V45 M63 37 V45 M68 37 V45" stroke="#4a6fa5" stroke-width="1" opacity="0.7"></path><circle cx="50" cy="13" r="4.5" fill="#6c8fc4"></circle><path d="M65 81 C68.4 84.5 68.4 91 65 95 C61.6 91 61.6 84.5 65 81 Z" fill="#ececf2"></path><circle cx="65" cy="87" r="1.5" fill="#4a6fa5"></circle><path d="M63 94 L61.5 97 M67 94 L68.5 97" stroke="#e8745f" stroke-width="1.4" stroke-linecap="round"></path></g></svg></div><div class="mate__name" data-i18n="crew.9">DevOps</div><p class="mate__blurb" data-i18n="crew.10">build y lanzamiento</p><span class="mate__tag mono" data-i18n="crew.5">Puede cambiar archivos</span></li>
+        <li class="mate"><span class="mate__i mono">07 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-analyst-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#e8e0d2" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#e8e0d2" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-analyst-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#c99572"></stop><stop offset="100%" stop-color="#ab7a58"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-analyst-glow)"></rect><g class="face-fig"><path d="M29 50 C27 26 39 20 50 20 C61 20 73 26 71 50 L71 63 L64 63 L64 44 L36 44 L36 63 L29 63 Z" fill="#2a1d17"></path><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#e8e9ee"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#cfd1da" opacity="0.5"></path><path d="M42 75 L50 86 L58 75 Z" fill="#c99572"></path><path d="M42 75 L50 86 L45 77 Z M58 75 L50 86 L55 77 Z" fill="#fff"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#ab7a58"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#c99572"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#c99572"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-analyst-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#c99572" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#2a1d17" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#ab7a58" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M44 59 Q50 61.4 57.5 57.4" stroke="#8c3d33" stroke-width="2" fill="none" stroke-linecap="round"></path><g stroke="#9aa1ad" stroke-width="1.5" fill="#ffffff" fill-opacity="0.08"><rect x="35" y="42.4" width="14" height="9.6" rx="2.2"></rect><rect x="51" y="42.4" width="14" height="9.6" rx="2.2"></rect><path d="M49 46 H51 M35 44.5 L31 43.5 M65 44.5 L69 43.5" fill="none"></path></g><path d="M31 43 C33 30 43 25 54 27 C63 29 69 35 69 43 C60 34 46 33 36 40 C34 41 32 42 31 43 Z" fill="#2a1d17"></path><rect x="31" y="88" width="2.6" height="5" fill="#5eead4"></rect><rect x="34.8" y="85" width="2.6" height="8" fill="#e9a96b"></rect><rect x="38.6" y="87" width="2.6" height="6" fill="#7aa2f7"></rect></g></svg></div><div class="mate__name" data-i18n="crew.11">Analista</div><p class="mate__blurb" data-i18n="crew.12">números y economía unitaria</p><span class="mate__tag mono" data-i18n="crew.3">Aconseja y revisa</span></li>
+        <li class="mate"><span class="mate__i mono">08 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-lawyer-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#e2e2e2" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#e2e2e2" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-lawyer-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5b3a28"></stop><stop offset="100%" stop-color="#472c1d"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-lawyer-glow)"></rect><g class="face-fig"><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#3b3b41"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#2b2b30" opacity="0.5"></path><path d="M42 75 L50 92 L58 75 Z" fill="#b86b7a"></path><path d="M42 75 L50 92 L40 82 Z M58 75 L50 92 L60 82 Z" fill="#2b2b30"></path><path d="M46 78 Q50 86 54 78" stroke="#9a4f5f" stroke-width="1.4" fill="none"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#472c1d"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#5b3a28"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#5b3a28"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-lawyer-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#5b3a28" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#120c09" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#472c1d" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M43.5 58.5 Q50 63 56.5 58.5" stroke="#8c3d33" stroke-width="2.2" fill="none" stroke-linecap="round"></path><path d="M31 42 C30 28 40 22 50 22 C60 22 70 28 69 42 C66 35 59 31 50 31 C41 31 34 35 31 42 Z" fill="#120c09"></path><circle cx="33" cy="88" r="3" fill="#d9b44a"></circle><path d="M31 88 H35 M33 85.5 V90.5" stroke="#7a5a14" stroke-width="0.9"></path></g></svg></div><div class="mate__name" data-i18n="crew.13">Abogado</div><p class="mate__blurb" data-i18n="crew.14">términos y privacidad</p><span class="mate__tag mono" data-i18n="crew.3">Aconseja y revisa</span></li>
+        <li class="mate"><span class="mate__i mono">09 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-accountant-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#d9ead6" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#d9ead6" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-accountant-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f1d4c1"></stop><stop offset="100%" stop-color="#d9b39c"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-accountant-glow)"></rect><g class="face-fig"><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#587a52"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#456440" opacity="0.5"></path><path d="M43 75 L50 100 L57 75 Z" fill="#efe9dc"></path><path d="M45 82 H47 M45 88 H47 M45 94 H47" stroke="#456440" stroke-width="2" stroke-linecap="round"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#d9b39c"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#f1d4c1"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#f1d4c1"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-accountant-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#f1d4c1" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#a3a6ae" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#d9b39c" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M43.5 58.5 Q50 63 56.5 58.5" stroke="#8c3d33" stroke-width="2.2" fill="none" stroke-linecap="round"></path><g stroke="#7a5a3a" stroke-width="1.6" fill="#ffffff" fill-opacity="0.1"><rect x="35.5" y="48.5" width="12" height="7.5" rx="2.6"></rect><rect x="52.5" y="48.5" width="12" height="7.5" rx="2.6"></rect><path d="M47.5 50.6 Q50 49.4 52.5 50.6" fill="none"></path></g><path d="M31 45 C29 27 40 21 51 21 C62 21 71 27 69 45 C66 36 60 31 50 31 C42 31 35 36 31 45 Z" fill="#b9bcc4"></path><path d="M35.5 50 C27 61 29 76 40 81" stroke="#d9b44a" stroke-width="1.1" fill="none" stroke-linecap="round"></path></g></svg></div><div class="mate__name" data-i18n="crew.15">Contable</div><p class="mate__blurb" data-i18n="crew.16">modelo financiero</p><span class="mate__tag mono" data-i18n="crew.3">Aconseja y revisa</span></li>
+        <li class="mate"><span class="mate__i mono">10 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-marketer-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#f3dccd" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#f3dccd" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-marketer-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d9a07a"></stop><stop offset="100%" stop-color="#bc835c"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-marketer-glow)"></rect><g class="face-fig"><path d="M26 48 C22 24 36 17 50 17 C64 17 78 24 74 48 C77 62 73 76 66 86 L34 86 C27 76 23 62 26 48 Z" fill="#5a3524"></path><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#dba52b"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#b98a1c" opacity="0.5"></path><path d="M42 75 L50 90 L58 75 Z" fill="#f7efe3"></path><path d="M42 75 L50 90 L38 82 Z M58 75 L50 90 L62 82 Z" fill="#b98a1c"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#bc835c"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#d9a07a"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#d9a07a"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-marketer-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#d9a07a" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#4a2b1a" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#bc835c" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M40.5 56 Q50 71 59.5 56 Z" fill="#8a2f3a"></path><path d="M42.5 56.6 Q50 59.4 57.5 56.6 L56.4 59.6 Q50 62 43.6 59.6 Z" fill="#fff"></path><path d="M31 44 C32 30 42 24 52 24 C64 25 70 33 69 44 C64 36 56 31 46 33 C40 35 34 40 31 44 Z" fill="#5a3524"></path><circle cx="30.5" cy="57" r="3" fill="#f2c94c"></circle><circle cx="69.5" cy="57" r="3" fill="#f2c94c"></circle></g></svg></div><div class="mate__name" data-i18n="crew.17">Marketing</div><p class="mate__blurb" data-i18n="crew.18">lanzamiento y anuncios</p><span class="mate__tag mono" data-i18n="crew.3">Aconseja y revisa</span></li>
+        <li class="mate"><span class="mate__i mono">11 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-intern-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#e0eadb" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#e0eadb" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-intern-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f1cdb0"></stop><stop offset="100%" stop-color="#d8ad8c"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-intern-glow)"></rect><g class="face-fig"><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#7ea36c"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#678a56" opacity="0.5"></path><path d="M42 75 Q50 81 58 75" stroke="#678a56" stroke-width="2" fill="none"></path><path d="M41 76 L47 93 M59 76 L53 93" stroke="#3b6fd0" stroke-width="2" stroke-linecap="round"></path><rect x="43.5" y="91" width="13" height="9" rx="1.8" fill="#f4f4f8"></rect><rect x="46" y="94" width="8" height="1.5" rx="0.7" fill="#c9cad6"></rect><rect x="43" y="62" width="14" height="17" rx="5" fill="#d8ad8c"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#f1cdb0"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#f1cdb0"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-intern-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#f1cdb0" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#5a3a22" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 38.5 Q42 35.5 46.5 38.5"></path><path d="M53.5 38.5 Q58 35.5 62.5 38.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.7" ry="3.3" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.7" ry="3.3" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#d8ad8c" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M43 58 Q50 64 57 58" stroke="#8c3d33" stroke-width="2" fill="none" stroke-linecap="round"></path><path d="M31 44 C28 28 40 20 52 21 C64 22 72 30 69 44 L66 36 L61 41 L57 33 L51 40 L45 33 L40 41 L35 35 Z" fill="#5a3a22"></path></g></svg></div><div class="mate__name" data-i18n="crew.19">Becario</div><p class="mate__blurb" data-i18n="crew.20">tareas pequeñas</p><span class="mate__tag mono" data-i18n="crew.5">Puede cambiar archivos</span></li>
+        <li class="mate"><span class="mate__i mono">12 / 12</span><div class="mate__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="c-joker-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#f2e3b9" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#f2e3b9" stop-opacity="0.05"></stop></radialGradient><linearGradient id="c-joker-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#efc3a5"></stop><stop offset="100%" stop-color="#d6a283"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#c-joker-glow)"></rect><g class="face-fig"><g fill="#c4532a"><circle cx="33" cy="34" r="8.5"></circle><circle cx="42" cy="26" r="9"></circle><circle cx="53" cy="24" r="9"></circle><circle cx="64" cy="28" r="9"></circle><circle cx="70" cy="39" r="8"></circle><circle cx="29" cy="46" r="7"></circle><circle cx="72" cy="50" r="6.5"></circle></g><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#5a7bd6"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#4563b8" opacity="0.5"></path><g fill="#f2c94c"><circle cx="26" cy="90" r="2.4"></circle><circle cx="38" cy="96" r="2.4"></circle><circle cx="62" cy="96" r="2.4"></circle><circle cx="74" cy="90" r="2.4"></circle></g><g fill="#ef6f8e"><circle cx="32" cy="83" r="2"></circle><circle cx="68" cy="83" r="2"></circle><circle cx="50" cy="96" r="2"></circle></g><path d="M42 75 L50 84 L58 75 Z" fill="#f7efe3"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#d6a283"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#efc3a5"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#efc3a5"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#c-joker-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#efc3a5" opacity="0.82"></ellipse><g fill="#d6a283" opacity="0.75"><circle cx="38" cy="53" r="0.95"></circle><circle cx="41.5" cy="55" r="0.95"></circle><circle cx="36.5" cy="56" r="0.95"></circle><circle cx="62" cy="53" r="0.95"></circle><circle cx="58.5" cy="55" r="0.95"></circle><circle cx="63.5" cy="56" r="0.95"></circle></g><g class="face-brows"><g stroke="#a8421f" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><path d="M37.8 46.5 Q42 43 46.2 46.5" stroke="#1d1a18" stroke-width="2.2" fill="none" stroke-linecap="round"></path><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#d6a283" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M41.5 56.5 Q50 69 58.5 56.5 Z" fill="#7a2a2a"></path><path d="M43 57 Q50 59.6 57 57 L56 59.6 Q50 62 44 59.6 Z" fill="#fff"></path><path d="M32 42 C34 31 42 28 50 28 C58 28 66 31 68 42 C64 36 58 34 50 34 C42 34 36 36 32 42 Z" fill="#c4532a"></path><g transform="rotate(-14 52 24)"><path d="M43 25 L61 25 L52 2 Z" fill="#ef6f8e"></path><path d="M45.5 19 L58.5 19 M48 12.5 L56 12.5" stroke="#f7efe3" stroke-width="2"></path><circle cx="52" cy="3" r="3.2" fill="#f2c94c"></circle></g></g></svg></div><div class="mate__name" data-i18n="crew.21">Bromista</div><p class="mate__blurb" data-i18n="crew.22">mantiene el buen humor en la llamada</p><span class="mate__tag mono" data-i18n="crew.3">Aconseja y revisa</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5. Reviews from the crew -->
+  <section class="section reviews" aria-labelledby="reviews-title">
+    <div class="wrap">
+      <div class="reviews__bar mono">
+        <span data-i18n="main.1">Reseñas de la tripulación</span>
+        <span data-i18n="main.2">Valoraciones de roles [ 12 ]</span>
+        <span class="stars" aria-hidden="true">★★★★★</span>
+        <span>[ 4.9/5 ]</span>
+      </div>
+      <h2 class="sr-only" id="reviews-title" data-i18n="main.1">Reseñas de la tripulación</h2>
+      <ul class="reviews__list">
+        <li class="review"><div class="review__top mono"><span class="stars" aria-hidden="true">★★★★★</span><span>[ 5/5 ]</span></div><blockquote data-i18n="main.3">«El primer agente que dice solo cuánto ha gastado. <em>Lo quiero en el equipo.</em>»</blockquote><div class="review__who"><div class="review__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="r-lead-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#dcdcf5" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#dcdcf5" stop-opacity="0.05"></stop></radialGradient><linearGradient id="r-lead-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8a5a3c"></stop><stop offset="100%" stop-color="#6f4630"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#r-lead-glow)"></rect><g class="face-fig"><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#2b3150"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#1f2440" opacity="0.5"></path><path d="M43 75 L50 88 L57 75 Z" fill="#e7e7ee"></path><path d="M43 75 L50 88 L47 76 Z M57 75 L50 88 L53 76 Z" fill="#cfd0dc"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#6f4630"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#8a5a3c"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#8a5a3c"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#r-lead-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#8a5a3c" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#cfcfd6" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#6f4630" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M44 59 Q50 61.4 57.5 57.4" stroke="#8c3d33" stroke-width="2" fill="none" stroke-linecap="round"></path><path d="M31 45 C29 27 40 21 51 21 C62 21 71 27 69 45 C66 36 60 31 50 31 C42 31 35 36 31 45 Z" fill="#b5b6bf"></path><circle cx="66" cy="86" r="3.6" fill="#d9b44a"></circle><path d="M66 83.6 L67.2 86 L66 88.4 L64.8 86 Z" fill="#7a5a14"></path></g></svg></div><div><b class="mono" data-i18n="view-vibe.3">Team lead</b><span class="mono" data-i18n="crew.2">reparte el trabajo y revisa el resultado</span></div></div></li>
+        <li class="review"><div class="review__top mono"><span class="stars" aria-hidden="true">★★★★★</span><span>[ 4.5/5 ]</span></div><blockquote data-i18n="main.4">«Encontré un bug. Era una función. <em>Lo deshice con un botón</em>, por si acaso.»</blockquote><div class="review__who"><div class="review__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="r-qa-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#ece6cf" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#ece6cf" stop-opacity="0.05"></stop></radialGradient><linearGradient id="r-qa-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f6d6c0"></stop><stop offset="100%" stop-color="#e0b49a"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#r-qa-glow)"></rect><g class="face-fig"><circle cx="50" cy="17" r="9" fill="#8a4b2b"></circle><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#c9b27a"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#a99358" opacity="0.5"></path><path d="M42 75 L50 83 L58 75" stroke="#a99358" stroke-width="2" fill="none"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#e0b49a"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#f6d6c0"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#f6d6c0"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#r-qa-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#f6d6c0" opacity="0.82"></ellipse><g fill="#e0b49a" opacity="0.75"><circle cx="38" cy="53" r="0.95"></circle><circle cx="41.5" cy="55" r="0.95"></circle><circle cx="36.5" cy="56" r="0.95"></circle><circle cx="62" cy="53" r="0.95"></circle><circle cx="58.5" cy="55" r="0.95"></circle><circle cx="63.5" cy="56" r="0.95"></circle></g><g class="face-brows"><g stroke="#7a3f22" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 36.5 Q58.5 33.5 63 37.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#e0b49a" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M44 59 Q50 61.4 57.5 57.4" stroke="#8c3d33" stroke-width="2" fill="none" stroke-linecap="round"></path><g stroke="#4a4a55" stroke-width="1.5" fill="#ffffff" fill-opacity="0.08"><rect x="35" y="42.4" width="14" height="9.6" rx="2.2"></rect><rect x="51" y="42.4" width="14" height="9.6" rx="2.2"></rect><path d="M49 46 H51 M35 44.5 L31 43.5 M65 44.5 L69 43.5" fill="none"></path></g><path d="M31 45 C29 27 40 21 51 21 C62 21 71 27 69 45 C66 36 60 31 50 31 C42 31 35 36 31 45 Z" fill="#8a4b2b"></path><path d="M43 76 L50 90 L57 76" stroke="#d8c98a" stroke-width="1.2" fill="none"></path><circle cx="50" cy="92" r="4.2" stroke="#e8d99a" stroke-width="1.8" fill="#e8d99a" fill-opacity="0.15"></circle><path d="M53 95 L56 98.5" stroke="#e8d99a" stroke-width="2" stroke-linecap="round"></path></g></svg></div><div><b class="mono">QA</b><span class="mono" data-i18n="crew.8">revisa cada tarea</span></div></div></li>
+        <li class="review"><div class="review__top mono"><span class="stars" aria-hidden="true">★★★★★</span><span>[ 5/5 ]</span></div><blockquote data-i18n="main.5">«Las claves en el almacén de Windows, no en el repositorio. <em>Sin objeciones.</em>»</blockquote><div class="review__who"><div class="review__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="r-lawyer-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#e2e2e2" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#e2e2e2" stop-opacity="0.05"></stop></radialGradient><linearGradient id="r-lawyer-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5b3a28"></stop><stop offset="100%" stop-color="#472c1d"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#r-lawyer-glow)"></rect><g class="face-fig"><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#3b3b41"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#2b2b30" opacity="0.5"></path><path d="M42 75 L50 92 L58 75 Z" fill="#b86b7a"></path><path d="M42 75 L50 92 L40 82 Z M58 75 L50 92 L60 82 Z" fill="#2b2b30"></path><path d="M46 78 Q50 86 54 78" stroke="#9a4f5f" stroke-width="1.4" fill="none"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#472c1d"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#5b3a28"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#5b3a28"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#r-lawyer-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#5b3a28" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#120c09" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#472c1d" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M43.5 58.5 Q50 63 56.5 58.5" stroke="#8c3d33" stroke-width="2.2" fill="none" stroke-linecap="round"></path><path d="M31 42 C30 28 40 22 50 22 C60 22 70 28 69 42 C66 35 59 31 50 31 C41 31 34 35 31 42 Z" fill="#120c09"></path><circle cx="33" cy="88" r="3" fill="#d9b44a"></circle><path d="M31 88 H35 M33 85.5 V90.5" stroke="#7a5a14" stroke-width="0.9"></path></g></svg></div><div><b class="mono" data-i18n="crew.13">Abogado</b><span class="mono" data-i18n="crew.14">términos y privacidad</span></div></div></li>
+        <li class="review"><div class="review__top mono"><span class="stars" aria-hidden="true">★★★★★</span><span>[ 5/5 ]</span></div><blockquote data-i18n="main.6">«Tokens contados hasta el último. <em>Por fin</em> un informe que cuadra.»</blockquote><div class="review__who"><div class="review__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="r-accountant-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#d9ead6" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#d9ead6" stop-opacity="0.05"></stop></radialGradient><linearGradient id="r-accountant-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f1d4c1"></stop><stop offset="100%" stop-color="#d9b39c"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#r-accountant-glow)"></rect><g class="face-fig"><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#587a52"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#456440" opacity="0.5"></path><path d="M43 75 L50 100 L57 75 Z" fill="#efe9dc"></path><path d="M45 82 H47 M45 88 H47 M45 94 H47" stroke="#456440" stroke-width="2" stroke-linecap="round"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#d9b39c"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#f1d4c1"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#f1d4c1"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#r-accountant-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#f1d4c1" opacity="0.82"></ellipse><g class="face-brows"><g stroke="#a3a6ae" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><ellipse cx="42" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="42.8" cy="45.4" r="0.9" fill="#fff"></circle><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#d9b39c" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M43.5 58.5 Q50 63 56.5 58.5" stroke="#8c3d33" stroke-width="2.2" fill="none" stroke-linecap="round"></path><g stroke="#7a5a3a" stroke-width="1.6" fill="#ffffff" fill-opacity="0.1"><rect x="35.5" y="48.5" width="12" height="7.5" rx="2.6"></rect><rect x="52.5" y="48.5" width="12" height="7.5" rx="2.6"></rect><path d="M47.5 50.6 Q50 49.4 52.5 50.6" fill="none"></path></g><path d="M31 45 C29 27 40 21 51 21 C62 21 71 27 69 45 C66 36 60 31 50 31 C42 31 35 36 31 45 Z" fill="#b9bcc4"></path><path d="M35.5 50 C27 61 29 76 40 81" stroke="#d9b44a" stroke-width="1.1" fill="none" stroke-linecap="round"></path></g></svg></div><div><b class="mono" data-i18n="crew.15">Contable</b><span class="mono" data-i18n="crew.16">modelo financiero</span></div></div></li>
+        <li class="review"><div class="review__top mono"><span class="stars" aria-hidden="true">★★★★★</span><span>[ 5/5 ]</span></div><blockquote data-i18n="main.7">«Me contrataron por el buen ambiente. Pero <em>también ejecuto los tests.</em>»</blockquote><div class="review__who"><div class="review__face"><svg class="face-art" data-mood="idle" viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true" focusable="false"><defs><radialGradient id="r-joker-glow" cx="50%" cy="42%" r="58%"><stop offset="0%" stop-color="#f2e3b9" stop-opacity="0.62"></stop><stop offset="100%" stop-color="#f2e3b9" stop-opacity="0.05"></stop></radialGradient><linearGradient id="r-joker-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#efc3a5"></stop><stop offset="100%" stop-color="#d6a283"></stop></linearGradient></defs><rect width="100" height="100" fill="url(#r-joker-glow)"></rect><g class="face-fig"><g fill="#c4532a"><circle cx="33" cy="34" r="8.5"></circle><circle cx="42" cy="26" r="9"></circle><circle cx="53" cy="24" r="9"></circle><circle cx="64" cy="28" r="9"></circle><circle cx="70" cy="39" r="8"></circle><circle cx="29" cy="46" r="7"></circle><circle cx="72" cy="50" r="6.5"></circle></g><path d="M10 100 C10 83 26 75 50 75 C74 75 90 83 90 100 Z" fill="#5a7bd6"></path><path d="M10 100 C10 90 16 84 26 80 C22 88 22 94 24 100 Z" fill="#4563b8" opacity="0.5"></path><g fill="#f2c94c"><circle cx="26" cy="90" r="2.4"></circle><circle cx="38" cy="96" r="2.4"></circle><circle cx="62" cy="96" r="2.4"></circle><circle cx="74" cy="90" r="2.4"></circle></g><g fill="#ef6f8e"><circle cx="32" cy="83" r="2"></circle><circle cx="68" cy="83" r="2"></circle><circle cx="50" cy="96" r="2"></circle></g><path d="M42 75 L50 84 L58 75 Z" fill="#f7efe3"></path><rect x="43" y="62" width="14" height="17" rx="5" fill="#d6a283"></rect><ellipse cx="31.2" cy="49" rx="3.4" ry="5.2" fill="#efc3a5"></ellipse><ellipse cx="68.8" cy="49" rx="3.4" ry="5.2" fill="#efc3a5"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="url(#r-joker-face)"></ellipse><ellipse cx="50" cy="47" rx="19" ry="22" fill="#efc3a5" opacity="0.82"></ellipse><g fill="#d6a283" opacity="0.75"><circle cx="38" cy="53" r="0.95"></circle><circle cx="41.5" cy="55" r="0.95"></circle><circle cx="36.5" cy="56" r="0.95"></circle><circle cx="62" cy="53" r="0.95"></circle><circle cx="58.5" cy="55" r="0.95"></circle><circle cx="63.5" cy="56" r="0.95"></circle></g><g class="face-brows"><g stroke="#a8421f" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37.5 40.5 Q42 38 46.5 40.2"></path><path d="M53.5 40.2 Q58 38 62.5 40.5"></path></g></g><g class="face-eyes"><g class="face-look"><path d="M37.8 46.5 Q42 43 46.2 46.5" stroke="#1d1a18" stroke-width="2.2" fill="none" stroke-linecap="round"></path><ellipse cx="58" cy="46.5" rx="2.2" ry="2.6" fill="#1d1a18"></ellipse><circle cx="58.8" cy="45.4" r="0.9" fill="#fff"></circle></g></g><path d="M50.5 48.5 Q47.5 54 50.5 54.6" stroke="#d6a283" stroke-width="1.6" fill="none" stroke-linecap="round"></path><path d="M41.5 56.5 Q50 69 58.5 56.5 Z" fill="#7a2a2a"></path><path d="M43 57 Q50 59.6 57 57 L56 59.6 Q50 62 44 59.6 Z" fill="#fff"></path><path d="M32 42 C34 31 42 28 50 28 C58 28 66 31 68 42 C64 36 58 34 50 34 C42 34 36 36 32 42 Z" fill="#c4532a"></path><g transform="rotate(-14 52 24)"><path d="M43 25 L61 25 L52 2 Z" fill="#ef6f8e"></path><path d="M45.5 19 L58.5 19 M48 12.5 L56 12.5" stroke="#f7efe3" stroke-width="2"></path><circle cx="52" cy="3" r="3.2" fill="#f2c94c"></circle></g></g></svg></div><div><b class="mono" data-i18n="crew.21">Bromista</b><span class="mono" data-i18n="crew.22">mantiene el buen humor en la llamada</span></div></div></li>
+      </ul>
+      <p class="reviews__note mono" data-i18n="main.8">* Reseñas escritas por los roles de AIDE. No son imparciales.</p>
+    </div>
+  </section>
+
+  <!-- 6. Numbers -->
+  <section class="section numbers" aria-label="AIDE en cifras" data-i18n-attr="aria-label:main.9">
+    <div class="wrap numbers__grid">
+      <div class="num"><b data-count="12">12</b><span class="mono" data-i18n="main.10">roles con caras y voces</span></div>
+      <div class="num"><b data-count="11">11</b><span class="mono" data-i18n="main.11">idiomas de interfaz</span></div>
+      <div class="num"><b data-count="6">6</b><span class="mono" data-i18n="main.12">stacks para un proyecto desde una maqueta</span></div>
+      <div class="num"><b data-count="0">0</b><span class="mono" data-i18n="main.13">forks de VS Code dentro</span></div>
+    </div>
+  </section>
+
+  <!-- 7. Spec table -->
+  <section class="section specs" id="modes" aria-labelledby="specs-title">
+    <div class="wrap">
+      <div class="section__head center">
+        <p class="kicker mono"><span>07</span> <span data-i18n="modes.1">Comparativa</span></p>
+        <h2 class="display display--md" id="specs-title" data-lines="" data-i18n="specs-title.1">Elige tu modo</h2>
+      </div>
+      <div class="specs__grid">
+        <article class="spec glass">
+          <p class="spec__tag mono" data-i18n="modes.2">Modo 01</p>
+          <h3>IDE</h3>
+          <p class="spec__desc" data-i18n="modes.3">El clásico, afinado hasta el silencio. Código, árbol, terminal, y el agente al lado cuando lo llamas.</p>
+          <dl>
+            <div><dt data-i18n="modes.4">Tú</dt><dd data-i18n="modes.5">Escribes código</dd></div>
+            <div><dt data-i18n="features.1">Agente</dt><dd data-i18n="modes.6">Ayuda en el chat</dd></div>
+            <div><dt data-i18n="modes.7">Manos</dt><dd data-i18n="modes.8">Las tuyas</dd></div>
+            <div><dt data-i18n="modes.9">Nube</dt><dd data-i18n="modes.10">Solo tu modelo</dd></div>
+            <div><dt data-i18n="modes.11">Ideal para</dt><dd data-i18n="modes.12">Trabajo preciso</dd></div>
+          </dl>
+        </article>
+        <article class="spec spec--hot glass">
+          <p class="spec__tag mono" data-i18n="modes.13">Modo 02</p>
+          <h3>Vibe</h3>
+          <p class="spec__desc" data-i18n="modes.14">Describe el resultado: el team lead lo divide en pasos, los roles lo hacen y QA lo revisa.</p>
+          <dl>
+            <div><dt data-i18n="modes.4">Tú</dt><dd data-i18n="modes.15">Planteas la tarea</dd></div>
+            <div><dt data-i18n="features.1">Agente</dt><dd data-i18n="modes.16">Dirige un equipo de roles</dd></div>
+            <div><dt data-i18n="modes.7">Manos</dt><dd data-i18n="modes.17">Las de los roles, con permiso</dd></div>
+            <div><dt data-i18n="modes.9">Nube</dt><dd data-i18n="modes.10">Solo tu modelo</dd></div>
+            <div><dt data-i18n="modes.11">Ideal para</dt><dd data-i18n="modes.18">Prototipos rápidos</dd></div>
+          </dl>
+        </article>
+        <article class="spec glass">
+          <p class="spec__tag mono" data-i18n="modes.19">Modo 03</p>
+          <h3 data-i18n="tab-design.1">Diseño</h3>
+          <p class="spec__desc" data-i18n="modes.20">Lienzo, capas y propiedades. La maqueta terminada se convierte en un proyecto en el stack elegido.</p>
+          <dl>
+            <div><dt data-i18n="modes.4">Tú</dt><dd data-i18n="modes.21">Armas una maqueta</dd></div>
+            <div><dt data-i18n="features.1">Agente</dt><dd data-i18n="modes.22">Edita con palabras, escribe el código</dd></div>
+            <div><dt data-i18n="modes.7">Manos</dt><dd data-i18n="modes.23">Las tuyas y las del agente</dd></div>
+            <div><dt data-i18n="modes.9">Nube</dt><dd data-i18n="modes.10">Solo tu modelo</dd></div>
+            <div><dt data-i18n="modes.11">Ideal para</dt><dd data-i18n="modes.24">Interfaces desde cero</dd></div>
+          </dl>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Start -->
+  <section class="section start" id="start" aria-labelledby="start-title">
+    <div class="wrap start__grid">
+      <div>
+        <p class="kicker mono"><span>08</span> <span data-i18n="nav.7">Empezar</span></p>
+        <h2 class="display display--md" id="start-title" data-lines="" data-i18n="start-title.1">Dos comandos<br>hasta el estudio</h2>
+        <p class="start__req" data-i18n="start.1">Necesitas <code>Node.js 20+</code>, <code>Rust</code> y los requisitos de Tauri 2 para Windows.</p>
+      </div>
+      <div class="cmds">
+        <div class="cmd glass"><span class="cmd__n mono">01</span><code>npm install</code><button class="copy mono" type="button" data-copy="npm install" aria-label="Copiar npm install" data-i18n-attr="aria-label:start.2" data-i18n="start.3">Copiar</button></div>
+        <div class="cmd glass"><span class="cmd__n mono">02</span><code>npm run tauri dev</code><button class="copy mono" type="button" data-copy="npm run tauri dev" aria-label="Copiar npm run tauri dev" data-i18n-attr="aria-label:start.4" data-i18n="start.3">Copiar</button></div>
+        <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p class="foot__mark" aria-hidden="true">AIDE</p>
+  <p class="foot__made glass"><img src="../img/logo.svg" alt="" width="28" height="28"><span data-i18n="foot.1">Este sitio se hizo en <b>AIDE</b>, de la maqueta al código.</span></p>
+  <div class="foot__row mono">
+    <span data-i18n="foot.2">Un estudio de IA en tu editor</span>
+    <span>v0.1.1 · Windows</span>
+    <a href="docs/" data-i18n="foot.4">Documentación</a>
+    <a href="changelog/" data-i18n="foot.5">Novedades</a>
+    <button class="mode-toggle mono" id="mode-toggle" type="button" aria-pressed="false" data-i18n="mode-toggle.1">Versión ligera: no</button>
+    <a href="#top" data-i18n="foot.3">Arriba ↑</a>
+  </div>
+</footer>
+
+
+</body></html>

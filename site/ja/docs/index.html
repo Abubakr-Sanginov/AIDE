@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ja" data-page-path="docs/" data-page-lang="ja"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="head.4">ドキュメント — AIDE</title>
+  <meta name="description" content="AIDEの使い方：セットアップ、IDE・Vibe・デザインの各モード、エージェントと許可、クルー、プロジェクトのルール、独自コマンド、ショートカット。" data-i18n-attr="content:head.5">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#110e0c">
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="ru" href="../../docs/">
+  <link rel="alternate" hreflang="en" href="../../en/docs/">
+  <link rel="alternate" hreflang="de" href="../../de/docs/">
+  <link rel="alternate" hreflang="fr" href="../../fr/docs/">
+  <link rel="alternate" hreflang="es" href="../../es/docs/">
+  <link rel="alternate" hreflang="pt" href="../../pt/docs/">
+  <link rel="alternate" hreflang="it" href="../../it/docs/">
+  <link rel="alternate" hreflang="zh" href="../../zh/docs/">
+  <link rel="alternate" hreflang="ja" href="../../ja/docs/">
+  <link rel="alternate" hreflang="ko" href="../../ko/docs/">
+  <link rel="alternate" hreflang="tg" href="../../tg/docs/">
+  <link rel="alternate" hreflang="x-default" href="../../docs/">
+  <!-- /hreflang -->
+  <link rel="icon" href="../../img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../styles.css">
+  <script src="../../js/mode.js"></script>
+  <script type="module" src="../../js/app.js"></script>
+<script type="application/json" id="i18n-js">{"js.copy":"コピー","js.copied":"コピーしました","js.copyFail":"失敗","js.copyOk":"コマンドをコピーしました","js.copyErr":"コピーできませんでした","js.liteOn":"軽量版：オン","js.liteOff":"軽量版：オフ","js.toast":"なめらかに動くよう軽量版に切り替えました","js.lang":"言語"}</script></head>
+<body class="page">
+<a class="skip" href="#main" data-i18n="page.1">本文へ移動</a>
+<div class="glow glow--static" aria-hidden="true"></div>
+
+<header class="nav glass">
+  <a class="wordmark" href="../" aria-label="AIDE — ホーム" data-i18n-attr="aria-label:nav.8">AIDE</a>
+  <nav aria-label="セクション" data-i18n-attr="aria-label:nav.2">
+    <ul>
+      <li><a href="../#features" data-i18n="nav.4">機能</a></li>
+      <li><a href="../#crew" data-i18n="nav.5">クルー</a></li>
+      <li><a href="./" aria-current="page" data-i18n="foot.4">ドキュメント</a></li>
+      <li><a href="../changelog/" data-i18n="foot.5">新機能</a></li>
+      <li class="lang">
+        <button class="lang__btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="言語" data-i18n-attr="aria-label:js.lang"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"></path></svg><span class="lang__code">RU</span></button>
+        <ul class="lang__menu" id="lang-menu" translate="no" hidden="">
+          <li><a href="../../docs/" hreflang="ru" lang="ru" data-lang="ru"><span class="lang__iso">RU</span>Русский</a></li>
+          <li><a href="../../en/docs/" hreflang="en" lang="en" data-lang="en"><span class="lang__iso">EN</span>English</a></li>
+          <li><a href="../../de/docs/" hreflang="de" lang="de" data-lang="de"><span class="lang__iso">DE</span>Deutsch</a></li>
+          <li><a href="../../fr/docs/" hreflang="fr" lang="fr" data-lang="fr"><span class="lang__iso">FR</span>Français</a></li>
+          <li><a href="../../es/docs/" hreflang="es" lang="es" data-lang="es"><span class="lang__iso">ES</span>Español</a></li>
+          <li><a href="../../pt/docs/" hreflang="pt" lang="pt" data-lang="pt"><span class="lang__iso">PT</span>Português</a></li>
+          <li><a href="../../it/docs/" hreflang="it" lang="it" data-lang="it"><span class="lang__iso">IT</span>Italiano</a></li>
+          <li><a href="../../zh/docs/" hreflang="zh" lang="zh" data-lang="zh"><span class="lang__iso">ZH</span>中文</a></li>
+          <li><a href="../../ja/docs/" hreflang="ja" lang="ja" data-lang="ja" aria-current="true"><span class="lang__iso">JA</span>日本語</a></li>
+          <li><a href="../../ko/docs/" hreflang="ko" lang="ko" data-lang="ko"><span class="lang__iso">KO</span>한국어</a></li>
+          <li><a href="../../tg/docs/" hreflang="tg" lang="tg" data-lang="tg"><span class="lang__iso">TG</span>Тоҷикӣ</a></li>
+        </ul>
+      </li>
+      <li><a class="nav__cta" href="../#start" data-i18n="nav.7">はじめる</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main" class="doc wrap">
+  <aside class="doc__toc" aria-labelledby="toc-title">
+    <p class="mono" id="toc-title" data-i18n="toc-title.1">目次</p>
+    <ol>
+      <li><a href="#doc-start" data-i18n="main.14">はじめに</a></li>
+      <li><a href="#doc-modes" data-i18n="main.15">3つのモード</a></li>
+      <li><a href="#doc-agent" data-i18n="features.1">エージェント</a></li>
+      <li><a href="#doc-crew" data-i18n="nav.5">クルー</a></li>
+      <li><a href="#doc-rules" data-i18n="main.16">ルールとコマンド</a></li>
+      <li><a href="#doc-keys" data-i18n="main.17">キーボードショートカット</a></li>
+    </ol>
+  </aside>
+
+  <article class="doc__body">
+    <header class="doc__head">
+      <p class="kicker mono"><span>AIDE</span> <span data-i18n="foot.4">ドキュメント</span></p>
+      <h1 class="display display--md" data-i18n="nav.9">AIDEの<br>使い方</h1>
+      <p class="doc__lead" data-i18n="nav.10">要点だけの短いガイド：初回起動からエージェント用の独自コマンドまで。</p>
+    </header>
+
+    <section id="doc-start" aria-labelledby="h-start">
+      <h2 id="h-start" data-i18n="main.14">はじめに</h2>
+      <ol class="doc__steps">
+        <li data-i18n="doc-start.1"><code>Node.js 20+</code>、<code>Rust</code>、Windows向けTauri 2の前提環境をインストールします。</li>
+        <li data-i18n="doc-start.2">プロジェクトフォルダーで <code>npm install</code>、続けて <code>npm run tauri dev</code> を実行します。</li>
+        <li data-i18n="doc-start.3">コードのフォルダーを開く：<kbd>Ctrl</kbd>+<kbd>O</kbd>。</li>
+        <li data-i18n="doc-start.4">設定でモデルを接続します。APIキーはファイルではなくWindowsの資格情報マネージャーに保存されます。</li>
+      </ol>
+    </section>
+
+    <section id="doc-modes" aria-labelledby="h-modes">
+      <h2 id="h-modes" data-i18n="main.15">3つのモード</h2>
+      <p data-i18n="doc-modes.1">ウィンドウ上部のスイッチでインターフェース全体が切り替わります。プロジェクト、履歴、エージェントはそのままです。</p>
+      <dl class="doc__defs">
+        <div><dt>IDE</dt><dd data-i18n="doc-modes.2">CodeMirror 6ベースのエディター、ファイルツリー、タブ式ターミナル、Git、検索。エージェントは右側のチャットにいます。</dd></div>
+        <div><dt>Vibe</dt><dd data-i18n="doc-modes.3">結果を言葉で伝えるだけ。チームリードがタスクを手順に分け、ロールが実行し、QAが確認します。</dd></div>
+        <div><dt data-i18n="tab-design.1">デザイン</dt><dd data-i18n="doc-modes.4">キャンバスでモックアップを組み、「プロジェクトに作成」を押してスタックを選択：HTML、React、Vue、Svelte、Next.js、Astro。</dd></div>
+      </dl>
+    </section>
+
+    <section id="doc-agent" aria-labelledby="h-agent">
+      <h2 id="h-agent" data-i18n="features.1">エージェント</h2>
+      <ul class="doc__list">
+        <li data-i18n="doc-agent.1"><b>許可。</b>ファイルの書き込みやターミナルでのコマンド実行は、あなたが「許可」してから。</li>
+        <li data-i18n="doc-agent.2"><b>レポート。</b>返答の最後に「完了：6件の操作 ›」のような操作一覧と、使ったトークン数が表示されます。</li>
+        <li data-i18n="doc-agent.3"><b>元に戻す。</b>編集の前にチェックポイントを作成。「元に戻す」で変更したファイルを復元します。</li>
+        <li data-i18n="doc-agent.4"><b>停止。</b>モデルへのリクエストを即座に中断します。</li>
+        <li data-i18n="doc-agent.5"><b>選択範囲の編集。</b>コードを選択して <kbd>Ctrl</kbd>+<kbd>K</kbd>：変更が diff で表示され、採用か却下を選べます。</li>
+      </ul>
+    </section>
+
+    <section id="doc-crew" aria-labelledby="h-crew">
+      <h2 id="h-crew" data-i18n="nav.5">クルー</h2>
+      <p data-i18n="doc-crew.1">顔と声とスキルを持つ12のロール：チームリード、デザイン、フロント、バック、QA、DevOps、アナリスト、法務、経理、マーケター、インターン、ムードメーカー。あなたはCEO。タスクを出すと、ロールたちが話し合って作業を分担します。</p>
+      <p data-i18n="doc-crew.2">ファイルの変更やコマンドの実行ができるのは「手」を持つロールだけで、他は助言とレビューを担当します。ロールの操作もエージェントと同じ許可の仕組みを通ります。</p>
+    </section>
+
+    <section id="doc-rules" aria-labelledby="h-rules">
+      <h2 id="h-rules" data-i18n="main.16">ルールとコマンド</h2>
+      <p data-i18n="doc-rules.1">プロジェクトのルートに <code>AGENTS.md</code> か <code>CLAUDE.md</code> を置くと、エージェントは作業前にそのルールを読みます。</p>
+      <p data-i18n="doc-rules.2">独自のチャットコマンド：プロンプトを書いたファイル <code>.aide/commands/名前.md</code> を作ると、チャットに <code>/名前</code> として表示され、<code>$ARGUMENTS</code> はコマンドの後に入力した内容に置き換わります。</p>
+    </section>
+
+    <section id="doc-keys" aria-labelledby="h-keys">
+      <h2 id="h-keys" data-i18n="main.17">キーボードショートカット</h2>
+      <table class="doc__keys">
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td data-i18n="doc-keys.1">プロジェクトフォルダーを開く</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td data-i18n="doc-keys.2">ファイルを保存</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>W</kbd></td><td data-i18n="doc-keys.3">タブを閉じる</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td data-i18n="doc-keys.4">コマンドパレット</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>R</kbd></td><td data-i18n="doc-keys.5">最近のプロジェクト</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td data-i18n="doc-keys.6">サイドバーの表示・非表示</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>J</kbd></td><td data-i18n="doc-keys.7">ターミナルの表示・非表示</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td data-i18n="doc-keys.8">プロジェクト内を検索</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd></td><td data-i18n="doc-keys.9">Gitパネル</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td data-i18n="doc-keys.10">選択したコードをエージェントに編集させる</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td data-i18n="doc-keys.11">パレット、設定、編集を閉じる</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </article>
+</main>
+
+<footer class="foot foot--page">
+  <div class="foot__row mono">
+    <span data-i18n="foot.2">エディターの中のAIスタジオ</span>
+    <span>v0.1.1 · Windows</span>
+    <a href="../changelog/" data-i18n="foot.5">新機能</a>
+    <a href="#main" data-i18n="foot.3">トップへ ↑</a>
+  </div>
+</footer>
+
+
+</body></html>

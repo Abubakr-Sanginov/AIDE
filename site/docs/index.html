@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru" data-page-path="docs/"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="head.4">Документация — AIDE</title>
+  <meta name="description" content="Как работать в AIDE: установка, режимы IDE, Vibe и Дизайн, агент и разрешения, Экипаж, правила проекта, свои команды и горячие клавиши." data-i18n-attr="content:head.5">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#110e0c">
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="ru" href="../docs/">
+  <link rel="alternate" hreflang="en" href="../en/docs/">
+  <link rel="alternate" hreflang="de" href="../de/docs/">
+  <link rel="alternate" hreflang="fr" href="../fr/docs/">
+  <link rel="alternate" hreflang="es" href="../es/docs/">
+  <link rel="alternate" hreflang="pt" href="../pt/docs/">
+  <link rel="alternate" hreflang="it" href="../it/docs/">
+  <link rel="alternate" hreflang="zh" href="../zh/docs/">
+  <link rel="alternate" hreflang="ja" href="../ja/docs/">
+  <link rel="alternate" hreflang="ko" href="../ko/docs/">
+  <link rel="alternate" hreflang="tg" href="../tg/docs/">
+  <link rel="alternate" hreflang="x-default" href="../docs/">
+  <!-- /hreflang -->
+  <link rel="icon" href="../img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <script src="../js/mode.js"></script>
+  <script type="module" src="../js/app.js"></script>
+</head>
+<body class="page">
+<a class="skip" href="#main" data-i18n="page.1">К содержимому</a>
+<div class="glow glow--static" aria-hidden="true"></div>
+
+<header class="nav glass">
+  <a class="wordmark" href="../" aria-label="AIDE — на главную" data-i18n-attr="aria-label:nav.8">AIDE</a>
+  <nav aria-label="Разделы" data-i18n-attr="aria-label:nav.2">
+    <ul>
+      <li><a href="../#features" data-i18n="nav.4">Возможности</a></li>
+      <li><a href="../#crew" data-i18n="nav.5">Экипаж</a></li>
+      <li><a href="./" aria-current="page" data-i18n="foot.4">Документация</a></li>
+      <li><a href="../changelog/" data-i18n="foot.5">Что нового</a></li>
+      <li class="lang">
+        <button class="lang__btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Язык" data-i18n-attr="aria-label:js.lang"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"></path></svg><span class="lang__code">RU</span></button>
+        <ul class="lang__menu" id="lang-menu" translate="no" hidden="">
+          <li><a href="../docs/" hreflang="ru" lang="ru" data-lang="ru" aria-current="true"><span class="lang__iso">RU</span>Русский</a></li>
+          <li><a href="../en/docs/" hreflang="en" lang="en" data-lang="en"><span class="lang__iso">EN</span>English</a></li>
+          <li><a href="../de/docs/" hreflang="de" lang="de" data-lang="de"><span class="lang__iso">DE</span>Deutsch</a></li>
+          <li><a href="../fr/docs/" hreflang="fr" lang="fr" data-lang="fr"><span class="lang__iso">FR</span>Français</a></li>
+          <li><a href="../es/docs/" hreflang="es" lang="es" data-lang="es"><span class="lang__iso">ES</span>Español</a></li>
+          <li><a href="../pt/docs/" hreflang="pt" lang="pt" data-lang="pt"><span class="lang__iso">PT</span>Português</a></li>
+          <li><a href="../it/docs/" hreflang="it" lang="it" data-lang="it"><span class="lang__iso">IT</span>Italiano</a></li>
+          <li><a href="../zh/docs/" hreflang="zh" lang="zh" data-lang="zh"><span class="lang__iso">ZH</span>中文</a></li>
+          <li><a href="../ja/docs/" hreflang="ja" lang="ja" data-lang="ja"><span class="lang__iso">JA</span>日本語</a></li>
+          <li><a href="../ko/docs/" hreflang="ko" lang="ko" data-lang="ko"><span class="lang__iso">KO</span>한국어</a></li>
+          <li><a href="../tg/docs/" hreflang="tg" lang="tg" data-lang="tg"><span class="lang__iso">TG</span>Тоҷикӣ</a></li>
+        </ul>
+      </li>
+      <li><a class="nav__cta" href="../#start" data-i18n="nav.7">Запуск</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main" class="doc wrap">
+  <aside class="doc__toc" aria-labelledby="toc-title">
+    <p class="mono" id="toc-title" data-i18n="toc-title.1">Содержание</p>
+    <ol>
+      <li><a href="#doc-start" data-i18n="main.14">Начало работы</a></li>
+      <li><a href="#doc-modes" data-i18n="main.15">Три режима</a></li>
+      <li><a href="#doc-agent" data-i18n="features.1">Агент</a></li>
+      <li><a href="#doc-crew" data-i18n="nav.5">Экипаж</a></li>
+      <li><a href="#doc-rules" data-i18n="main.16">Правила и команды</a></li>
+      <li><a href="#doc-keys" data-i18n="main.17">Горячие клавиши</a></li>
+    </ol>
+  </aside>
+
+  <article class="doc__body">
+    <header class="doc__head">
+      <p class="kicker mono"><span>AIDE</span> <span data-i18n="foot.4">Документация</span></p>
+      <h1 class="display display--md" data-i18n="nav.9">Как работать<br>в AIDE</h1>
+      <p class="doc__lead" data-i18n="nav.10">Короткие руководства по главному: от первого запуска до своих команд для агента.</p>
+    </header>
+
+    <section id="doc-start" aria-labelledby="h-start">
+      <h2 id="h-start" data-i18n="main.14">Начало работы</h2>
+      <ol class="doc__steps">
+        <li data-i18n="doc-start.1">Установите <code>Node.js 20+</code>, <code>Rust</code> и зависимости Tauri 2 для Windows.</li>
+        <li data-i18n="doc-start.2">В папке проекта выполните <code>npm install</code>, затем <code>npm run tauri dev</code>.</li>
+        <li data-i18n="doc-start.3">Откройте папку с кодом: <kbd>Ctrl</kbd>+<kbd>O</kbd>.</li>
+        <li data-i18n="doc-start.4">Подключите модель в настройках. Ключ API сохраняется в хранилище учётных данных Windows, а не в файлах.</li>
+      </ol>
+    </section>
+
+    <section id="doc-modes" aria-labelledby="h-modes">
+      <h2 id="h-modes" data-i18n="main.15">Три режима</h2>
+      <p data-i18n="doc-modes.1">Переключатель в шапке окна меняет весь интерфейс. Проект, история и агент при этом остаются те же.</p>
+      <dl class="doc__defs">
+        <div><dt>IDE</dt><dd data-i18n="doc-modes.2">Редактор на CodeMirror 6, дерево файлов, терминалы во вкладках, Git и поиск. Агент — в чате справа.</dd></div>
+        <div><dt>Vibe</dt><dd data-i18n="doc-modes.3">Опишите результат словами. Тимлид разложит задачу на шаги, роли выполнят их, QA проверит.</dd></div>
+        <div><dt data-i18n="tab-design.1">Дизайн</dt><dd data-i18n="doc-modes.4">Соберите макет на холсте, а потом нажмите «Создать в проекте» и выберите стек: HTML, React, Vue, Svelte, Next.js или Astro.</dd></div>
+      </dl>
+    </section>
+
+    <section id="doc-agent" aria-labelledby="h-agent">
+      <h2 id="h-agent" data-i18n="features.1">Агент</h2>
+      <ul class="doc__list">
+        <li data-i18n="doc-agent.1"><b>Разрешения.</b> Запись файлов и команды в терминале выполняются только после вашего «Разрешить».</li>
+        <li data-i18n="doc-agent.2"><b>Отчёт.</b> В конце ответа — список действий, например «Выполнено: 6 действий ›», и число потраченных токенов.</li>
+        <li data-i18n="doc-agent.3"><b>Откат.</b> Перед правками создаётся чекпоинт. Кнопка «Отменить» возвращает изменённые файлы.</li>
+        <li data-i18n="doc-agent.4"><b>Стоп.</b> Мгновенно обрывает запрос к модели.</li>
+        <li data-i18n="doc-agent.5"><b>Правка выделенного.</b> Выделите код и нажмите <kbd>Ctrl</kbd>+<kbd>K</kbd>: изменения покажутся как diff, их можно принять или отклонить.</li>
+      </ul>
+    </section>
+
+    <section id="doc-crew" aria-labelledby="h-crew">
+      <h2 id="h-crew" data-i18n="nav.5">Экипаж</h2>
+      <p data-i18n="doc-crew.1">Двенадцать ролей с лицами, голосами и навыками: тимлид, дизайн, фронт, бэк, QA, девопс, аналитик, юрист, бухгалтер, маркетолог, стажёр и шутник. Вы — CEO: ставите задачу, а роли обсуждают её и делят работу.</p>
+      <p data-i18n="doc-crew.2">Менять файлы и запускать команды могут только роли с «руками» — остальные советуют и проверяют. Действия ролей проходят через те же разрешения, что и действия агента.</p>
+    </section>
+
+    <section id="doc-rules" aria-labelledby="h-rules">
+      <h2 id="h-rules" data-i18n="main.16">Правила и команды</h2>
+      <p data-i18n="doc-rules.1">Положите <code>AGENTS.md</code> или <code>CLAUDE.md</code> в корень проекта — агент прочитает эти правила перед работой.</p>
+      <p data-i18n="doc-rules.2">Свои команды для чата: создайте файл <code>.aide/commands/имя.md</code> с текстом запроса. В чате он появится как <code>/имя</code>, а вместо <code>$ARGUMENTS</code> подставится то, что вы напишете после команды.</p>
+    </section>
+
+    <section id="doc-keys" aria-labelledby="h-keys">
+      <h2 id="h-keys" data-i18n="main.17">Горячие клавиши</h2>
+      <table class="doc__keys">
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td data-i18n="doc-keys.1">Открыть папку проекта</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td data-i18n="doc-keys.2">Сохранить файл</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>W</kbd></td><td data-i18n="doc-keys.3">Закрыть вкладку</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td data-i18n="doc-keys.4">Палитра команд</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>R</kbd></td><td data-i18n="doc-keys.5">Недавние проекты</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td data-i18n="doc-keys.6">Показать или скрыть боковую панель</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>J</kbd></td><td data-i18n="doc-keys.7">Показать или скрыть терминал</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td data-i18n="doc-keys.8">Поиск по проекту</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd></td><td data-i18n="doc-keys.9">Панель Git</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td data-i18n="doc-keys.10">Правка выделенного кода агентом</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td data-i18n="doc-keys.11">Закрыть палитру, настройки или правку</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </article>
+</main>
+
+<footer class="foot foot--page">
+  <div class="foot__row mono">
+    <span data-i18n="foot.2">ИИ-студия в вашем редакторе</span>
+    <span>v0.1.1 · Windows</span>
+    <a href="../changelog/" data-i18n="foot.5">Что нового</a>
+    <a href="#main" data-i18n="foot.3">Наверх ↑</a>
+  </div>
+</footer>
+
+
+</body></html>

@@ -1,0 +1,11 @@
+{
+  "name": "demo",
+  "publisher": "aide",
+  "version": "1.0.0",
+  "main": "./extension.js",
+  "activationEvents": ["onLanguage:plaintext", "onCommand:demo.hello"],
+  "contributes": {
+    "commands": [{ "command": "demo.hello", "title": "Demo: Hello" }],
+    "configuration": { "properties": { "demo.greeting": { "type": "string", "default": "Hi" }, "demo.nested.a": { "default": 1 } } }
+  }
+}

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es" data-page-path="docs/" data-page-lang="es"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="head.4">Documentación — AIDE</title>
+  <meta name="description" content="Cómo trabajar en AIDE: instalación, modos IDE, Vibe y Diseño, el agente y los permisos, la tripulación, reglas del proyecto, comandos propios y atajos." data-i18n-attr="content:head.5">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#110e0c">
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="ru" href="../../docs/">
+  <link rel="alternate" hreflang="en" href="../../en/docs/">
+  <link rel="alternate" hreflang="de" href="../../de/docs/">
+  <link rel="alternate" hreflang="fr" href="../../fr/docs/">
+  <link rel="alternate" hreflang="es" href="../../es/docs/">
+  <link rel="alternate" hreflang="pt" href="../../pt/docs/">
+  <link rel="alternate" hreflang="it" href="../../it/docs/">
+  <link rel="alternate" hreflang="zh" href="../../zh/docs/">
+  <link rel="alternate" hreflang="ja" href="../../ja/docs/">
+  <link rel="alternate" hreflang="ko" href="../../ko/docs/">
+  <link rel="alternate" hreflang="tg" href="../../tg/docs/">
+  <link rel="alternate" hreflang="x-default" href="../../docs/">
+  <!-- /hreflang -->
+  <link rel="icon" href="../../img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../styles.css">
+  <script src="../../js/mode.js"></script>
+  <script type="module" src="../../js/app.js"></script>
+<script type="application/json" id="i18n-js">{"js.copy":"Copiar","js.copied":"Copiado","js.copyFail":"Error","js.copyOk":"Comando copiado","js.copyErr":"No se pudo copiar","js.liteOn":"Versión ligera: sí","js.liteOff":"Versión ligera: no","js.toast":"Versión ligera activada para mayor fluidez","js.lang":"Idioma"}</script></head>
+<body class="page">
+<a class="skip" href="#main" data-i18n="page.1">Ir al contenido</a>
+<div class="glow glow--static" aria-hidden="true"></div>
+
+<header class="nav glass">
+  <a class="wordmark" href="../" aria-label="AIDE — inicio" data-i18n-attr="aria-label:nav.8">AIDE</a>
+  <nav aria-label="Secciones" data-i18n-attr="aria-label:nav.2">
+    <ul>
+      <li><a href="../#features" data-i18n="nav.4">Funciones</a></li>
+      <li><a href="../#crew" data-i18n="nav.5">Tripulación</a></li>
+      <li><a href="./" aria-current="page" data-i18n="foot.4">Documentación</a></li>
+      <li><a href="../changelog/" data-i18n="foot.5">Novedades</a></li>
+      <li class="lang">
+        <button class="lang__btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Idioma" data-i18n-attr="aria-label:js.lang"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"></path></svg><span class="lang__code">RU</span></button>
+        <ul class="lang__menu" id="lang-menu" translate="no" hidden="">
+          <li><a href="../../docs/" hreflang="ru" lang="ru" data-lang="ru"><span class="lang__iso">RU</span>Русский</a></li>
+          <li><a href="../../en/docs/" hreflang="en" lang="en" data-lang="en"><span class="lang__iso">EN</span>English</a></li>
+          <li><a href="../../de/docs/" hreflang="de" lang="de" data-lang="de"><span class="lang__iso">DE</span>Deutsch</a></li>
+          <li><a href="../../fr/docs/" hreflang="fr" lang="fr" data-lang="fr"><span class="lang__iso">FR</span>Français</a></li>
+          <li><a href="../../es/docs/" hreflang="es" lang="es" data-lang="es" aria-current="true"><span class="lang__iso">ES</span>Español</a></li>
+          <li><a href="../../pt/docs/" hreflang="pt" lang="pt" data-lang="pt"><span class="lang__iso">PT</span>Português</a></li>
+          <li><a href="../../it/docs/" hreflang="it" lang="it" data-lang="it"><span class="lang__iso">IT</span>Italiano</a></li>
+          <li><a href="../../zh/docs/" hreflang="zh" lang="zh" data-lang="zh"><span class="lang__iso">ZH</span>中文</a></li>
+          <li><a href="../../ja/docs/" hreflang="ja" lang="ja" data-lang="ja"><span class="lang__iso">JA</span>日本語</a></li>
+          <li><a href="../../ko/docs/" hreflang="ko" lang="ko" data-lang="ko"><span class="lang__iso">KO</span>한국어</a></li>
+          <li><a href="../../tg/docs/" hreflang="tg" lang="tg" data-lang="tg"><span class="lang__iso">TG</span>Тоҷикӣ</a></li>
+        </ul>
+      </li>
+      <li><a class="nav__cta" href="../#start" data-i18n="nav.7">Empezar</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main" class="doc wrap">
+  <aside class="doc__toc" aria-labelledby="toc-title">
+    <p class="mono" id="toc-title" data-i18n="toc-title.1">Contenido</p>
+    <ol>
+      <li><a href="#doc-start" data-i18n="main.14">Primeros pasos</a></li>
+      <li><a href="#doc-modes" data-i18n="main.15">Tres modos</a></li>
+      <li><a href="#doc-agent" data-i18n="features.1">Agente</a></li>
+      <li><a href="#doc-crew" data-i18n="nav.5">Tripulación</a></li>
+      <li><a href="#doc-rules" data-i18n="main.16">Reglas y comandos</a></li>
+      <li><a href="#doc-keys" data-i18n="main.17">Atajos de teclado</a></li>
+    </ol>
+  </aside>
+
+  <article class="doc__body">
+    <header class="doc__head">
+      <p class="kicker mono"><span>AIDE</span> <span data-i18n="foot.4">Documentación</span></p>
+      <h1 class="display display--md" data-i18n="nav.9">Cómo trabajar<br>en AIDE</h1>
+      <p class="doc__lead" data-i18n="nav.10">Guías cortas de lo esencial: desde el primer arranque hasta tus propios comandos para el agente.</p>
+    </header>
+
+    <section id="doc-start" aria-labelledby="h-start">
+      <h2 id="h-start" data-i18n="main.14">Primeros pasos</h2>
+      <ol class="doc__steps">
+        <li data-i18n="doc-start.1">Instala <code>Node.js 20+</code>, <code>Rust</code> y los requisitos de Tauri 2 para Windows.</li>
+        <li data-i18n="doc-start.2">En la carpeta del proyecto ejecuta <code>npm install</code> y luego <code>npm run tauri dev</code>.</li>
+        <li data-i18n="doc-start.3">Abre la carpeta con tu código: <kbd>Ctrl</kbd>+<kbd>O</kbd>.</li>
+        <li data-i18n="doc-start.4">Conecta un modelo en los ajustes. La clave de API se guarda en el almacén de credenciales de Windows, no en archivos.</li>
+      </ol>
+    </section>
+
+    <section id="doc-modes" aria-labelledby="h-modes">
+      <h2 id="h-modes" data-i18n="main.15">Tres modos</h2>
+      <p data-i18n="doc-modes.1">El interruptor de la cabecera de la ventana cambia toda la interfaz. El proyecto, el historial y el agente siguen siendo los mismos.</p>
+      <dl class="doc__defs">
+        <div><dt>IDE</dt><dd data-i18n="doc-modes.2">Un editor sobre CodeMirror 6, árbol de archivos, terminales en pestañas, Git y búsqueda. El agente está en el chat de la derecha.</dd></div>
+        <div><dt>Vibe</dt><dd data-i18n="doc-modes.3">Describe el resultado con palabras. El team lead divide la tarea en pasos, los roles los hacen y QA lo revisa.</dd></div>
+        <div><dt data-i18n="tab-design.1">Diseño</dt><dd data-i18n="doc-modes.4">Arma una maqueta en el lienzo, pulsa «Crear en el proyecto» y elige un stack: HTML, React, Vue, Svelte, Next.js o Astro.</dd></div>
+      </dl>
+    </section>
+
+    <section id="doc-agent" aria-labelledby="h-agent">
+      <h2 id="h-agent" data-i18n="features.1">Agente</h2>
+      <ul class="doc__list">
+        <li data-i18n="doc-agent.1"><b>Permisos.</b> Escribir archivos y ejecutar comandos en la terminal, solo después de tu «Permitir».</li>
+        <li data-i18n="doc-agent.2"><b>Informe.</b> Cada respuesta termina con la lista de acciones, por ejemplo «Hecho: 6 acciones ›», y los tokens gastados.</li>
+        <li data-i18n="doc-agent.3"><b>Deshacer.</b> Antes de cualquier cambio se crea un punto de control. El botón «Deshacer» restaura los archivos modificados.</li>
+        <li data-i18n="doc-agent.4"><b>Detener.</b> Corta al instante la petición al modelo.</li>
+        <li data-i18n="doc-agent.5"><b>Editar una selección.</b> Selecciona código y pulsa <kbd>Ctrl</kbd>+<kbd>K</kbd>: los cambios aparecen como diff para aceptarlos o rechazarlos.</li>
+      </ul>
+    </section>
+
+    <section id="doc-crew" aria-labelledby="h-crew">
+      <h2 id="h-crew" data-i18n="nav.5">Tripulación</h2>
+      <p data-i18n="doc-crew.1">Doce roles con caras, voces y habilidades: team lead, diseño, front, back, QA, DevOps, analista, abogado, contable, marketing, becario y bromista. Tú eres el CEO: planteas la tarea, los roles la discuten y se reparten el trabajo.</p>
+      <p data-i18n="doc-crew.2">Solo los roles con «manos» pueden cambiar archivos y ejecutar comandos; el resto aconseja y revisa. Sus acciones pasan por los mismos permisos que las del agente.</p>
+    </section>
+
+    <section id="doc-rules" aria-labelledby="h-rules">
+      <h2 id="h-rules" data-i18n="main.16">Reglas y comandos</h2>
+      <p data-i18n="doc-rules.1">Pon <code>AGENTS.md</code> o <code>CLAUDE.md</code> en la raíz del proyecto: el agente leerá esas reglas antes de trabajar.</p>
+      <p data-i18n="doc-rules.2">Tus propios comandos de chat: crea un archivo <code>.aide/commands/nombre.md</code> con el prompt. Aparecerá en el chat como <code>/nombre</code>, y <code>$ARGUMENTS</code> se sustituye por lo que escribas después del comando.</p>
+    </section>
+
+    <section id="doc-keys" aria-labelledby="h-keys">
+      <h2 id="h-keys" data-i18n="main.17">Atajos de teclado</h2>
+      <table class="doc__keys">
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td data-i18n="doc-keys.1">Abrir una carpeta de proyecto</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td data-i18n="doc-keys.2">Guardar el archivo</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>W</kbd></td><td data-i18n="doc-keys.3">Cerrar la pestaña</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td data-i18n="doc-keys.4">Paleta de comandos</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>R</kbd></td><td data-i18n="doc-keys.5">Proyectos recientes</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td data-i18n="doc-keys.6">Mostrar u ocultar la barra lateral</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>J</kbd></td><td data-i18n="doc-keys.7">Mostrar u ocultar la terminal</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td data-i18n="doc-keys.8">Buscar en el proyecto</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd></td><td data-i18n="doc-keys.9">Panel de Git</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td data-i18n="doc-keys.10">Que el agente edite el código seleccionado</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td data-i18n="doc-keys.11">Cerrar la paleta, los ajustes o la edición</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </article>
+</main>
+
+<footer class="foot foot--page">
+  <div class="foot__row mono">
+    <span data-i18n="foot.2">Un estudio de IA en tu editor</span>
+    <span>v0.1.1 · Windows</span>
+    <a href="../changelog/" data-i18n="foot.5">Novedades</a>
+    <a href="#main" data-i18n="foot.3">Arriba ↑</a>
+  </div>
+</footer>
+
+
+</body></html>

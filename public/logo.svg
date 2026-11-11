@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="AIDE">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#25231f"/>
+      <stop offset="1" stop-color="#0f0f0e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="34%" r="62%">
+      <stop offset="0" stop-color="#5eead4" stop-opacity="0.34"/>
+      <stop offset="0.55" stop-color="#5eead4" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#5eead4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mark" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#fde3c8"/>
+      <stop offset="0.55" stop-color="#fbc89d"/>
+      <stop offset="1" stop-color="#8ff0de"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#9ff5e6"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="url(#bg)"/>
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="url(#glow)"/>
+  <rect x="17" y="17" width="478" height="478" rx="115" fill="none" stroke="#ffffff" stroke-opacity="0.09" stroke-width="2"/>
+
+  <!-- The letter A: two strokes meeting at the top, like the roof of a house or an open bracket pair -->
+  <g stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M142 388 L256 128 L370 388" stroke="#5eead4" stroke-opacity="0.35" stroke-width="52" filter="url(#soft)"/>
+    <path d="M142 388 L256 128 L370 388" stroke="url(#mark)" stroke-width="46"/>
+  </g>
+
+  <!-- A spark in place of the crossbar: the "AI" in the IDE -->
+  <path d="M256 250 C261 283 273 295 306 300 C273 305 261 317 256 350 C251 317 239 305 206 300 C239 295 251 283 256 250 Z" fill="url(#spark)"/>
+  <circle cx="338" cy="214" r="9" fill="#9ff5e6" fill-opacity="0.9"/>
+  <circle cx="176" cy="236" r="5.5" fill="#fde3c8" fill-opacity="0.8"/>
+</svg>
