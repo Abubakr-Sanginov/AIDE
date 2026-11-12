@@ -18,6 +18,8 @@ const TEXT = {
     hint: "Updates come from the project's GitHub releases and are installed only if they are signed with AIDE's key. AIDE restarts to finish the update.",
     failed: "Could not check:",
     dev: "Updates work in the installed app, not in development mode.",
+    noRelease: "No published release found yet. Check again after the next release.",
+    offline: "Could not reach GitHub. Check your internet connection.",
   },
   ru: {
     title: "Обновления",
@@ -31,6 +33,8 @@ const TEXT = {
     hint: "Обновления берутся из релизов проекта на GitHub и ставятся, только если подписаны ключом AIDE. Для установки AIDE перезапустится.",
     failed: "Не удалось проверить:",
     dev: "Обновления работают в установленном приложении, а не в режиме разработки.",
+    noRelease: "Опубликованных релизов пока нет. Проверьте снова после следующего релиза.",
+    offline: "Не удалось связаться с GitHub. Проверьте подключение к интернету.",
   },
   tg: {
     title: "Навсозиҳо",
@@ -44,8 +48,17 @@ const TEXT = {
     hint: "Навсозиҳо аз релизҳои лоиҳа дар GitHub гирифта мешаванд ва танҳо дар сурате насб мешаванд, ки бо калиди AIDE имзо шуда бошанд. Барои насб AIDE аз нав оғоз мешавад.",
     failed: "Санҷиш нашуд:",
     dev: "Навсозиҳо дар барномаи насбшуда кор мекунанд, на дар реҷаи таҳия.",
+    noRelease: "Ҳоло релизи нашршуда нест. Пас аз релизи навбатӣ боз санҷед.",
+    offline: "Бо GitHub пайваст шудан нашуд. Интернетро санҷед.",
   },
 };
+
+/** Turns the updater's technical errors into something a person can act on. */
+export function explain(message: string, L: { noRelease: string; offline: string; failed: string }): string {
+  if (/valid release json|404|not found/i.test(message)) return L.noRelease;
+  if (/error sending request|dns|timed out|network|connect/i.test(message)) return L.offline;
+  return `${L.failed} ${message}`;
+}
 
 export function UpdatesSection() {
   const { lang } = useI18n();
@@ -67,7 +80,7 @@ export function UpdatesSection() {
     setBusy(false);
     if (r.state === "available") setFound(r.info);
     else if (r.state === "none") setMessage(L.latest);
-    else setMessage(import.meta.env.DEV ? L.dev : `${L.failed} ${r.message}`);
+    else setMessage(import.meta.env.DEV ? L.dev : explain(r.message, L));
   };
 
   const install = async () => {
