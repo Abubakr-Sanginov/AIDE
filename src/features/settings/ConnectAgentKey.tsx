@@ -115,7 +115,9 @@ export function ConnectAgentKey({ agent, onClose, onDone }: { agent: AgentAccoun
     try {
       const id = providerIdFor(agent.id, providers.map((p) => p.id));
       await accountsApi.importKey(chosen.id, id);
-      useAi.getState().registerImportedProvider({ id, name: name.trim(), kind, baseUrl: parsed.href, custom: true });
+      // The agent's helper program often cannot list models: take the list the agent wrote next to the key (best effort).
+      const models = await accountsApi.models(chosen.id).catch(() => [] as string[]);
+      useAi.getState().registerImportedProvider({ id, name: name.trim(), kind, baseUrl: parsed.href, custom: true, ...(models.length > 0 ? { models } : {}) });
       onDone(L.done);
     } catch (e) {
       setError(`${L.failed} ${String(e)}`);

@@ -470,16 +470,20 @@ export const useAi = create<AiState>((set, get) => ({
     if (!get().hasKey) return;
     set({ modelsLoading: true, modelsError: null });
     try {
-      const models = await ai.listModels(cfg.id, cfg.kind, cfg.baseUrl, authOf(cfg.id), uaOf(cfg.id));
+      const listed = await ai.listModels(cfg.id, cfg.kind, cfg.baseUrl, authOf(cfg.id), uaOf(cfg.id));
+      // A server that answers with an empty list falls back to the fixed one (agents' helper programs often do).
+      const models = listed.length === 0 && cfg.models?.length ? cfg.models : listed;
       if (get().providerId !== cfg.id) return;
       const selection = modelSelection(models, localStorage.getItem(modelKey(cfg.id)));
       localStorage.setItem(modelKey(cfg.id), selection.model);
       set({ ...selection, modelsLoading: false });
     } catch (e) {
       if (get().providerId !== cfg.id) return;
-      const fallback = cfg.kind === "anthropic" ? ANTHROPIC_FALLBACK_MODELS : [];
+      const fixed = cfg.models ?? [];
+      const fallback = cfg.kind === "anthropic" ? ANTHROPIC_FALLBACK_MODELS : fixed;
       const selection = modelSelection(fallback, localStorage.getItem(modelKey(cfg.id)));
-      set({ ...selection, modelsLoading: false, modelsError: cfg.kind === "anthropic" ? null : String(e) });
+      if (fixed.length > 0) localStorage.setItem(modelKey(cfg.id), selection.model);
+      set({ ...selection, modelsLoading: false, modelsError: cfg.kind === "anthropic" || fixed.length > 0 ? null : String(e) });
     }
   },
 
@@ -504,7 +508,9 @@ export const useAi = create<AiState>((set, get) => ({
         }),
       };
     } catch (e) {
-      return { ok: false, message: t("settings.testFail", { error: String(e) }) };
+      // The server does not list models: say so honestly, and mention the list taken from the agent's file.
+      const fixed = cfg.models?.length ? ` · ${cfg.models.length} models from the agent's file` : "";
+      return { ok: false, message: t("settings.testFail", { error: String(e) + fixed }) };
     }
   },
 

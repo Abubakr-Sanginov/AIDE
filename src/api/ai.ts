@@ -9,6 +9,8 @@ export interface ProviderConfig {
   kind: ProviderKind;
   baseUrl: string;
   custom?: boolean;
+  /** A fixed list of models, for servers that cannot list them (taken from the file of the agent the key came from). */
+  models?: string[];
 }
 
 export interface Attachment {

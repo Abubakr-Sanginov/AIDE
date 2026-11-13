@@ -897,11 +897,9 @@ pub fn valid_provider_id(id: &str) -> bool {
         && !id.ends_with('-')
 }
 
-/// Читает выбранный ключ из файла и отдаёт его в `store` (запись в хранилище ключей). Значение никуда больше не уходит.
-pub fn import_key(home: &Path, candidate_id: &str, provider_id: &str, store: impl FnOnce(&str, &str) -> Result<(), String>) -> Result<(), String> {
-    if !valid_provider_id(provider_id) {
-        return Err("Некорректный идентификатор провайдера (agent-…)".into());
-    }
+/// Находит файл и значение выбранного ключа: файл обязан лежать в домашней папке, быть файлом входа агента и не из
+/// запрещённых папок. Возвращает файл, его содержимое и путь внутри JSON.
+fn resolve_candidate(home: &Path, candidate_id: &str) -> Result<(PathBuf, Value, String), String> {
     let (file_disp, pointer) = candidate_id.split_once('|').ok_or("Некорректный выбор ключа")?;
     let rest = file_disp.strip_prefix("~\\").or_else(|| file_disp.strip_prefix("~/")).ok_or("Файл должен лежать в вашей домашней папке")?;
     if rest.split(['\\', '/']).any(|p| p == ".." || p.is_empty()) {
@@ -924,7 +922,61 @@ pub fn import_key(home: &Path, candidate_id: &str, provider_id: &str, store: imp
         return Err("Этот файл не похож на файл входа агента".into());
     }
     let value = read_json(&file, if in_root { MAX_ROOT_FILE_BYTES } else { MAX_FILE_BYTES }).ok_or("Не удалось прочитать файл")?;
-    let secret = value.pointer(pointer).and_then(Value::as_str).map(str::trim).filter(|s| !s.is_empty()).ok_or("Значение не найдено: файл изменился?")?;
+    Ok((file, value, pointer.to_string()))
+}
+
+/// Модели, которые агент записал рядом с ключом: массив «models» в ближайшем объекте выше по дереву
+/// (элементы — строки или объекты с id/name/model). Нужны, когда сервер агента не отдаёт список моделей.
+pub fn models_near(value: &Value, pointer: &str) -> Vec<String> {
+    let mut parts: Vec<&str> = pointer.trim_start_matches('/').split('/').collect();
+    while !parts.is_empty() {
+        parts.pop();
+        let p = if parts.is_empty() { String::new() } else { format!("/{}", parts.join("/")) };
+        if let Some(Value::Object(map)) = value.pointer(&p) {
+            if let Some(Value::Array(items)) = map.get("models") {
+                let mut out: Vec<String> = Vec::new();
+                for it in items.iter().take(300) {
+                    let id = match it {
+                        Value::String(x) => Some(x.as_str()),
+                        Value::Object(o) => ["id", "model", "name"].iter().find_map(|k| o.get(*k).and_then(Value::as_str)),
+                        _ => None,
+                    };
+                    if let Some(id) = id {
+                        let id = id.trim();
+                        if !id.is_empty() && id.chars().count() <= 100 && !id.chars().any(char::is_control) && !out.iter().any(|x| x == id) {
+                            out.push(id.to_string());
+                        }
+                    }
+                }
+                if !out.is_empty() {
+                    out.truncate(100);
+                    return out;
+                }
+            }
+        }
+    }
+    Vec::new()
+}
+
+/// Модели, найденные рядом с выбранным ключом (без самого ключа).
+pub fn list_models(home: &Path, candidate_id: &str) -> Result<Vec<String>, String> {
+    let (_file, value, pointer) = resolve_candidate(home, candidate_id)?;
+    Ok(models_near(&value, &pointer))
+}
+
+#[tauri::command]
+pub async fn list_agent_models(candidate_id: String) -> Result<Vec<String>, String> {
+    let home = dirs_next::home_dir().ok_or("Не удалось определить домашнюю папку")?;
+    tauri::async_runtime::spawn_blocking(move || list_models(&home, &candidate_id)).await.map_err(|e| e.to_string())?
+}
+
+/// Читает выбранный ключ из файла и отдаёт его в `store` (запись в хранилище ключей). Значение никуда больше не уходит.
+pub fn import_key(home: &Path, candidate_id: &str, provider_id: &str, store: impl FnOnce(&str, &str) -> Result<(), String>) -> Result<(), String> {
+    if !valid_provider_id(provider_id) {
+        return Err("Некорректный идентификатор провайдера (agent-…)".into());
+    }
+    let (_file, value, pointer) = resolve_candidate(home, candidate_id)?;
+    let secret = value.pointer(&pointer).and_then(Value::as_str).map(str::trim).filter(|s| !s.is_empty()).ok_or("Значение не найдено: файл изменился?")?;
     if let Some(reason) = classify_token(secret).blocked {
         return Err(reason.into());
     }
@@ -1185,6 +1237,21 @@ mod tests {
         deny("~\\.zzagent\\auth.json|/nope", "agent-nope-1");
         deny("без разделителя", "agent-x-1");
         let _ = fs::remove_dir_all(&home);
+    }
+
+    #[test]
+    fn models_are_taken_from_the_provider_block_next_to_the_key() {
+        let v = json!({"providers": {"deepai": {"baseUrl": "http://127.0.0.1:1", "apiKey": "k".repeat(40), "models": [{"id": "glm-5.3-flash", "name": "GLM"}, {"name": "only-name"}, "plain-string", {"id": "glm-5.3-flash"}, {"id": ""}, {"x": 1}]},
+            "other": {"apiKey": "o".repeat(40), "models": [{"id": "other-model"}]}}});
+        assert_eq!(models_near(&v, "/providers/deepai/apiKey"), vec!["glm-5.3-flash", "only-name", "plain-string"]);
+        assert_eq!(models_near(&v, "/providers/other/apiKey"), vec!["other-model"]);
+        assert!(models_near(&v, "/providers/missing/apiKey").is_empty());
+        // ключ в пуле: модели берутся у родительского провайдера
+        let pooled = json!({"p": {"models": ["m1"], "apiKeyPool": [{"key": "k".repeat(40)}]}});
+        assert_eq!(models_near(&pooled, "/p/apiKeyPool/0/key"), vec!["m1"]);
+        // не больше 100
+        let many = json!({"p": {"apiKey": "k".repeat(40), "models": (0..300).map(|i| format!("m{i}")).collect::<Vec<_>>()}});
+        assert_eq!(models_near(&many, "/p/apiKey").len(), 100);
     }
 
     #[test]

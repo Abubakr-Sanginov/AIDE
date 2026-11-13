@@ -61,6 +61,7 @@ if (!("__TAURI_INTERNALS__" in window)) {
         ];
       }
       if (cmd === "import_agent_key") return null;
+      if (cmd === "list_agent_models") return ["glm-5.3-flash", "glm-5.3", "kimi-k3"];
       if (cmd === "scan_agent_accounts") {
         return [
           { id: "claude-code", name: "Claude Code", known: true, location: "~\\.claude", plan: "Max", account: "al***@mail.com", expires_at: Date.now() + 3600_000, facts: [["Уровень", "default_claude_max_5x"]], signed_in: true },

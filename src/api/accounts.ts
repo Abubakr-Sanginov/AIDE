@@ -37,6 +37,8 @@ export const accountsApi = {
   keys: (agentId: string) => invoke<KeyCandidate[]>("list_agent_keys", { agentId }),
   /** The backend reads the chosen key and puts it into the Windows credential store under `providerId` ("agent-…"). */
   importKey: (candidateId: string, providerId: string) => invoke<void>("import_agent_key", { candidateId, providerId }),
+  /** Models the agent wrote next to the chosen key (for servers that do not list models). Never includes the key. */
+  models: (candidateId: string) => invoke<string[]>("list_agent_models", { candidateId }),
   /** Looks through the local sign-in files of AI agents (read-only; nothing is sent anywhere). */
   scan: () => invoke<AgentAccount[]>("scan_agent_accounts"),
 };
