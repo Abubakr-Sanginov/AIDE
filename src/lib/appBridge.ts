@@ -8,6 +8,7 @@ import { useDesign, DEVICES, type Device } from "@/features/design/store";
 import { cleanHtml, isAid } from "@/features/design/dom";
 import { hasId } from "@/features/design/ops";
 import { fail, parseStyles, projectFile } from "@/lib/bridgeArgs";
+import { sessionsTool } from "@/lib/sessionsBridge";
 
 // Bridge "agent → interface". The Rust agent (the chat agent and every Kins role use the same
 // backend) calls app_state / app_navigate / design_control; they run here, next to the stores.
@@ -209,6 +210,8 @@ export async function runBridgeTool(tool: string, args: Record<string, unknown>)
       return appState();
     case "app_navigate":
       return navigate(args);
+    case "sessions":
+      return sessionsTool(args);
     case "design_control":
       if (useUi.getState().mode !== "design") {
         // The design workspace has to be on screen for the user to see what the agent does.

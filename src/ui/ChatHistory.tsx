@@ -9,12 +9,14 @@ export interface ChatItem {
   title: string;
   updatedAt: number;
   active: boolean;
+  /** Open tasks the agent keeps for this chat (its own and handed over by other chats). */
+  tasks?: number;
 }
 
 const TEXT = {
-  en: { newChat: "New chat", history: "Chat history", empty: "No chats yet", untitled: "New chat", remove: "Delete chat" },
-  ru: { newChat: "Новый чат", history: "История чатов", empty: "Чатов пока нет", untitled: "Новый чат", remove: "Удалить чат" },
-  tg: { newChat: "Чати нав", history: "Таърихи чатҳо", empty: "Ҳоло чат нест", untitled: "Чати нав", remove: "Нест кардани чат" },
+  en: { newChat: "New chat", history: "Chat history", empty: "No chats yet", untitled: "New chat", remove: "Delete chat", tasks: "Open tasks" },
+  ru: { newChat: "Новый чат", history: "История чатов", empty: "Чатов пока нет", untitled: "Новый чат", remove: "Удалить чат", tasks: "Открытых заданий" },
+  tg: { newChat: "Чати нав", history: "Таърихи чатҳо", empty: "Ҳоло чат нест", untitled: "Чати нав", remove: "Нест кардани чат", tasks: "Вазифаҳои кушода" },
 };
 
 export function useChatText() {
@@ -144,6 +146,11 @@ export function ChatSessionButtons({
                   }
                 >
                   <span className="min-w-0 flex-1 truncate">{c.title || T.untitled}</span>
+                  {!!c.tasks && (
+                    <span title={`${T.tasks}: ${c.tasks}`} className="shrink-0 rounded-full bg-amber-300/15 px-1.5 text-[11px] text-amber-200">
+                      {c.tasks}
+                    </span>
+                  )}
                   <span className="shrink-0 text-[11px] text-ink-500">{formatWhen(c.updatedAt)}</span>
                   <button
                     type="button"

@@ -8,6 +8,7 @@ mod terminal;
 mod browse;
 mod browser_view;
 mod browser_viewport;
+mod computer;
 mod mcp;
 mod project_context;
 mod skills;
@@ -441,6 +442,8 @@ pub fn run() {
             fs_commands::write_file,
             fs_commands::create_entry,
             fs_commands::delete_entry,
+            fs_commands::delete_entries,
+            fs_commands::trash_entries,
             fs_commands::rename_entry,
             fs_commands::search_project,
             fs_commands::git_branch,

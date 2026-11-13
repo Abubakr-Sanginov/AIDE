@@ -76,7 +76,7 @@ export interface AiErrorEvent {
   message: string;
 }
 
-export type AgentMode = "plan" | "agent";
+export type AgentMode = "plan" | "agent" | "computer";
 
 export type PermissionMode = "ask" | "auto" | "full";
 

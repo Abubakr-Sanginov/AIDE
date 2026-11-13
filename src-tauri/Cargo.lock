@@ -4413,7 +4413,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-app"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "base64 0.22.1",
  "dirs-next",
@@ -4421,6 +4421,7 @@ dependencies = [
  "keyring",
  "notify",
  "percent-encoding",
+ "png",
  "portable-pty",
  "regex",
  "reqwest 0.12.28",
@@ -4434,6 +4435,7 @@ dependencies = [
  "tokio",
  "url",
  "webview2-com",
+ "windows",
  "windows-core",
  "zip 2.6.1",
 ]

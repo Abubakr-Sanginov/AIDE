@@ -44,6 +44,16 @@ if (!("__TAURI_INTERNALS__" in window)) {
       if (cmd === "list_dir") {
         return (dirs[args.path] ?? []).map(([name, is_dir]) => ({ name, path: `${args.path}/${name}`, is_dir }));
       }
+      if (cmd === "trash_entries" || cmd === "delete_entries") {
+        // Removes the entries from the fake project, as the real commands do on disk.
+        const paths = (args as unknown as { paths: string[] }).paths;
+        for (const p of paths) {
+          const slash = p.lastIndexOf("/");
+          const parent = p.slice(0, slash);
+          dirs[parent] = (dirs[parent] ?? []).filter(([name]) => name !== p.slice(slash + 1));
+        }
+        return { done: paths, failed: [] };
+      }
       if (cmd === "read_file") return code;
       if (cmd === "fetch_site") {
         const { url: rawUrl, html: pasted } = args as unknown as { url: string; html: string | null };

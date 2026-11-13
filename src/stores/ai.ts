@@ -33,6 +33,7 @@ import { currentRoot, keyFor, projectScope, sameRoot } from "@/lib/workspaceKey"
 import { t } from "@/i18n/t";
 import { usePermissionGate } from "@/features/chat/PermissionGate";
 import { agentNotice } from "@/lib/notify";
+import { hasComputerConsent } from "@/lib/computerMode";
 
 export type AiMode = "chat" | AgentMode;
 
@@ -541,6 +542,10 @@ export const useAi = create<AiState>((set, get) => ({
     }
     if (!s.hasKey) {
       set({ error: t("inlineEdit.noKey") });
+      return;
+    }
+    if (s.mode === "computer" && !hasComputerConsent()) {
+      set({ error: "Computer mode needs your consent: switch to the Computer tab and confirm. / Режим «Компьютер» нужно сначала подтвердить: переключитесь на вкладку «Компьютер»." });
       return;
     }
     if (!s.model) {

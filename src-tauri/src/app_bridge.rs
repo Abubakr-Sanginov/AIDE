@@ -27,7 +27,7 @@ pub struct AppBridge(Mutex<HashMap<String, oneshot::Sender<Reply>>>);
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 
 pub fn is_bridge_tool(name: &str) -> bool {
-    matches!(name, "app_state" | "app_navigate" | "design_control")
+    matches!(name, "app_state" | "app_navigate" | "design_control" | "sessions")
 }
 
 /// Действия, которые пишут на диск или необратимы. Остальное (смена панели, правка макета)

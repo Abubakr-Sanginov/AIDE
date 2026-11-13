@@ -179,3 +179,21 @@ export const useChats = create<ChatsState>((set, get) => ({
     persistMessages(active ? active.messages : []);
   },
 }));
+
+/** The id of the session the live conversation is archived under; creates one if the chat is still unsaved. */
+export function ensureActiveId(): string {
+  const s = useChats.getState();
+  if (s.activeId) return s.activeId;
+  const id = crypto.randomUUID();
+  localStorage.setItem(activeKey(s.root), id);
+  useChats.setState({ activeId: id });
+  return id;
+}
+
+/** Sessions of the open project (never another project's), with the live conversation brought up to date. Read-only. */
+export function sessionsSnapshot(): { chats: ArchivedChat[]; activeId: string } {
+  const activeId = ensureActiveId();
+  const s = useChats.getState();
+  const merged = saveActive({ activeId, root: s.root }, all);
+  return { chats: ofRoot(merged, s.root), activeId };
+}

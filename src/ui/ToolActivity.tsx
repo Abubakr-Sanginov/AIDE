@@ -32,7 +32,19 @@ const VERBS: Record<string, { ru: Verbs; en: Verbs }> = {
   search_code: { ru: { now: "Ищу по коду", past: "Искал по коду" }, en: { now: "Searching the code", past: "Searched the code" } },
   find_symbol: { ru: { now: "Ищу определение", past: "Искал определение" }, en: { now: "Finding a definition", past: "Found a definition" } },
   project_map: { ru: { now: "Смотрю карту проекта", past: "Посмотрел карту проекта" }, en: { now: "Reading the project map", past: "Read the project map" } },
+  sessions: { ru: { now: "Смотрю сессии", past: "Посмотрел сессии" }, en: { now: "Checking sessions", past: "Checked sessions" } },
   browse_page: { ru: { now: "Открываю", past: "Открыл" }, en: { now: "Opening", past: "Opened" } },
+  computer_screenshot: { ru: { now: "Смотрю на экран", past: "Посмотрел на экран" }, en: { now: "Looking at the screen", past: "Looked at the screen" } },
+  computer_click: { ru: { now: "Кликаю", past: "Кликнул" }, en: { now: "Clicking", past: "Clicked" } },
+  computer_move: { ru: { now: "Двигаю курсор", past: "Подвинул курсор" }, en: { now: "Moving the cursor", past: "Moved the cursor" } },
+  computer_drag: { ru: { now: "Перетаскиваю", past: "Перетащил" }, en: { now: "Dragging", past: "Dragged" } },
+  computer_scroll: { ru: { now: "Прокручиваю", past: "Прокрутил" }, en: { now: "Scrolling", past: "Scrolled" } },
+  computer_type: { ru: { now: "Печатаю", past: "Напечатал" }, en: { now: "Typing", past: "Typed" } },
+  computer_key: { ru: { now: "Нажимаю", past: "Нажал" }, en: { now: "Pressing", past: "Pressed" } },
+  computer_wait: { ru: { now: "Жду", past: "Подождал" }, en: { now: "Waiting", past: "Waited" } },
+  computer_windows: { ru: { now: "Смотрю окна", past: "Посмотрел окна" }, en: { now: "Listing windows", past: "Listed windows" } },
+  computer_focus_window: { ru: { now: "Открываю окно", past: "Открыл окно" }, en: { now: "Focusing a window", past: "Focused a window" } },
+  computer_open: { ru: { now: "Запускаю", past: "Запустил" }, en: { now: "Launching", past: "Launched" } },
 };
 
 function parse(args: string): Record<string, unknown> {
@@ -53,7 +65,8 @@ export function targetOf(a: Activity): string {
     for (const k of keys) if (typeof o[k] === "string" && o[k]) return o[k] as string;
     return "";
   };
-  const raw = pick("command", "path", "file_path", "query", "pattern", "url", "name");
+  if (typeof o.x === "number" && typeof o.y === "number") return `(${Math.round(o.x)}, ${Math.round(o.y)})`;
+  const raw = pick("command", "path", "file_path", "query", "pattern", "url", "name", "keys", "text", "title", "target");
   return clip(raw.replace(/\s+/g, " ").trim(), 70);
 }
 

@@ -1,7 +1,10 @@
 import { rt } from "@/i18n/tgMap";
 import { isRuLike } from "@/i18n/ruLike";
-import { useEffect, useRef, useState, type DragEvent as ReactDragEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent } from "react";
+import { loadTasks, openCount } from "@/lib/sessionTasks";
 import { Markdown } from "@/ui/Markdown";
+import { ComputerConsent } from "@/features/chat/ComputerConsent";
+import { grantComputerConsent, hasComputerConsent } from "@/lib/computerMode";
 import { SlashMenu } from "@/features/chat/SlashMenu";
 import { fillPrompt, filterItems, loadProjectCommands, skillCommands, type SlashItem } from "@/features/chat/slash";
 import { useSkills } from "@/features/design/skills/store";
@@ -16,6 +19,7 @@ import {
   Clock,
   FileText,
   FolderCode,
+  Monitor,
   Paperclip,
   Pencil,
   RefreshCw,
@@ -222,6 +226,7 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
   const [attachNote, setAttachNote] = useState<string | null>(null);
+  const [consentOpen, setConsentOpen] = useState(false);
   // ArrowUp/ArrowDown history of the input: sent messages, plus the draft that was there
   // before browsing started (so walking down past the newest restores what you typed).
   const [hist, setHist] = useState<string[]>([]);
@@ -317,6 +322,7 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
     { id: "chat", label: t("chat.modeChat"), icon: Sparkles, active: "border-transparent bg-white/10 text-ink-50" },
     { id: "plan", label: t("chat.modePlan"), icon: Brain, active: "border-transparent bg-white/10 text-ink-50" },
     { id: "agent", label: t("chat.modeAgent"), icon: FolderCode, active: "border-transparent bg-white/10 text-ink-50" },
+    { id: "computer", label: ru ? rt("Компьютер") : "Computer", icon: Monitor, active: "border-transparent bg-white/10 text-ink-50" },
   ];
 
   useEffect(() => {
@@ -513,7 +519,7 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
                 {m.tools && m.tools.length > 0 && (
                   <div className="mb-1.5 flex items-center gap-1.5 pl-1 text-[11px] text-ink-600">
                     <div className="h-px flex-1 bg-ink-800/40" />
-                    <span>{mode === "agent" ? t("chat.modeAgent") : mode === "plan" ? t("chat.modePlan") : t("chat.modeChat")}</span>
+                    <span>{mode === "agent" ? t("chat.modeAgent") : mode === "plan" ? t("chat.modePlan") : mode === "computer" ? (ru ? rt("Компьютер") : "Computer") : t("chat.modeChat")}</span>
                     {m.iterations !== undefined && (
                       <span className="text-ink-700">· {t("chat.iteration")} {m.iterations + 1}</span>
                     )}
@@ -678,6 +684,8 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
                   ? isRuLike(lang)
                     ? rt("Следующее сообщение — отправится, когда агент закончит")
                     : "Next message — sent when the agent finishes"
+                  : mode === "computer"
+                  ? (ru ? rt("Что сделать на компьютере? Например: проверь бота в Telegram") : "What should I do on the computer? For example: test the Telegram bot")
                   : mode === "agent"
                   ? t("chat.placeholderAgent")
                   : mode === "plan"
@@ -798,7 +806,7 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
                     title={item.label}
                     aria-label={item.label}
                     aria-pressed={selected}
-                    onClick={() => setMode(item.id)}
+                    onClick={() => (item.id === "computer" && !hasComputerConsent() ? setConsentOpen(true) : setMode(item.id))}
                     className={
                       "flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-full text-[12.5px] font-medium transition-colors " +
                       (selected ? "px-2.5 text-ink-50" : "w-7 text-ink-500 hover:text-ink-200")
@@ -883,6 +891,16 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
             />
           </div>
         </div>
+        {mode === "computer" && (
+          <div role="note" className={"mt-1.5 flex items-start gap-1.5 px-2 text-[12px] leading-5 " + (permissionMode === "full" ? "text-amber-300" : "text-ink-500")}>
+            <Monitor size={13} className="mt-1 shrink-0" />
+            <span className="min-w-0 flex-1 break-words">
+              {permissionMode === "full"
+                ? (ru ? rt("Режим «Свобода»: клики и ввод выполняются без подтверждения. Остановить: «Стоп» или мышь в левый верхний угол.") : "“Full” mode: clicks and typing run without confirmation. Stop: the Stop button or the mouse in the top-left corner.")
+                : (ru ? rt("Агент смотрит на экран и управляет мышью и клавиатурой. Остановить: «Стоп» или мышь в левый верхний угол.") : "The agent looks at the screen and uses the mouse and keyboard. Stop: the Stop button or the mouse in the top-left corner.")}
+            </span>
+          </div>
+        )}
         {attachNote && (
           <div role="alert" className="mt-1.5 flex items-start gap-1.5 px-2 text-[12.5px] leading-5 text-red-300">
             <CircleAlert size={13} className="mt-1 shrink-0" />
@@ -893,6 +911,17 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
           </div>
         )}
       </div>
+
+      {consentOpen && (
+        <ComputerConsent
+          onCancel={() => setConsentOpen(false)}
+          onAccept={() => {
+            grantComputerConsent();
+            setConsentOpen(false);
+            setMode("computer");
+          }}
+        />
+      )}
 
       {dragging && (
         <div className="aide-fade pointer-events-none absolute inset-2 z-30 flex flex-col items-center justify-center gap-2 rounded-[30px] border-2 border-dashed border-teal-300/60 bg-canvas/85 px-6 text-center backdrop-blur-sm">
@@ -913,6 +942,8 @@ function SessionButtons() {
   const activeId = useChats((s) => s.activeId);
   const messages = useAi((s) => s.messages);
   const streaming = useAi((s) => s.streaming);
+  // Tasks the agent keeps per chat (stored apart from the chats); read again whenever the list changes.
+  const taskMap = useMemo(() => loadTasks(), [chats, messages.length, streaming]);
   const items: ChatItem[] = [
     ...(messages.length > 0
       ? [
@@ -921,10 +952,11 @@ function SessionButtons() {
             title: titleOf(messages),
             updatedAt: chats.find((c) => c.id === activeId)?.updatedAt ?? Date.now(),
             active: true,
+            tasks: openCount(taskMap, activeId ?? "current"),
           },
         ]
       : []),
-    ...chats.filter((c) => c.id !== activeId).map((c) => ({ id: c.id, title: c.title, updatedAt: c.updatedAt, active: false })),
+    ...chats.filter((c) => c.id !== activeId).map((c) => ({ id: c.id, title: c.title, updatedAt: c.updatedAt, active: false, tasks: openCount(taskMap, c.id) })),
   ];
   return (
     <ChatSessionButtons

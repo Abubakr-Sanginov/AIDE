@@ -74,7 +74,7 @@ export function StatusBar() {
   }, []);
 
   const modeLabel =
-    mode === "agent" ? t("statusBar.agent") : mode === "plan" ? t("statusBar.plan") : t("statusBar.chat");
+    mode === "agent" ? t("statusBar.agent") : mode === "plan" ? t("statusBar.plan") : mode === "computer" ? "Computer" : t("statusBar.chat");
 
   return (
     <footer className="flex h-8 shrink-0 select-none items-center justify-between gap-3 px-3 text-[12px] text-ink-400">

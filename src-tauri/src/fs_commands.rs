@@ -289,6 +289,128 @@ fn is_whole_word(hay: &str, start: usize, len: usize) -> bool {
     before_ok && after_ok
 }
 
+/* ───────────── Удаление нескольких объектов: корзина и насовсем ───────────── */
+
+/// Больше стольких объектов за раз не удаляем: это защита от случайного «выделить всё и удалить» в огромном проекте.
+const MAX_DELETE_ITEMS: usize = 2000;
+
+#[derive(Serialize)]
+pub struct DeleteReport {
+    /// Что удалено.
+    pub done: Vec<String>,
+    /// Что не удалось, с причиной (имя: ошибка).
+    pub failed: Vec<String>,
+}
+
+/// Без повторов и без вложенных: если выбрана папка и файл в ней, удаляется только папка.
+fn drop_nested(mut paths: Vec<PathBuf>) -> Vec<PathBuf> {
+    paths.sort();
+    paths.dedup();
+    let all = paths.clone();
+    paths.retain(|p| !all.iter().any(|q| q != p && p.starts_with(q)));
+    paths
+}
+
+/// Проверенные цели удаления: внутри рабочей области, не корень, без вложенных.
+fn delete_targets(root: &Path, paths: &[String]) -> Result<Vec<PathBuf>, String> {
+    if paths.is_empty() {
+        return Err("Ничего не выбрано".into());
+    }
+    if paths.len() > MAX_DELETE_ITEMS {
+        return Err(format!("Слишком много объектов за раз (больше {MAX_DELETE_ITEMS})"));
+    }
+    let mut out = Vec::new();
+    for p in paths {
+        let resolved = resolve_existing(root, p)?;
+        if resolved == root {
+            return Err("Нельзя удалить корень рабочей области".into());
+        }
+        out.push(resolved);
+    }
+    Ok(drop_nested(out))
+}
+
+fn display_name(p: &Path) -> String {
+    p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| p.to_string_lossy().into_owned())
+}
+
+/// Удаляет выбранное навсегда (Shift+Delete). Ошибка одного объекта не мешает остальным.
+#[tauri::command]
+pub fn delete_entries(state: State<WorkspaceRoot>, paths: Vec<String>) -> Result<DeleteReport, String> {
+    let root = workspace_root(&state)?;
+    let targets = delete_targets(&root, &paths)?;
+    let mut report = DeleteReport { done: Vec::new(), failed: Vec::new() };
+    for p in targets {
+        let result = match fs::symlink_metadata(&p) {
+            Ok(meta) if meta.is_dir() => fs::remove_dir_all(&p),
+            Ok(_) => fs::remove_file(&p),
+            Err(e) => Err(e),
+        };
+        match result {
+            Ok(()) => report.done.push(p.to_string_lossy().into_owned()),
+            Err(e) => report.failed.push(format!("{}: {e}", display_name(&p))),
+        }
+    }
+    Ok(report)
+}
+
+/// Список путей для SHFileOperation: каждый путь заканчивается нулём, весь список — ещё одним нулём.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn double_null_list(paths: &[PathBuf]) -> Vec<u16> {
+    let mut wide: Vec<u16> = Vec::new();
+    for p in paths {
+        wide.extend(p.to_string_lossy().encode_utf16());
+        wide.push(0);
+    }
+    wide.push(0);
+    wide
+}
+
+/// Отправляет выбранное в корзину Windows (Delete): файлы можно вернуть из корзины.
+#[tauri::command]
+pub fn trash_entries(state: State<WorkspaceRoot>, paths: Vec<String>) -> Result<DeleteReport, String> {
+    let root = workspace_root(&state)?;
+    let targets = delete_targets(&root, &paths)?;
+    trash(&targets)?;
+    let mut report = DeleteReport { done: Vec::new(), failed: Vec::new() };
+    for p in targets {
+        // Проверяем по факту: Windows мог пропустить часть объектов (например, занятые другой программой).
+        if p.exists() {
+            report.failed.push(format!("{}: не удалось переместить в корзину", display_name(&p)));
+        } else {
+            report.done.push(p.to_string_lossy().into_owned());
+        }
+    }
+    Ok(report)
+}
+
+#[cfg(windows)]
+fn trash(targets: &[PathBuf]) -> Result<(), String> {
+    use windows::core::PCWSTR;
+    use windows::Win32::UI::Shell::{SHFileOperationW, FOF_ALLOWUNDO, FOF_NOERRORUI, FOF_SILENT, FOF_WANTNUKEWARNING, FO_DELETE, SHFILEOPSTRUCTW};
+    let from = double_null_list(targets);
+    let mut op = SHFILEOPSTRUCTW {
+        wFunc: FO_DELETE,
+        pFrom: PCWSTR(from.as_ptr()),
+        // Без FOF_NOCONFIRMATION: если объект слишком велик для корзины, Windows сама спросит, удалять ли его насовсем.
+        fFlags: (FOF_ALLOWUNDO.0 | FOF_NOERRORUI.0 | FOF_SILENT.0 | FOF_WANTNUKEWARNING.0) as u16,
+        ..Default::default()
+    };
+    let code = unsafe { SHFileOperationW(&mut op) };
+    if code != 0 {
+        return Err(format!("Корзина Windows не приняла файлы (код {code:#x})"));
+    }
+    if op.fAnyOperationsAborted.as_bool() {
+        return Err("Удаление отменено".into());
+    }
+    Ok(())
+}
+
+#[cfg(not(windows))]
+fn trash(_targets: &[PathBuf]) -> Result<(), String> {
+    Err("Корзина доступна только в Windows: используйте Shift+Delete".into())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -323,6 +445,67 @@ mod tests {
         watcher
             .watch(Path::new(r"D:\Projects\AIDE"), notify::RecursiveMode::Recursive)
             .unwrap();
+    }
+
+    #[test]
+    fn nested_and_repeated_targets_collapse() {
+        let v = vec![
+            PathBuf::from("C:\\p\\src\\x.ts"),
+            PathBuf::from("C:\\p\\src"),
+            PathBuf::from("C:\\p\\a.txt"),
+            PathBuf::from("C:\\p\\a.txt"),
+            PathBuf::from("C:\\p\\srcx"),
+        ];
+        let out = drop_nested(v);
+        assert_eq!(out, vec![PathBuf::from("C:\\p\\a.txt"), PathBuf::from("C:\\p\\src"), PathBuf::from("C:\\p\\srcx")]);
+    }
+
+    #[test]
+    fn shell_path_list_ends_with_two_zeros() {
+        let w = double_null_list(&[PathBuf::from("C:\\a"), PathBuf::from("C:\\bб")]);
+        let text: Vec<String> = w.split(|c| *c == 0).map(String::from_utf16_lossy).collect();
+        assert_eq!(text, vec!["C:\\a", "C:\\bб", "", ""]);
+        assert_eq!(&w[w.len() - 2..], &[0, 0]);
+    }
+
+    #[test]
+    fn delete_targets_refuse_the_root_and_outsiders() {
+        let dir = std::env::temp_dir().join(format!("aide-del-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(dir.join("sub")).unwrap();
+        fs::write(dir.join("a.txt"), "x").unwrap();
+        fs::write(dir.join("sub").join("b.txt"), "x").unwrap();
+        let root = crate::strip_verbatim(dir.canonicalize().unwrap());
+        let s = |p: &Path| p.to_string_lossy().into_owned();
+        assert!(delete_targets(&root, &[]).is_err());
+        assert!(delete_targets(&root, &[s(&root)]).unwrap_err().contains("корень"));
+        assert!(delete_targets(&root, &[s(&root.join("missing"))]).is_err());
+        assert!(delete_targets(&root, &[s(&std::env::temp_dir())]).is_err());
+        let ok = delete_targets(&root, &[s(&root.join("sub")), s(&root.join("sub").join("b.txt")), "a.txt".into()]).unwrap();
+        assert_eq!(ok.len(), 2, "{ok:?}");
+        let many: Vec<String> = (0..MAX_DELETE_ITEMS + 1).map(|i| format!("f{i}")).collect();
+        assert!(delete_targets(&root, &many).unwrap_err().contains("Слишком много"));
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    /// Живая проверка корзины Windows на этом компьютере (запуск вручную: cargo test --lib fs_commands::tests::live_trash -- --ignored).
+    /// Создаёт три временных объекта и отправляет их в корзину: после проверки там останутся несколько пустячных файлов.
+    #[cfg(windows)]
+    #[test]
+    #[ignore]
+    fn live_trash() {
+        let dir = std::env::temp_dir().join(format!("aide-trash-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(dir.join("folder")).unwrap();
+        fs::write(dir.join("a.txt"), "aide test").unwrap();
+        fs::write(dir.join("folder").join("b.txt"), "aide test").unwrap();
+        fs::write(dir.join("с кириллицей.txt"), "aide test").unwrap();
+        let targets = vec![dir.join("a.txt"), dir.join("folder"), dir.join("с кириллицей.txt")];
+        trash(&targets).expect("корзина");
+        for t in &targets {
+            assert!(!t.exists(), "{t:?} остался на месте");
+        }
+        let _ = fs::remove_dir_all(&dir);
     }
 }
 
