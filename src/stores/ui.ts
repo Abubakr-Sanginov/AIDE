@@ -8,7 +8,7 @@ export type AppMode = "ide" | "design" | "vibe";
 // Order of things on screen, so a switch slides the way the eye expects.
 const MODE_ORDER: AppMode[] = ["vibe", "ide", "design"];
 const PANEL_ORDER: SidebarPanel[] = ["explorer", "search", "git", "snippets"];
-const RIGHT_ORDER = ["chat", "kins", "browser"];
+const RIGHT_ORDER = ["chat", "computer", "kins", "browser"];
 const DOCK_ORDER: DockTab[] = ["problems", "output", "terminal", "agent"];
 
 /** Which switch a state change is, if any (see withViewTransitions). */

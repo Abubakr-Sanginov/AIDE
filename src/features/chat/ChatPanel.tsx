@@ -2,6 +2,7 @@ import { rt } from "@/i18n/tgMap";
 import { isRuLike } from "@/i18n/ruLike";
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent } from "react";
 import { loadTasks, openCount } from "@/lib/sessionTasks";
+import { useUi } from "@/stores/ui";
 import { Markdown } from "@/ui/Markdown";
 import { ComputerConsent } from "@/features/chat/ComputerConsent";
 import { grantComputerConsent, hasComputerConsent } from "@/lib/computerMode";
@@ -207,7 +208,7 @@ function AttachmentsGrid({ atts }: { atts: Attachment[] }) {
 }
 
 /** "vibe": full-width agent workspace — no tab row, centered column, provider in the composer. */
-export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } = {}) {
+export function ChatPanel({ variant = "panel", computerTab = false }: { variant?: "panel" | "vibe"; computerTab?: boolean } = {}) {
   const vibe = variant === "vibe";
   const column = vibe ? "px-[max(1rem,calc((100%-820px)/2))]" : "px-4";
   const composerColumn = vibe ? "px-[max(0.5rem,calc((100%-836px)/2))]" : "px-2";
@@ -227,6 +228,17 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
   const dragDepth = useRef(0);
   const [attachNote, setAttachNote] = useState<string | null>(null);
   const [consentOpen, setConsentOpen] = useState(false);
+  // The "Computer" tab of the right panel is this same chat locked to computer mode; the "Agent" tab never stays in it.
+  useEffect(() => {
+    if (variant !== "panel") return;
+    if (computerTab) {
+      if (hasComputerConsent()) {
+        if (useAi.getState().mode !== "computer") useAi.getState().setMode("computer");
+      } else setConsentOpen(true);
+    } else if (useAi.getState().mode === "computer") {
+      useAi.getState().setMode("agent");
+    }
+  }, [computerTab, variant]);
   // ArrowUp/ArrowDown history of the input: sent messages, plus the draft that was there
   // before browsing started (so walking down past the newest restores what you typed).
   const [hist, setHist] = useState<string[]>([]);
@@ -796,7 +808,7 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
             </button>
             <div ref={modeIndicator.ref} role="group" className="relative isolate ml-1 flex min-w-0 items-center gap-0.5 rounded-full bg-white/[0.04] p-0.5">
               <Indicator box={modeIndicator.box} radius={999} />
-              {MODES.map((item) => {
+              {MODES.filter((m) => (computerTab ? m.id === "computer" : m.id !== "computer")).map((item) => {
                 const Icon = item.icon;
                 const selected = mode === item.id;
                 return (
@@ -914,7 +926,10 @@ export function ChatPanel({ variant = "panel" }: { variant?: "panel" | "vibe" } 
 
       {consentOpen && (
         <ComputerConsent
-          onCancel={() => setConsentOpen(false)}
+          onCancel={() => {
+            setConsentOpen(false);
+            if (computerTab) useUi.getState().setRightTab("chat"); // without consent there is nothing to show here
+          }}
           onAccept={() => {
             grantComputerConsent();
             setConsentOpen(false);

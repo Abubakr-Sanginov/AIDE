@@ -48,6 +48,7 @@ export function RightPanel() {
 
   const tabs: { key: string; label: string; onClick: () => void; close?: () => void }[] = [
     { key: "chat", label: isRuLike(lang) ? rt("Агент") : "Agent", onClick: () => setTab("chat") },
+    { key: "computer", label: isRuLike(lang) ? rt("Компьютер") : "Computer", onClick: () => setTab("computer") },
     { key: "kins", label: isRuLike(lang) ? rt("Экипаж") : "Crew", onClick: () => setTab("kins") },
     { key: "browser", label: isRuLike(lang) ? rt("Браузер") : "Browser", onClick: () => setTab("browser") },
   ];
@@ -91,6 +92,7 @@ export function RightPanel() {
       </div>
       <div className="aide-vt-right-body min-h-0 flex-1">
         {tab === "chat" && <div className="h-full"><ChatPanel /></div>}
+        {tab === "computer" && <div className="h-full"><ChatPanel computerTab /></div>}
         {tab === "kins" && <div className="h-full"><KinsPane /></div>}
         {tab === "browser" && <div className="h-full"><BrowserPane /></div>}
         {Object.values(webviews).map((w) => (
