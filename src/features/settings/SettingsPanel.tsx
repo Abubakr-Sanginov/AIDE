@@ -2,6 +2,7 @@ import { rt } from "@/i18n/tgMap";
 import { isRuLike } from "@/i18n/ruLike";
 import { useEffect, useState, type ReactNode } from "react";
 import {
+  BadgeCheck,
   Bell,
   Bot,
   Braces,
@@ -41,6 +42,7 @@ import { LspSection } from "@/features/settings/LspSection";
 import { LocalModelsSection } from "@/features/settings/LocalModelsSection";
 import { NotificationsSection } from "@/features/settings/NotificationsSection";
 import { UpdatesSection } from "@/features/settings/UpdatesSection";
+import { AgentAccountsSection } from "@/features/settings/AgentAccountsSection";
 import { CodeIndexSection } from "@/features/settings/CodeIndexSection";
 import { isLocalProvider } from "@/lib/localProviders";
 import { MemorySection, RulesSection } from "@/features/settings/ContextSections";
@@ -116,7 +118,7 @@ export function Btn({
 
 /* ── Navigation ────────────────────────────────────────────── */
 
-type PageId = "agent" | "memory" | "rules" | "voice" | "mcp" | "skills" | "extensions" | "appearance" | "terminal" | "hotkeys" | "lsp" | "local" | "index" | "notifications" | "updates";
+type PageId = "agent" | "memory" | "rules" | "voice" | "mcp" | "skills" | "extensions" | "appearance" | "terminal" | "hotkeys" | "lsp" | "local" | "index" | "notifications" | "updates" | "accounts";
 
 interface NavItem {
   id: PageId;
@@ -133,6 +135,7 @@ const NAV: { id: string; ru: string; en: string; items: NavItem[] }[] = [
     en: "Agent and project",
     items: [
       { id: "agent", ru: "Агент", en: "Agent", keys: "модель ключ провайдер api model key provider openrouter openai anthropic", icon: Bot },
+      { id: "accounts", ru: "Подписки ИИ", en: "AI subscriptions", keys: "подписка тариф аккаунт план claude codex gemini copilot cursor агенты subscription plan account agents", icon: BadgeCheck },
       { id: "local", ru: "Локальные модели", en: "Local models", keys: "ollama lm studio локально офлайн без ключа local offline llama qwen", icon: Cpu },
       { id: "index", ru: "Индекс кода", en: "Code index", keys: "индекс поиск символы определения функции search symbols index map project карта проекта", icon: FileSearch },
       { id: "memory", ru: "Память", en: "Memory", keys: "заметки предпочтения notes memory", icon: Brain },
@@ -175,6 +178,7 @@ const TITLES: Record<PageId, { ru: [string, string]; en: [string, string] }> = {
   index: { ru: ["Индекс кода", "Карта проекта и умный поиск: агент сам находит нужные файлы."], en: ["Code index", "A map of the project and smart search: the agent finds the right files itself."] },
   local: { ru: ["Локальные модели", "Ollama и LM Studio: модели на вашем компьютере, без ключа и интернета."], en: ["Local models", "Ollama and LM Studio: models on your computer, no key and no internet."] },
   notifications: { ru: ["Уведомления", "О чём и когда AIDE сообщает, пока вы в другом окне."], en: ["Notifications", "What AIDE tells you about, and when, while you are in another window."] },
+  accounts: { ru: ["Подписки ИИ", "Какие ИИ-агенты есть на этом компьютере и на каком тарифе каждый."], en: ["AI subscriptions", "Which AI agents are on this computer and which plan each one has."] },
   updates: { ru: ["Обновления", "Версия AIDE и поиск новой версии."], en: ["Updates", "AIDE version and checking for a new one."] },
   lsp: { ru: ["Языковые серверы", "Подсказки по типам, переход к определению и ошибки в коде."], en: ["Language servers", "Type-aware completion, go to definition and errors in the code."] },
 };
@@ -754,6 +758,7 @@ export function SettingsPage() {
           {page === "local" && <LocalModelsSection />}
           {page === "notifications" && <NotificationsSection />}
           {page === "updates" && <UpdatesSection />}
+          {page === "accounts" && <AgentAccountsSection />}
           {page === "index" && <CodeIndexSection />}
           {page === "skills" && (
             <>

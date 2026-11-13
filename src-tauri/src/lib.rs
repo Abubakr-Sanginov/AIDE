@@ -7,6 +7,7 @@ mod kv_store;
 mod terminal;
 mod browse;
 mod browser_view;
+mod agent_accounts;
 mod browser_viewport;
 mod computer;
 mod mcp;
@@ -531,6 +532,7 @@ pub fn run() {
             terminal::respond_question,
             app_bridge::app_bridge_reply,
             local_models::local_probe,
+            agent_accounts::scan_agent_accounts,
             local_models::local_ollama_variant,
             local_models::local_ollama_delete_variant,
             code_index::code_index_status,

@@ -54,6 +54,14 @@ if (!("__TAURI_INTERNALS__" in window)) {
         }
         return { done: paths, failed: [] };
       }
+      if (cmd === "scan_agent_accounts") {
+        return [
+          { id: "claude-code", name: "Claude Code", known: true, location: "~\\.claude", plan: "Max", account: "al***@mail.com", expires_at: Date.now() + 3600_000, facts: [["Уровень", "default_claude_max_5x"]], signed_in: true },
+          { id: "codex", name: "Codex (OpenAI)", known: true, location: "~\\.codex", plan: "Plus", account: "me***@mail.com", expires_at: null, facts: [["Подписка до", "2026-12-01"]], signed_in: true },
+          { id: "gemini", name: "Gemini CLI", known: true, location: "~\\.gemini", plan: null, account: null, expires_at: null, facts: [], signed_in: false },
+          { id: "found-genspark", name: "Genspark-tool-cli", known: false, location: "~\\.genspark-tool-cli", plan: null, account: null, expires_at: null, facts: [], signed_in: true },
+        ];
+      }
       if (cmd === "read_file") return code;
       if (cmd === "fetch_site") {
         const { url: rawUrl, html: pasted } = args as unknown as { url: string; html: string | null };
