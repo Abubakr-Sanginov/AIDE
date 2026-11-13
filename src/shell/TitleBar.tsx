@@ -170,14 +170,14 @@ export function TitleBar() {
         {vibeMode && (
           <div ref={vibeIndicator.ref} className="relative isolate mr-3 flex h-full items-stretch gap-4" onDoubleClick={(e) => e.stopPropagation()}>
             <Indicator box={vibeIndicator.box} variant="underline" />
-            {(["agent", "kins"] as const).map((id) => (
+            {(["agent", "computer", "kins"] as const).map((id) => (
               <button
                 key={id}
                 aria-pressed={tabNow === id}
                 onClick={() => useKins.getState().setTab(id)}
                 className="border-b-2 border-transparent px-0.5 text-[13px] font-medium text-ink-400 transition-colors hover:text-ink-50 aria-pressed:text-ink-50"
               >
-                {id === "agent" ? V.agent : K.kins}
+                {id === "agent" ? V.agent : id === "computer" ? (isRuLike(lang) ? rt("Компьютер") : "Computer") : K.kins}
               </button>
             ))}
           </div>

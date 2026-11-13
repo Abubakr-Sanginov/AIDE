@@ -116,9 +116,9 @@ function persist(tasks: KinsTask[], team: TeamConfig) {
 
 export type Mood = "idle" | "thinking" | "working" | "checking" | "wants" | "speaking";
 
-export type KinsTab = "agent" | "kins";
+export type KinsTab = "agent" | "computer" | "kins";
 /** Order of the tabs in the title bar (transitions slide in this direction). */
-const KINS_TAB_ORDER: KinsTab[] = ["agent", "kins"];
+const KINS_TAB_ORDER: KinsTab[] = ["agent", "computer", "kins"];
 export type SideTab = "preview" | "team" | "checks";
 
 interface KinsState {

@@ -218,7 +218,7 @@ export function VibeView() {
       ) : (
         <main className="aide-island relative mx-1.5 flex min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1">
-            <ChatPanel variant="vibe" />
+            <ChatPanel variant="vibe" computerTab={tab === "computer"} />
           </div>
           <div className="flex h-7 shrink-0 items-center gap-2 px-4 pb-1 text-[12px] text-ink-500">
             <FolderOpen size={12} />

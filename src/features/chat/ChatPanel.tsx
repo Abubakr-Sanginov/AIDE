@@ -3,6 +3,7 @@ import { isRuLike } from "@/i18n/ruLike";
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent } from "react";
 import { loadTasks, openCount } from "@/lib/sessionTasks";
 import { useUi } from "@/stores/ui";
+import { useKins } from "@/features/kins/store";
 import { Markdown } from "@/ui/Markdown";
 import { ComputerConsent } from "@/features/chat/ComputerConsent";
 import { grantComputerConsent, hasComputerConsent } from "@/lib/computerMode";
@@ -230,7 +231,6 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
   const [consentOpen, setConsentOpen] = useState(false);
   // The "Computer" tab of the right panel is this same chat locked to computer mode; the "Agent" tab never stays in it.
   useEffect(() => {
-    if (variant !== "panel") return;
     if (computerTab) {
       if (hasComputerConsent()) {
         if (useAi.getState().mode !== "computer") useAi.getState().setMode("computer");
@@ -928,7 +928,11 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
         <ComputerConsent
           onCancel={() => {
             setConsentOpen(false);
-            if (computerTab) useUi.getState().setRightTab("chat"); // without consent there is nothing to show here
+            // Without consent there is nothing to show on the Computer tab: go back to the Agent tab.
+            if (computerTab) {
+              if (variant === "vibe") useKins.getState().setTab("agent");
+              else useUi.getState().setRightTab("chat");
+            }
           }}
           onAccept={() => {
             grantComputerConsent();
