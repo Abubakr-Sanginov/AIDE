@@ -181,6 +181,8 @@ interface AiState {
   refreshModels: () => Promise<void>;
   testConnection: () => Promise<{ ok: boolean; message: string }>;
   addCustomProvider: (cfg: ProviderConfig, key: string) => Promise<void>;
+  /** A provider whose key the backend already stored (taken from another agent's files): no key passes through here. */
+  registerImportedProvider: (cfg: ProviderConfig) => void;
   removeCustomProvider: (providerId: string) => void;
   send: (text: string) => Promise<void>;
   retry: () => Promise<void>;
@@ -520,6 +522,15 @@ export const useAi = create<AiState>((set, get) => ({
     const ready = Boolean(key.trim()) || isLocalProvider(cfg.id);
     set({ providers, providerId: cfg.id, hasKey: ready, models: [], model: "", modelsError: null });
     if (ready) void get().refreshModels();
+  },
+
+  registerImportedProvider: (cfg) => {
+    const valid = { ...validateCustomProvider(cfg, get().providers), custom: true };
+    const providers = [...get().providers, valid];
+    saveCustomProviders(providers.filter((p) => p.custom));
+    localStorage.setItem(KEY_PROVIDER, valid.id);
+    set({ providers, providerId: valid.id, hasKey: true, models: [], model: "", modelsError: null });
+    void get().refreshModels();
   },
 
   removeCustomProvider: (providerId) => {

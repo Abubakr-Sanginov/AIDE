@@ -54,6 +54,13 @@ if (!("__TAURI_INTERNALS__" in window)) {
         }
         return { done: paths, failed: [] };
       }
+      if (cmd === "list_agent_keys") {
+        return [
+          { id: "~\\.genspark\\config.json|/api_key", file: "~\\.genspark\\config.json", field: "api_key", preview: "gsk-… (308 симв.)", kind: "openai", base_url: null, blocked: null },
+          { id: "~\\.genspark\\config.json|/oauth/token", file: "~\\.genspark\\config.json", field: "oauth.token", preview: "sk-a… (60 симв.)", kind: "anthropic", base_url: null, blocked: "Токен подписки Claude: его можно использовать только в Claude Code" },
+        ];
+      }
+      if (cmd === "import_agent_key") return null;
       if (cmd === "scan_agent_accounts") {
         return [
           { id: "claude-code", name: "Claude Code", known: true, location: "~\\.claude", plan: "Max", account: "al***@mail.com", expires_at: Date.now() + 3600_000, facts: [["Уровень", "default_claude_max_5x"]], signed_in: true },

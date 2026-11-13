@@ -3,7 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useI18n } from "@/i18n";
 import { Btn, Row, Section } from "@/features/settings/SettingsPanel";
-import { accountsApi, type AgentAccount } from "@/api/accounts";
+import { BLOCKED_AGENTS, accountsApi, type AgentAccount } from "@/api/accounts";
+import { ConnectAgentKey } from "@/features/settings/ConnectAgentKey";
 
 const TEXT = {
   en: {
@@ -23,6 +24,10 @@ const TEXT = {
     tokenOld: "token is old (renews when the agent starts)",
     failed: "Could not scan:",
     hintNoPlan: "The agent is signed in, but its files do not say which plan it is.",
+    connect: "Use its key in AIDE",
+    showMore: (n: number) => `Show ${n} more without a sign-in found`,
+    hideMore: "Hide them",
+    locked: "its sign-in only works inside its own app",
   },
   ru: {
     title: "ИИ-агенты на этом компьютере",
@@ -41,6 +46,10 @@ const TEXT = {
     tokenOld: "токен устарел (обновится при запуске агента)",
     failed: "Не удалось проверить:",
     hintNoPlan: "Агент вошёл в аккаунт, но в его файлах не написано, какой это тариф.",
+    connect: "Использовать его ключ в AIDE",
+    showMore: (n: number) => `Показать ещё ${n} без найденного входа`,
+    hideMore: "Скрыть их",
+    locked: "его вход работает только в его приложении",
   },
   tg: {
     title: "Агентҳои ИИ дар ин компютер",
@@ -59,6 +68,10 @@ const TEXT = {
     tokenOld: "токен кӯҳна шудааст (ҳангоми оғози агент нав мешавад)",
     failed: "Санҷиш нашуд:",
     hintNoPlan: "Агент ворид шудааст, аммо дар файлҳояш тариф навишта нашудааст.",
+    connect: "Калиди ӯро дар AIDE истифода бурдан",
+    showMore: (n: number) => `Нишон додани ${n} дигар бе воридшавии ёфтшуда`,
+    hideMore: "Пинҳон кардан",
+    locked: "воридшавии ӯ танҳо дар барномаи худаш кор мекунад",
   },
 };
 
@@ -73,6 +86,9 @@ export function AgentAccountsSection() {
   const [list, setList] = useState<AgentAccount[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [connecting, setConnecting] = useState<AgentAccount | null>(null);
+  const [notice, setNotice] = useState("");
+  const [all, setAll] = useState(false);
   const seq = useRef(0);
 
   const scan = useCallback(() => {
@@ -99,11 +115,12 @@ export function AgentAccountsSection() {
           </Btn>
         </div>
       </Row>
+      {notice && <Row title={<span role="status" className="text-teal-200">{notice}</span>} />}
       {error && (
         <Row title={<span className="text-red-400">{L.failed}</span>} hint={<span role="alert" className="break-words text-red-300">{error}</span>} />
       )}
       {list && list.length === 0 && <Row title={L.none} />}
-      {list?.map((a) => {
+      {(all ? list : list?.filter((a) => a.known || a.signed_in || a.plan))?.map((a) => {
         const details = [a.account, ...a.facts.map(([k, v]) => `${k}: ${v}`)].filter(Boolean);
         return (
           <Row
@@ -126,7 +143,13 @@ export function AgentAccountsSection() {
               </span>
             }
           >
-            <div className="flex justify-end">
+            <div className="flex flex-col items-end gap-1.5">
+              {a.signed_in &&
+                (BLOCKED_AGENTS.includes(a.id) ? (
+                  <span className="max-w-[260px] text-right text-[11.5px] text-ink-500">{L.locked}</span>
+                ) : (
+                  <Btn onClick={() => setConnecting(a)}>{L.connect}</Btn>
+                ))}
               {a.plan ? (
                 <span className="inline-flex items-center gap-1.5 text-[13px] text-ink-100">
                   <span className="text-ink-400">{L.plan}:</span>
@@ -139,6 +162,23 @@ export function AgentAccountsSection() {
           </Row>
         );
       })}
+      {list && list.some((a) => !(a.known || a.signed_in || a.plan)) && (
+        <Row title={<span className="text-[13px] font-normal text-ink-400">{all ? "" : L.showMore(list.filter((a) => !(a.known || a.signed_in || a.plan)).length)}</span>}>
+          <div className="flex justify-end">
+            <Btn onClick={() => setAll((v) => !v)}>{all ? L.hideMore : L.showMore(list.filter((a) => !(a.known || a.signed_in || a.plan)).length)}</Btn>
+          </div>
+        </Row>
+      )}
+      {connecting && (
+        <ConnectAgentKey
+          agent={connecting}
+          onClose={() => setConnecting(null)}
+          onDone={(m) => {
+            setConnecting(null);
+            setNotice(m);
+          }}
+        />
+      )}
     </Section>
   );
 }

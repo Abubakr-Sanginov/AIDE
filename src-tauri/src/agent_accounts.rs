@@ -340,9 +340,8 @@ fn read_json(path: &Path, limit: u64) -> Option<Value> {
     serde_json::from_str(&fs::read_to_string(path).ok()?).ok()
 }
 
-/// Факты из файлов входа в папке агента (сама папка и подпапки на один уровень вглубь).
-fn scan_dir(dir: &Path, files_read: &mut usize) -> Facts {
-    let mut total = Facts::default();
+/// Файлы входа в папке агента (сама папка и подпапки на один уровень вглубь).
+fn cred_files(dir: &Path) -> Vec<PathBuf> {
     let mut candidates: Vec<PathBuf> = Vec::new();
     let mut sub: Vec<PathBuf> = vec![dir.to_path_buf()];
     if let Ok(rd) = fs::read_dir(dir) {
@@ -362,7 +361,13 @@ fn scan_dir(dir: &Path, files_read: &mut usize) -> Facts {
             }
         }
     }
-    for f in candidates {
+    candidates
+}
+
+/// Факты из файлов входа в папке агента.
+fn scan_dir(dir: &Path, files_read: &mut usize) -> Facts {
+    let mut total = Facts::default();
+    for f in cred_files(dir) {
         if *files_read >= 400 {
             break;
         }
@@ -490,11 +495,16 @@ pub fn scan(home: &Path) -> Vec<AgentAccount> {
     }
     candidates.sort();
     candidates.dedup();
+    let mut by_id: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for d in candidates.into_iter().take(MAX_DIRS) {
         if used_dirs.contains(&d) {
             continue;
         }
         let name = d.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+        let lower = name.to_lowercase();
+        if ["updater", "cache", "crashpad", "logs", "temp"].iter().any(|w| lower.contains(w)) {
+            continue;
+        }
         let f = scan_dir(&d, &mut files_read);
         // Показываем папку, если в ней нашёлся тариф, либо по названию она похожа на ИИ-агента (тогда даже без читаемого входа:
         // человек увидит, что такой агент есть, и что про его подписку из файлов ничего не узнать).
@@ -502,7 +512,22 @@ pub fn scan(home: &Path) -> Vec<AgentAccount> {
         if !worth {
             continue;
         }
-        out.push(to_account(format!("found-{}", name.trim_start_matches('.').to_lowercase()), pretty_name(&name), false, display(home, &d), f));
+        let id = format!("found-{}", name.trim_start_matches('.').to_lowercase());
+        // Папка с тем же именем в двух местах (в домашней и в AppData) — один агент.
+        if let Some(&i) = by_id.get(&id) {
+            let extra = to_account(id, String::new(), false, String::new(), f);
+            let a = &mut out[i];
+            if a.plan.is_none() {
+                a.plan = extra.plan;
+            }
+            if a.account.is_none() {
+                a.account = extra.account;
+            }
+            a.signed_in |= extra.signed_in;
+            continue;
+        }
+        by_id.insert(id.clone(), out.len());
+        out.push(to_account(id, pretty_name(&name), false, display(home, &d), f));
     }
     // Домашние файлы вида .something.json, которых нет среди известных.
     for (name, f) in roots {
@@ -522,6 +547,383 @@ pub fn scan(home: &Path) -> Vec<AgentAccount> {
 pub async fn scan_agent_accounts() -> Result<Vec<AgentAccount>, String> {
     let home = dirs_next::home_dir().ok_or("Не удалось определить домашнюю папку")?;
     tauri::async_runtime::spawn_blocking(move || scan(&home)).await.map_err(|e| format!("сканирование прервалось: {e}"))
+}
+
+/* ───────────── Подключение ключа другого агента как провайдера ───────────── */
+//
+// Человек может взять ключ или токен, который сохранил какой-то агент, и подключить его в AIDE как провайдера ИИ.
+// Само значение секрета при этом не покидает Rust: интерфейс получает только описание («поле, длина, куда
+// похоже»), а запись в хранилище ключей Windows делает команда `import_agent_key`.
+// Claude Code, Codex и Gemini CLI исключены: их вход привязан к их приложениям и вне них не работает.
+
+/// Агенты, чей вход нельзя использовать вне их собственных приложений.
+const BLOCKED_AGENTS: &[&str] = &["claude-code", "codex", "gemini"];
+/// Папки (и файлы в домашней), по которым запрет проверяется ещё и по пути, а не только по имени агента.
+const BLOCKED_PATHS: &[&str] = &[".claude", ".claude.json", ".codex", ".gemini"];
+const MAX_CANDIDATES: usize = 20;
+const BLOCKED_NOTE: &str = "Вход Claude Code, Codex и Gemini CLI привязан к их приложениям и вне них не работает: такой токен нельзя использовать как ключ в AIDE.";
+
+#[derive(Serialize, Clone, Debug, PartialEq)]
+pub struct KeyCandidate {
+    /// «файл|путь внутри JSON»: по нему команда подключения находит значение заново.
+    pub id: String,
+    pub file: String,
+    /// Читаемое имя поля: «tokens.api_key».
+    pub field: String,
+    /// Начало значения (не больше 4 символов) и длина: чтобы человек узнал ключ, но не прочитал его.
+    pub preview: String,
+    /// Протокол провайдера: openai (совместимый), anthropic или google.
+    pub kind: String,
+    /// Предполагаемый адрес API (из файла или по виду ключа).
+    pub base_url: Option<String>,
+    /// Если ключ использовать нельзя: почему.
+    pub blocked: Option<String>,
+}
+
+pub fn pointer_to_field(pointer: &str) -> String {
+    pointer.trim_start_matches('/').replace('/', ".")
+}
+
+/// Все значения, похожие на ключи или токены: (путь в JSON, значение). Токены обновления (refresh) пропускаются:
+/// как ключ они не годятся.
+pub fn collect_secrets(value: &Value) -> Vec<(String, String)> {
+    let mut out = Vec::new();
+    let mut budget = MAX_NODES;
+    collect(value, "", 0, &mut out, &mut budget);
+    out
+}
+
+fn collect(v: &Value, pointer: &str, depth: usize, out: &mut Vec<(String, String)>, budget: &mut usize) {
+    if depth > MAX_DEPTH || *budget == 0 || out.len() >= 40 {
+        return;
+    }
+    *budget -= 1;
+    match v {
+        Value::Object(map) => {
+            for (k, val) in map {
+                let p = format!("{pointer}/{}", k.replace('~', "~0").replace('/', "~1"));
+                match val {
+                    Value::String(s) => {
+                        let s = s.trim();
+                        let kl = k.to_lowercase();
+                        if kl.contains("refresh") || s.len() < 16 || s.len() > 4000 || s.contains(char::is_whitespace) {
+                            continue;
+                        }
+                        // Только то, что названо ключом или токеном: идентификаторы, хэши, адреса и UUID — не ключи.
+                        let keyish = is_secret_key(k) || kl.ends_with("key") || kl.ends_with("token") || kl.contains("apikey");
+                        if keyish && !not_a_key(s) {
+                            out.push((p, s.to_string()));
+                        }
+                    }
+                    Value::Object(_) | Value::Array(_) => collect(val, &p, depth + 1, out, budget),
+                    _ => {}
+                }
+            }
+        }
+        Value::Array(items) => {
+            for (i, item) in items.iter().enumerate().take(20) {
+                collect(item, &format!("{pointer}/{i}"), depth + 1, out, budget);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Значения, которые лежат под «ключевым» именем, но ключом не являются: адреса, имена переменных окружения,
+/// зашифрованные приложением блоки (Electron safeStorage: «v10…», в base64 «djEw…»).
+pub fn not_a_key(value: &str) -> bool {
+    let v = value.trim();
+    let env_name = v.len() <= 100 && v.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_') && v.chars().any(|c| c.is_ascii_uppercase());
+    v.starts_with("http://") || v.starts_with("https://") || env_name || v.starts_with("djEw") || v.starts_with("v10") || v.starts_with("v11")
+}
+
+#[derive(Debug, PartialEq)]
+pub struct TokenClass {
+    pub kind: &'static str,
+    pub base_url: Option<&'static str>,
+    pub blocked: Option<&'static str>,
+}
+
+/// По виду значения: что это за ключ, куда он, по всей видимости, относится и можно ли его использовать.
+pub fn classify_token(secret: &str) -> TokenClass {
+    let ok = |kind, base_url| TokenClass { kind, base_url, blocked: None };
+    let no = |reason| TokenClass { kind: "openai", base_url: None, blocked: Some(reason) };
+    if secret.starts_with("sk-ant-oat") || secret.starts_with("sk-ant-ort") {
+        return no("Токен подписки Claude: его можно использовать только в Claude Code");
+    }
+    if secret.starts_with("ya29.") || secret.starts_with("1//") {
+        return no("Токен входа Google (Gemini): вне Gemini CLI он не работает");
+    }
+    if let Some(p) = jwt_payload(secret) {
+        // Сессии ChatGPT и Codex.
+        let s = p.to_string().to_lowercase();
+        if s.contains("api.openai.com/auth") || s.contains("chatgpt") || s.contains("auth.openai.com") {
+            return no("Токен входа ChatGPT/Codex: вне Codex он не работает как ключ");
+        }
+        return ok("openai", None);
+    }
+    if secret.starts_with("sk-ant-") {
+        return ok("anthropic", Some("https://api.anthropic.com"));
+    }
+    if secret.starts_with("sk-or-") {
+        return ok("openai", Some("https://openrouter.ai/api/v1"));
+    }
+    if secret.starts_with("gsk_") {
+        return ok("openai", Some("https://api.groq.com/openai/v1"));
+    }
+    if secret.starts_with("xai-") {
+        return ok("openai", Some("https://api.x.ai/v1"));
+    }
+    if secret.starts_with("pplx-") {
+        return ok("openai", Some("https://api.perplexity.ai"));
+    }
+    if secret.starts_with("AIza") {
+        return ok("google", Some("https://generativelanguage.googleapis.com"));
+    }
+    if secret.starts_with("sk-") {
+        return ok("openai", Some("https://api.openai.com/v1"));
+    }
+    ok("openai", None)
+}
+
+/// Адрес API, который агент сам записал в файле (baseURL, endpoint…): только https или http на этом компьютере.
+pub fn guess_base_url(value: &Value) -> Option<String> {
+    fn find(v: &Value, depth: usize, budget: &mut usize) -> Option<String> {
+        if depth > MAX_DEPTH || *budget == 0 {
+            return None;
+        }
+        *budget -= 1;
+        match v {
+            Value::Object(map) => {
+                for (k, val) in map {
+                    let kn: String = k.to_lowercase().chars().filter(|c| c.is_ascii_alphanumeric()).collect();
+                    if let Value::String(s) = val {
+                        if ["baseurl", "apibase", "apiurl", "endpoint", "baseuri", "apiendpoint"].contains(&kn.as_str()) {
+                            let t = s.trim().trim_end_matches('/');
+                            let local = t.starts_with("http://localhost") || t.starts_with("http://127.0.0.1");
+                            if (t.starts_with("https://") || local) && t.len() <= 200 && !t.contains(char::is_whitespace) {
+                                return Some(t.to_string());
+                            }
+                        }
+                    }
+                }
+                map.values().find_map(|x| find(x, depth + 1, budget))
+            }
+            Value::Array(a) => a.iter().take(10).find_map(|x| find(x, depth + 1, budget)),
+            _ => None,
+        }
+    }
+    let mut budget = MAX_NODES;
+    find(value, 0, &mut budget)
+}
+
+/// Адрес API для ключа по пути `pointer`: ближайший объект выше по дереву, где записан baseUrl; если такого нет, то
+/// общий адрес файла, но только когда он в файле один.
+pub fn base_url_near(value: &Value, pointer: &str) -> Option<String> {
+    let mut parts: Vec<&str> = pointer.trim_start_matches('/').split('/').collect();
+    while !parts.is_empty() {
+        parts.pop();
+        let p = if parts.is_empty() { String::new() } else { format!("/{}", parts.join("/")) };
+        if let Some(obj) = value.pointer(&p) {
+            if obj.is_object() {
+                // Только прямые поля этого объекта.
+                let direct = match obj {
+                    Value::Object(m) => Value::Object(m.iter().filter(|(_, v)| v.is_string()).map(|(k, v)| (k.clone(), v.clone())).collect()),
+                    _ => Value::Null,
+                };
+                if let Some(u) = guess_base_url(&direct) {
+                    return Some(u);
+                }
+            }
+        }
+    }
+    let mut all = Vec::new();
+    collect_urls(value, 0, &mut all);
+    all.sort();
+    all.dedup();
+    if all.len() == 1 { all.pop() } else { None }
+}
+
+fn collect_urls(v: &Value, depth: usize, out: &mut Vec<String>) {
+    if depth > MAX_DEPTH || out.len() > 20 {
+        return;
+    }
+    match v {
+        Value::Object(m) => {
+            if let Some(u) = guess_base_url(&Value::Object(m.iter().filter(|(_, v)| v.is_string()).map(|(k, v)| (k.clone(), v.clone())).collect())) {
+                out.push(u);
+            }
+            for x in m.values() {
+                collect_urls(x, depth + 1, out);
+            }
+        }
+        Value::Array(a) => a.iter().take(20).for_each(|x| collect_urls(x, depth + 1, out)),
+        _ => {}
+    }
+}
+
+/// Протокол по адресу: «…/anthropic» — Anthropic-совместимый, googleapis — Google; иначе по виду ключа.
+pub fn kind_for_url(url: &str, fallback: &str) -> String {
+    let u = url.to_lowercase();
+    if u.contains("anthropic") {
+        "anthropic".into()
+    } else if u.contains("generativelanguage.googleapis.com") {
+        "google".into()
+    } else {
+        fallback.into()
+    }
+}
+
+fn preview(secret: &str) -> String {
+    let head: String = secret.chars().take(4.min(secret.chars().count() / 4)).collect();
+    format!("{head}… ({} симв.)", secret.chars().count())
+}
+
+fn is_blocked_path(home: &Path, file: &Path) -> bool {
+    match file.strip_prefix(home) {
+        Ok(rest) => rest.components().any(|c| {
+            let n = c.as_os_str().to_string_lossy().to_lowercase();
+            BLOCKED_PATHS.contains(&n.as_str()) || n.starts_with("claude") || n.starts_with(".claude")
+        }),
+        Err(_) => false,
+    }
+}
+
+/// Агент, вход которого использовать нельзя: из списка и всё, что называется claude… (приложение, данные, CLI).
+pub fn agent_blocked(id: &str) -> bool {
+    BLOCKED_AGENTS.contains(&id) || id.starts_with("found-claude") || id == "found-codex" || id == "found-gemini"
+}
+
+/// Папки агента по его id (известный — по списку, найденный общим способом — по имени папки).
+fn agent_dirs(home: &Path, id: &str) -> Vec<PathBuf> {
+    if let Some(k) = KNOWN.iter().find(|k| k.id == id) {
+        return k.dirs.iter().map(|d| home.join(d)).filter(|d| d.is_dir()).collect();
+    }
+    let Some(name) = id.strip_prefix("found-") else { return Vec::new() };
+    let mut out = Vec::new();
+    for base in [home.to_path_buf(), home.join(".config"), home.join(".local/share"), home.join("AppData/Roaming"), home.join("AppData/Local")] {
+        if let Ok(rd) = fs::read_dir(&base) {
+            for e in rd.flatten().take(500) {
+                let n = e.file_name().to_string_lossy().to_lowercase();
+                if n.trim_start_matches('.') == name && e.file_type().map(|t| t.is_dir() && !t.is_symlink()).unwrap_or(false) {
+                    out.push(e.path());
+                }
+            }
+        }
+    }
+    out
+}
+
+/// Ключи, найденные у агента. Сами значения не возвращаются.
+pub fn list_keys(home: &Path, agent_id: &str) -> Result<Vec<KeyCandidate>, String> {
+    if agent_blocked(agent_id) {
+        return Err(BLOCKED_NOTE.into());
+    }
+    let mut files: Vec<PathBuf> = Vec::new();
+    for d in agent_dirs(home, agent_id) {
+        files.extend(cred_files(&d));
+    }
+    if let Some(name) = agent_id.strip_prefix("found-") {
+        // Файл вида ~/.name.json в домашней папке.
+        let f = home.join(format!(".{name}.json"));
+        if f.is_file() {
+            files.push(f);
+        }
+    }
+    let mut out = Vec::new();
+    for f in files {
+        if is_blocked_path(home, &f) {
+            continue;
+        }
+        let limit = if f.parent() == Some(home) { MAX_ROOT_FILE_BYTES } else { MAX_FILE_BYTES };
+        let Some(v) = read_json(&f, limit) else { continue };
+        let mut seen: HashSet<String> = HashSet::new();
+        for (ptr, secret) in collect_secrets(&v) {
+            // Один и тот же ключ часто записан дважды (apiKey и apiKeyPool.0.key): показываем один раз.
+            if !seen.insert(secret.clone()) {
+                continue;
+            }
+            let c = classify_token(&secret);
+            let file = display(home, &f);
+            let base_url = base_url_near(&v, &ptr).or_else(|| c.base_url.map(String::from));
+            let kind = base_url.as_deref().map(|u| kind_for_url(u, c.kind)).unwrap_or_else(|| c.kind.into());
+            out.push(KeyCandidate {
+                id: format!("{file}|{ptr}"),
+                file,
+                field: pointer_to_field(&ptr),
+                preview: preview(&secret),
+                kind,
+                base_url,
+                blocked: c.blocked.map(String::from),
+            });
+            if out.len() >= MAX_CANDIDATES {
+                return Ok(out);
+            }
+        }
+    }
+    Ok(out)
+}
+
+/// Идентификатор провайдера для подключённого ключа: всегда с префиксом `agent-`, чтобы нельзя было перезаписать ключ
+/// существующего провайдера (openai, anthropic…).
+pub fn valid_provider_id(id: &str) -> bool {
+    id.len() >= 8
+        && id.len() <= 40
+        && id.starts_with("agent-")
+        && id.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+        && !id.ends_with('-')
+}
+
+/// Читает выбранный ключ из файла и отдаёт его в `store` (запись в хранилище ключей). Значение никуда больше не уходит.
+pub fn import_key(home: &Path, candidate_id: &str, provider_id: &str, store: impl FnOnce(&str, &str) -> Result<(), String>) -> Result<(), String> {
+    if !valid_provider_id(provider_id) {
+        return Err("Некорректный идентификатор провайдера (agent-…)".into());
+    }
+    let (file_disp, pointer) = candidate_id.split_once('|').ok_or("Некорректный выбор ключа")?;
+    let rest = file_disp.strip_prefix("~\\").or_else(|| file_disp.strip_prefix("~/")).ok_or("Файл должен лежать в вашей домашней папке")?;
+    if rest.split(['\\', '/']).any(|p| p == ".." || p.is_empty()) {
+        return Err("Некорректный путь к файлу".into());
+    }
+    let home_canon = home.canonicalize().map_err(|e| e.to_string())?;
+    let file = home.join(rest.replace('\\', "/")).canonicalize().map_err(|_| "Файл не найден".to_string())?;
+    let file = crate::strip_verbatim(file);
+    let home_canon = crate::strip_verbatim(home_canon);
+    if !file.starts_with(&home_canon) {
+        return Err("Файл вне вашей домашней папки".into());
+    }
+    if is_blocked_path(&home_canon, &file) {
+        return Err(BLOCKED_NOTE.into());
+    }
+    let name = file.file_name().map(|n| n.to_string_lossy().to_lowercase()).unwrap_or_default();
+    let in_root = file.parent() == Some(home_canon.as_path());
+    let allowed = CRED_FILES.contains(&name.as_str()) || (in_root && name.starts_with('.') && name.ends_with(".json"));
+    if !allowed {
+        return Err("Этот файл не похож на файл входа агента".into());
+    }
+    let value = read_json(&file, if in_root { MAX_ROOT_FILE_BYTES } else { MAX_FILE_BYTES }).ok_or("Не удалось прочитать файл")?;
+    let secret = value.pointer(pointer).and_then(Value::as_str).map(str::trim).filter(|s| !s.is_empty()).ok_or("Значение не найдено: файл изменился?")?;
+    if let Some(reason) = classify_token(secret).blocked {
+        return Err(reason.into());
+    }
+    store(provider_id, secret)
+}
+
+#[tauri::command]
+pub async fn list_agent_keys(agent_id: String) -> Result<Vec<KeyCandidate>, String> {
+    let home = dirs_next::home_dir().ok_or("Не удалось определить домашнюю папку")?;
+    tauri::async_runtime::spawn_blocking(move || list_keys(&home, &agent_id)).await.map_err(|e| e.to_string())?
+}
+
+/// Подключает выбранный ключ агента как провайдера: сохраняет его в хранилище ключей Windows. Адрес и протокол
+/// провайдера интерфейс добавляет сам, после успешного ответа этой команды.
+#[tauri::command]
+pub async fn import_agent_key(candidate_id: String, provider_id: String) -> Result<(), String> {
+    let home = dirs_next::home_dir().ok_or("Не удалось определить домашнюю папку")?;
+    tauri::async_runtime::spawn_blocking(move || {
+        import_key(&home, &candidate_id, &provider_id, |id, key| crate::ai_service::set_api_key(id.to_string(), key.to_string()))
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[cfg(test)]
@@ -661,6 +1063,121 @@ mod tests {
         }
         assert!(!dump.contains("boss@corp.com"), "почта не замаскирована");
         let _ = fs::remove_dir_all(&home);
+    }
+
+    #[test]
+    fn tokens_are_classified_by_shape() {
+        assert!(classify_token("sk-ant-oat01-aaaaaaaaaaaaaaaaaaaaaaaa").blocked.is_some());
+        assert!(classify_token("sk-ant-ort01-aaaaaaaaaaaaaaaaaaaaaaaa").blocked.is_some());
+        assert!(classify_token("ya29.a0AfH6SMBxxxxxxxxxxxxxxxxxxxxxx").blocked.is_some());
+        let chatgpt = jwt(json!({"https://api.openai.com/auth": {"chatgpt_plan_type": "plus"}}));
+        assert!(classify_token(&chatgpt).blocked.is_some());
+        // обычный JWT стороннего сервиса не запрещён
+        assert!(classify_token(&jwt(json!({"sub": "user1", "iss": "https://agent.example"}))).blocked.is_none());
+        assert_eq!(classify_token("sk-ant-api03-aaaaaaaaaaaaaaaaaaaaaaaa"), TokenClass { kind: "anthropic", base_url: Some("https://api.anthropic.com"), blocked: None });
+        assert_eq!(classify_token("sk-or-v1-aaaaaaaaaaaaaaaaaaaa").base_url, Some("https://openrouter.ai/api/v1"));
+        assert_eq!(classify_token("gsk_aaaaaaaaaaaaaaaaaaaaaaaa").base_url, Some("https://api.groq.com/openai/v1"));
+        assert_eq!(classify_token("AIzaSyAaaaaaaaaaaaaaaaaaaaaa").kind, "google");
+        assert_eq!(classify_token("sk-proj-aaaaaaaaaaaaaaaaaaaaaaaaaaaa").base_url, Some("https://api.openai.com/v1"));
+        assert_eq!(classify_token("some-random-key-0123456789abcdef"), TokenClass { kind: "openai", base_url: None, blocked: None });
+    }
+
+    #[test]
+    fn secrets_are_collected_with_their_paths_but_refresh_tokens_are_skipped() {
+        let v = json!({"a/b": {"apiKey": "k".repeat(30)}, "list": [{"token": "t".repeat(30)}], "refresh_token": "r".repeat(30), "name": "short", "note": "some words here with spaces and more text", "id": "plain"});
+        let found = collect_secrets(&v);
+        let ptrs: Vec<&str> = found.iter().map(|(p, _)| p.as_str()).collect();
+        assert!(ptrs.contains(&"/a~1b/apiKey") && ptrs.contains(&"/list/0/token"), "{ptrs:?}");
+        assert!(!ptrs.iter().any(|p| p.contains("refresh")) && !ptrs.contains(&"/name") && !ptrs.contains(&"/note"));
+        assert_eq!(pointer_to_field("/tokens/api_key"), "tokens.api_key");
+        // путь работает как JSON Pointer
+        assert_eq!(v.pointer("/a~1b/apiKey").and_then(Value::as_str), Some("k".repeat(30).as_str()));
+    }
+
+    #[test]
+    fn base_urls_come_from_the_file_only_when_safe() {
+        assert_eq!(guess_base_url(&json!({"provider": {"x": {"options": {"baseURL": "https://api.example.com/v1/"}}}})).as_deref(), Some("https://api.example.com/v1"));
+        assert_eq!(guess_base_url(&json!({"endpoint": "http://localhost:8080/v1"})).as_deref(), Some("http://localhost:8080/v1"));
+        for bad in [json!({"baseUrl": "http://evil.example.com"}), json!({"baseUrl": "ftp://x"}), json!({"baseUrl": "https://a b"}), json!({"theme": "https://fine.com"})] {
+            assert_eq!(guess_base_url(&bad), None, "{bad}");
+        }
+    }
+
+    #[test]
+    fn provider_ids_must_be_agent_prefixed() {
+        for ok in ["agent-genspark", "agent-my-tool-2"] {
+            assert!(valid_provider_id(ok), "{ok}");
+        }
+        for bad in ["openai", "anthropic", "agent-", "agent-X", "agent_x_y_z", "agent-a/b", "agent-ends-", &format!("agent-{}", "a".repeat(40))] {
+            assert!(!valid_provider_id(bad), "{bad}");
+        }
+    }
+
+    #[test]
+    fn importing_a_key_is_limited_to_allowed_agents_and_files() {
+        let home = std::env::temp_dir().join(format!("aide-keys-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&home);
+        let w = |rel: &str, v: Value| {
+            let p = home.join(rel);
+            fs::create_dir_all(p.parent().unwrap()).unwrap();
+            fs::write(p, serde_json::to_string(&v).unwrap()).unwrap();
+        };
+        let key = format!("sk-or-v1-{}", "a".repeat(40));
+        w(".zzagent/auth.json", json!({"apiKey": key, "baseUrl": "https://api.zz.example/v1", "refresh_token": "r".repeat(40)}));
+        w(".claude/.credentials.json", json!({"claudeAiOauth": {"accessToken": format!("sk-ant-oat01-{}", "b".repeat(40))}}));
+        w(".codex/auth.json", json!({"OPENAI_API_KEY": format!("sk-{}", "c".repeat(40))}));
+        w(".zzagent/notes.json", json!({"secretKey": "d".repeat(40)}));
+        w(".gemini/oauth_creds.json", json!({"access_token": format!("ya29.{}", "e".repeat(40))}));
+
+        // список: у разрешённого агента один ключ, адрес из файла, значения в ответе нет
+        let list = list_keys(&home, "found-zzagent").unwrap();
+        assert_eq!(list.len(), 1, "{list:#?}");
+        assert_eq!(list[0].field, "apiKey");
+        assert_eq!(list[0].base_url.as_deref(), Some("https://api.zz.example/v1"));
+        assert!(list[0].blocked.is_none());
+        assert!(!format!("{list:?}").contains(&"a".repeat(20)), "значение ключа попало в список");
+        // запрещённые агенты
+        for id in ["claude-code", "codex", "gemini"] {
+            assert!(list_keys(&home, id).is_err(), "{id}");
+        }
+
+        // подключение: ключ уходит в хранилище целиком и только туда
+        let mut stored: Option<(String, String)> = None;
+        import_key(&home, &list[0].id, "agent-zzagent", |id, k| {
+            stored = Some((id.into(), k.into()));
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(stored, Some(("agent-zzagent".into(), key.clone())));
+
+        // отказы: чужой провайдер, обход путей, запрещённые папки, файл не из списка, подделанный путь
+        let deny = |id: &str, provider: &str| import_key(&home, id, provider, |_, _| panic!("не должно дойти до записи")).unwrap_err();
+        deny(&list[0].id, "openai");
+        deny("~\\.zzagent\\..\\.claude\\.credentials.json|/claudeAiOauth/accessToken", "agent-x-1");
+        deny("~\\.claude\\.credentials.json|/claudeAiOauth/accessToken", "agent-claude-1");
+        deny("~\\.codex\\auth.json|/OPENAI_API_KEY", "agent-codex-1");
+        deny("~\\.gemini\\oauth_creds.json|/access_token", "agent-gemini-1");
+        deny("~\\.zzagent\\notes.json|/secretKey", "agent-notes-1");
+        deny("C:\\Windows\\win.ini|/x", "agent-win-1");
+        deny("~\\.zzagent\\auth.json|/nope", "agent-nope-1");
+        deny("без разделителя", "agent-x-1");
+        let _ = fs::remove_dir_all(&home);
+    }
+
+    /// Живая проверка списка ключей (только описания: поле, файл, начало и длина; значения не печатаются).
+    #[test]
+    #[ignore]
+    fn live_keys_of_found_agents() {
+        let home = dirs_next::home_dir().unwrap();
+        for a in scan(&home) {
+            match list_keys(&home, &a.id) {
+                Ok(keys) => println!("{} -> {} ключ(ей)", a.id, keys.len()),
+                Err(e) => println!("{} -> отказ: {}", a.id, e.chars().take(60).collect::<String>()),
+            }
+            for k in list_keys(&home, &a.id).unwrap_or_default() {
+                println!("    {} | {} | {} | kind={} | url={:?} | blocked={:?}", k.field, k.file, k.preview, k.kind, k.base_url, k.blocked.map(|b| b.chars().take(30).collect::<String>()));
+            }
+        }
     }
 
     /// Живая проверка на этом компьютере: печатает только имена, тарифы и маски (запуск вручную с --ignored --nocapture).

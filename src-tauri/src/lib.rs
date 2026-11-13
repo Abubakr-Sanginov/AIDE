@@ -533,6 +533,8 @@ pub fn run() {
             app_bridge::app_bridge_reply,
             local_models::local_probe,
             agent_accounts::scan_agent_accounts,
+            agent_accounts::list_agent_keys,
+            agent_accounts::import_agent_key,
             local_models::local_ollama_variant,
             local_models::local_ollama_delete_variant,
             code_index::code_index_status,
