@@ -194,6 +194,13 @@ fn walk(v: &Value, facts: &mut Facts, depth: usize, budget: &mut usize) {
                 let kn: String = kl.chars().filter(|c| c.is_ascii_alphanumeric()).collect();
                 match val {
                     Value::String(s) => {
+                        // Идентификатор аккаунта (accountId, userId): это не секрет, но признак того, что вход был.
+                        if ["accountid", "userid"].contains(&kn.as_str()) && s.trim().len() >= 6 {
+                            facts.has_secret = true;
+                            let id: String = s.trim().chars().take(6).collect();
+                            facts.add_extra("Аккаунт", &format!("{id}…"));
+                            continue;
+                        }
                         if let Some(payload) = jwt_payload(s) {
                             facts.has_secret = true;
                             take_claims(&payload, facts);
@@ -288,7 +295,18 @@ const KNOWN: &[Known] = &[
 const CRED_FILES: &[&str] = &[
     ".credentials.json", "credentials.json", "auth.json", "oauth_creds.json", "oauth.json", "hosts.json", "apps.json",
     "token.json", "tokens.json", "account.json", "user.json", "profile.json", "settings.json", "config.json",
+    // Настольные агенты (например DeepAI Code) держат аккаунт и модели в своих файлах данных.
+    "models.json", "ownership.json",
 ];
+
+/// Папки внутри данных агента, в которые не заходим: кэши, вложения, профили браузера (там всё зашифровано) и т. п.
+const SKIP_DIRS: &[&str] = &[
+    "cache", "caches", "code cache", "gpucache", "gpupersistentcache", "dawngraphitecache", "dawnwebgpucache", "shadercache", "grshadercache",
+    "indexeddb", "local storage", "session storage", "service worker", "blob_storage", "partitions", "network", "webstorage", "shared dictionary",
+    "node_modules", "attachments", "worktrees", "scratch", "bin", "logs", "log", "crashpad", "extensions", "history", "sessions", "projects", "todos",
+];
+const MAX_SCAN_DEPTH: usize = 5;
+const MAX_SCAN_DIRS: usize = 200;
 
 /// Папки, которые заведомо не про ИИ-агентов: их не разбираем.
 const NOT_AGENTS: &[&str] = &[
@@ -343,24 +361,29 @@ fn read_json(path: &Path, limit: u64) -> Option<Value> {
 /// Файлы входа в папке агента (сама папка и подпапки на один уровень вглубь).
 fn cred_files(dir: &Path) -> Vec<PathBuf> {
     let mut candidates: Vec<PathBuf> = Vec::new();
-    let mut sub: Vec<PathBuf> = vec![dir.to_path_buf()];
-    if let Ok(rd) = fs::read_dir(dir) {
-        for e in rd.flatten().take(60) {
-            if e.file_type().map(|t| t.is_dir() && !t.is_symlink()).unwrap_or(false) {
-                sub.push(e.path());
-            }
+    // Поиск в ширину на несколько уровней вглубь: данные настольных агентов лежат глубоко (userdata/deepai/pi/deepai/…).
+    let mut queue: std::collections::VecDeque<(PathBuf, usize)> = std::collections::VecDeque::new();
+    queue.push_back((dir.to_path_buf(), 0));
+    let mut visited = 0usize;
+    while let Some((d, depth)) = queue.pop_front() {
+        visited += 1;
+        if visited > MAX_SCAN_DIRS {
+            break;
         }
-    }
-    for d in sub.iter().take(30) {
-        if let Ok(rd) = fs::read_dir(d) {
-            for e in rd.flatten().take(MAX_FILES_PER_DIR) {
-                let name = e.file_name().to_string_lossy().to_lowercase();
-                if CRED_FILES.contains(&name.as_str()) {
-                    candidates.push(e.path());
+        let Ok(rd) = fs::read_dir(&d) else { continue };
+        for e in rd.flatten().take(MAX_FILES_PER_DIR * 3) {
+            let name = e.file_name().to_string_lossy().to_lowercase();
+            let Ok(ft) = e.file_type() else { continue };
+            if ft.is_dir() && !ft.is_symlink() {
+                if depth < MAX_SCAN_DEPTH && !SKIP_DIRS.contains(&name.as_str()) {
+                    queue.push_back((e.path(), depth + 1));
                 }
+            } else if ft.is_file() && CRED_FILES.contains(&name.as_str()) {
+                candidates.push(e.path());
             }
         }
     }
+    candidates.truncate(MAX_FILES_PER_DIR);
     candidates
 }
 
@@ -1161,6 +1184,34 @@ mod tests {
         deny("C:\\Windows\\win.ini|/x", "agent-win-1");
         deny("~\\.zzagent\\auth.json|/nope", "agent-nope-1");
         deny("без разделителя", "agent-x-1");
+        let _ = fs::remove_dir_all(&home);
+    }
+
+    #[test]
+    fn desktop_agent_with_deep_files_is_seen_as_signed_in_and_offers_its_local_proxy_key() {
+        let home = std::env::temp_dir().join(format!("aide-deep-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&home);
+        let w = |rel: &str, v: Value| {
+            let p = home.join(rel);
+            fs::create_dir_all(p.parent().unwrap()).unwrap();
+            fs::write(p, serde_json::to_string(&v).unwrap()).unwrap();
+        };
+        w(".deepai-code/userdata/deepai/pi/deepai/auth.json", json!({}));
+        w(".deepai-code/userdata/deepai/pi/deepai/models.json", json!({"providers": {"deepai": {"baseUrl": "http://127.0.0.1:51499", "apiKey": "k".repeat(64), "models": [{"id": "m1"}]}}}));
+        w(".deepai-code/userdata/deepai-history/ownership.json", json!({"owners": {"u1": {"accountId": "abcdef0123456789".repeat(4)}}}));
+        // кэши и вложения не разбираются, даже если там что-то похожее
+        w(".deepai-code/caches/auth.json", json!({"apiKey": "z".repeat(64)}));
+
+        let list = scan(&home);
+        let a = list.iter().find(|a| a.id == "found-deepai-code").expect("deepai");
+        assert!(a.signed_in, "{a:#?}");
+        assert!(a.facts.iter().any(|(k, v)| k == "Аккаунт" && v == "abcdef…"), "{:?}", a.facts);
+        let keys = list_keys(&home, "found-deepai-code").unwrap();
+        assert_eq!(keys.len(), 1, "{keys:#?}");
+        assert_eq!(keys[0].field, "providers.deepai.apiKey");
+        assert_eq!(keys[0].base_url.as_deref(), Some("http://127.0.0.1:51499"));
+        let dump = format!("{list:?}{keys:?}");
+        assert!(!dump.contains("kkkkkkkkkk") && !dump.contains("zzzzzzzzzz") && !dump.contains("abcdef0123456789abcdef"), "секрет или полный идентификатор в ответе");
         let _ = fs::remove_dir_all(&home);
     }
 

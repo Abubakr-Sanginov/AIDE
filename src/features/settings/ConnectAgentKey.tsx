@@ -5,6 +5,7 @@ import { useI18n } from "@/i18n";
 import { accountsApi, type AgentAccount, type KeyCandidate } from "@/api/accounts";
 import { useAi } from "@/stores/ai";
 import { acceptableUrl, providerIdFor } from "@/lib/agentKeys";
+import { isLoopbackUrl } from "@/lib/localProviders";
 
 // Connect a key that another agent stored as an AI provider in AIDE. The key never reaches this code: the backend reads it
 // from the agent's file and puts it straight into the Windows credential store. Here the person picks which key, where it is
@@ -22,6 +23,7 @@ const TEXT = {
     url: "API address",
     urlHint: "Where the key will be sent. Use the service's own https address.",
     sendTo: (host: string) => `The key will be sent to: ${host}`,
+    proxy: "This is a local address: the agent's own helper program. It works only while that agent is running, and its port and key may change after it restarts (then connect again). It uses the agent's subscription, and the agent itself may refuse requests that do not come from its own app.",
     risk: "Some services forbid using a subscription token outside their own app, and the account may be blocked. The key is taken from this agent's files and stored in the Windows credential store; the agent itself is not changed.",
     agree: "I understand and want to connect it",
     connect: "Connect",
@@ -41,6 +43,7 @@ const TEXT = {
     url: "Адрес API",
     urlHint: "Куда будет отправляться ключ. Укажите собственный https-адрес сервиса.",
     sendTo: (host: string) => `Ключ будет отправляться на: ${host}`,
+    proxy: "Это локальный адрес: вспомогательная программа самого агента. Она работает, только пока агент запущен, а порт и ключ после его перезапуска могут смениться (тогда подключите заново). Используется подписка агента, и сам агент может отказывать запросам не из своего приложения.",
     risk: "Некоторые сервисы запрещают использовать токен подписки вне их приложения, аккаунт могут заблокировать. Ключ берётся из файлов этого агента и сохраняется в хранилище ключей Windows; сам агент не меняется.",
     agree: "Понимаю и хочу подключить",
     connect: "Подключить",
@@ -60,6 +63,7 @@ const TEXT = {
     url: "Суроғаи API",
     urlHint: "Калид ба куҷо фиристода мешавад. Суроғаи https-и худи сервисро нависед.",
     sendTo: (host: string) => `Калид ба ин ҷо фиристода мешавад: ${host}`,
+    proxy: "Ин суроғаи маҳаллӣ аст: барномаи ёрирасони худи агент. Он танҳо вақте кор мекунад, ки агент фаъол аст, ва порт ва калид пас аз аз нав оғоз шудан тағйир ёфта метавонанд (он гоҳ аз нав пайваст кунед). Обунаи агент истифода мешавад ва худи агент метавонад дархостҳоро аз барномаи дигар рад кунад.",
     risk: "Баъзе сервисҳо истифодаи токени обунаро берун аз барномаи худашон манъ мекунанд ва ҳисобро масдуд карда метавонанд. Калид аз файлҳои ин агент гирифта мешавад ва дар захираи калидҳои Windows нигоҳ дошта мешавад; худи агент тағйир намеёбад.",
     agree: "Мефаҳмам ва мехоҳам пайваст кунам",
     connect: "Пайваст кардан",
@@ -180,6 +184,7 @@ export function ConnectAgentKey({ agent, onClose, onDone }: { agent: AgentAccoun
                 </label>
                 {url && !parsed && <p role="alert" className="text-red-300">{L.badUrl}</p>}
                 {parsed && <p className="rounded-lg bg-amber-300/10 px-2.5 py-1.5 text-amber-200">{L.sendTo(parsed.host)}</p>}
+                {parsed && isLoopbackUrl(parsed.href) && <p className="text-[12.5px] leading-5 text-ink-300">{L.proxy}</p>}
                 <p className="text-[12.5px] leading-5 text-ink-400">{L.risk}</p>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
