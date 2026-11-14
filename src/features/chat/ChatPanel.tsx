@@ -7,6 +7,7 @@ import { useKins } from "@/features/kins/store";
 import { Markdown } from "@/ui/Markdown";
 import { ComputerConsent } from "@/features/chat/ComputerConsent";
 import { grantComputerConsent, hasComputerConsent } from "@/lib/computerMode";
+import { applyVoiceControl } from "@/features/voice/voiceControl";
 import { SlashMenu } from "@/features/chat/SlashMenu";
 import { fillPrompt, filterItems, loadProjectCommands, skillCommands, type SlashItem } from "@/features/chat/slash";
 import { useSkills } from "@/features/design/skills/store";
@@ -936,6 +937,7 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
           }}
           onAccept={() => {
             grantComputerConsent();
+            void applyVoiceControl().catch(() => {}); // voice control may have been waiting for this consent
             setConsentOpen(false);
             setMode("computer");
           }}

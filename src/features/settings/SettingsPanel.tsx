@@ -42,6 +42,7 @@ import { LspSection } from "@/features/settings/LspSection";
 import { LocalModelsSection } from "@/features/settings/LocalModelsSection";
 import { NotificationsSection } from "@/features/settings/NotificationsSection";
 import { UpdatesSection } from "@/features/settings/UpdatesSection";
+import { VoiceControlSection } from "@/features/settings/VoiceControlSection";
 import { AgentAccountsSection } from "@/features/settings/AgentAccountsSection";
 import { CodeIndexSection } from "@/features/settings/CodeIndexSection";
 import { isLocalProvider } from "@/lib/localProviders";
@@ -752,7 +753,12 @@ export function SettingsPage() {
           )}
           {page === "memory" && <MemorySection />}
           {page === "rules" && <RulesSection />}
-          {page === "voice" && <VoiceSettings ru={ru} />}
+          {page === "voice" && (
+            <>
+              <VoiceSettings ru={ru} />
+              <VoiceControlSection />
+            </>
+          )}
           {page === "mcp" && <McpSection />}
           {page === "lsp" && <LspSection />}
           {page === "local" && <LocalModelsSection />}

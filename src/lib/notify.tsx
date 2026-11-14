@@ -50,7 +50,8 @@ function flashTitle(msg: string) {
   titleTimer = setTimeout(restore, 8000);
 }
 
-function beep() {
+/** A short tone (also used for the voice-control hotkey: it works while the AIDE window is out of sight). */
+export function playTone(freq = 880, ms = 350) {
   try {
     const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return;
@@ -58,17 +59,21 @@ function beep() {
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.type = "sine";
-    o.frequency.value = 880;
+    o.frequency.value = freq;
     g.gain.value = 0.05;
     o.connect(g);
     g.connect(ctx.destination);
     o.start();
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
-    o.stop(ctx.currentTime + 0.4);
-    void setTimeout(() => void ctx.close().catch(() => {}), 700);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + ms / 1000);
+    o.stop(ctx.currentTime + ms / 1000 + 0.05);
+    void setTimeout(() => void ctx.close().catch(() => {}), ms + 350);
   } catch {
     /* audio blocked: the toast is still there */
   }
+}
+
+export async function notifySystem(title: string, body: string) {
+  await systemNotify(title, body);
 }
 
 async function systemNotify(title: string, body: string) {
@@ -116,7 +121,7 @@ export function agentNotice(kind: NoticeKind, text: string) {
     useNotices.getState().push({ kind, text });
     flashTitle(title);
   }
-  if (plan.sound) beep();
+  if (plan.sound) playTone();
   if (plan.system) void systemNotify(title, text);
 }
 

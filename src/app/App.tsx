@@ -33,6 +33,8 @@ import { ensureChangeEvents } from "@/stores/changes";
 import { PermissionGate, ensurePermissionEvents } from "@/features/chat/PermissionGate";
 import { QuestionGate, ensureQuestionEvents } from "@/features/chat/QuestionGate";
 import { AgentToasts, agentNotice } from "@/lib/notify";
+import { VoiceIndicator } from "@/features/voice/VoiceIndicator";
+import { applyVoiceControl } from "@/features/voice/voiceControl";
 import { backgroundCheckDue, checkForUpdate } from "@/lib/updater";
 import { appLang, isRuLike as isRuLikeLang } from "@/i18n/ruLike";
 import { rt as rtText } from "@/i18n/tgMap";
@@ -85,6 +87,11 @@ function AppInner() {
       void useExtHost.getState().start();
     }
     void useWorkspace.getState().restore();
+  }, []);
+
+  // Voice control of the computer agent: registers the global hotkey when it is switched on in Settings → Voice.
+  useEffect(() => {
+    void applyVoiceControl().catch(() => {});
   }, []);
 
   // Once a day, a quiet look for a new version (installed app only): a toast points to Settings → Updates.
@@ -260,6 +267,7 @@ function AppInner() {
       <PermissionGate />
       <QuestionGate />
       <AgentToasts />
+      <VoiceIndicator />
       <ExtHostUi />
     </div>
   );
