@@ -172,6 +172,17 @@ fn take_claims(payload: &Value, facts: &mut Facts) {
     }
 }
 
+/// Тариф из имени поля вида «a:b:zai-individual-coding-plan:c»: самая длинная часть, где есть «plan».
+pub fn plan_from_key_name(key: &str) -> Option<String> {
+    let seg = key
+        .split([':', '/', '.'])
+        .filter(|p| p.to_lowercase().contains("plan") && p.len() <= 60)
+        .max_by_key(|p| p.len())?;
+    let label = plan_label(seg);
+    // Само слово «plan»/«coding-plan» без названия тарифа ничего не говорит.
+    if seg.len() <= "coding-plan".len() { None } else { Some(label) }
+}
+
 const PLAN_KEYS: [&str; 5] = ["subscriptiontype", "plantype", "plan", "subscription", "membershiptype"];
 
 /// Достаёт из JSON тариф, аккаунт, срок и безобидные факты. Секреты не возвращаются.
@@ -209,6 +220,10 @@ fn walk(v: &Value, facts: &mut Facts, depth: usize, budget: &mut usize) {
                         if is_secret_key(k) {
                             if !s.trim().is_empty() {
                                 facts.has_secret = true;
+                                // Некоторые агенты записывают тариф в имя поля: «…:zai-individual-coding-plan:…:api-key».
+                                if facts.plan.is_none() {
+                                    facts.plan = plan_from_key_name(k);
+                                }
                             }
                             continue;
                         }
@@ -320,6 +335,7 @@ const AI_WORDS: &[&str] = &[
     "ai", "llm", "gpt", "agent", "agents", "copilot", "assistant", "claude", "codex", "gemini", "cursor", "windsurf", "cline",
     "aider", "kimi", "qwen", "mistral", "deepseek", "grok", "perplexity", "genspark", "accio", "codebuddy", "cagent", "dust", "droid",
     "opencode", "antigravity", "openrouter", "anthropic", "openai", "chatgpt", "crush", "goose", "zed", "tabnine", "codeium", "continue",
+    "autoclaw", "openclaw", "zcode", "hermes", "bigmodel", "zai", "glm", "kiro", "trae",
 ];
 
 fn name_tokens(name: &str) -> Vec<String> {
@@ -671,6 +687,10 @@ pub struct TokenClass {
 pub fn classify_token(secret: &str) -> TokenClass {
     let ok = |kind, base_url| TokenClass { kind, base_url, blocked: None };
     let no = |reason| TokenClass { kind: "openai", base_url: None, blocked: Some(reason) };
+    // Приложения (Electron safeStorage и т. п.) шифруют часть значений: «enc:…», «v10…». Вне приложения их не прочитать.
+    if secret.starts_with("enc:") || secret.starts_with("djEw") || secret.starts_with("v10") || secret.starts_with("v11") {
+        return no("Значение зашифровано самим приложением: вне него его не использовать");
+    }
     if secret.starts_with("sk-ant-oat") || secret.starts_with("sk-ant-ort") {
         return no("Токен подписки Claude: его можно использовать только в Claude Code");
     }
@@ -707,6 +727,18 @@ pub fn classify_token(secret: &str) -> TokenClass {
         return ok("openai", Some("https://api.openai.com/v1"));
     }
     ok("openai", None)
+}
+
+/// Подсказка по имени поля: ключи Z.ai и BigModel (GLM) работают с Anthropic-совместимым адресом.
+pub fn pointer_hint(pointer: &str) -> Option<(&'static str, &'static str)> {
+    let p = pointer.to_lowercase();
+    if p.contains("bigmodel") {
+        Some(("anthropic", "https://open.bigmodel.cn/api/anthropic"))
+    } else if p.contains("zai") || p.contains("z.ai") {
+        Some(("anthropic", "https://api.z.ai/api/anthropic"))
+    } else {
+        None
+    }
 }
 
 /// Адрес API, который агент сам записал в файле (baseURL, endpoint…): только https или http на этом компьютере.
@@ -868,7 +900,8 @@ pub fn list_keys(home: &Path, agent_id: &str) -> Result<Vec<KeyCandidate>, Strin
             }
             let c = classify_token(&secret);
             let file = display(home, &f);
-            let base_url = base_url_near(&v, &ptr).or_else(|| c.base_url.map(String::from));
+            let hint = pointer_hint(&ptr);
+            let base_url = base_url_near(&v, &ptr).or_else(|| c.base_url.map(String::from)).or_else(|| hint.map(|h| h.1.to_string()));
             let kind = base_url.as_deref().map(|u| kind_for_url(u, c.kind)).unwrap_or_else(|| c.kind.into());
             out.push(KeyCandidate {
                 id: format!("{file}|{ptr}"),
@@ -1143,6 +1176,10 @@ mod tests {
     #[test]
     fn tokens_are_classified_by_shape() {
         assert!(classify_token("sk-ant-oat01-aaaaaaaaaaaaaaaaaaaaaaaa").blocked.is_some());
+        // зашифрованное самим приложением
+        for enc in ["enc:AAAAAAAAAAAAAAAAAAAAAAAA", "djEwAAAAAAAAAAAAAAAAAAAA", "v10AAAAAAAAAAAAAAAAAAAAAAAA"] {
+            assert!(classify_token(enc).blocked.is_some(), "{enc}");
+        }
         assert!(classify_token("sk-ant-ort01-aaaaaaaaaaaaaaaaaaaaaaaa").blocked.is_some());
         assert!(classify_token("ya29.a0AfH6SMBxxxxxxxxxxxxxxxxxxxxxx").blocked.is_some());
         let chatgpt = jwt(json!({"https://api.openai.com/auth": {"chatgpt_plan_type": "plus"}}));
@@ -1252,6 +1289,49 @@ mod tests {
         // не больше 100
         let many = json!({"p": {"apiKey": "k".repeat(40), "models": (0..300).map(|i| format!("m{i}")).collect::<Vec<_>>()}});
         assert_eq!(models_near(&many, "/p/apiKey").len(), 100);
+    }
+
+    #[test]
+    fn plan_can_be_read_from_a_field_name() {
+        assert_eq!(plan_from_key_name("account-provider:coding-plan:account:zai-individual-coding-plan:account:86865637:api-key").as_deref(), Some("Zai individual coding plan"));
+        assert_eq!(plan_from_key_name("oauth:zai:access_token"), None);
+        assert_eq!(plan_from_key_name("coding-plan"), None);
+        assert_eq!(pointer_hint("/account-provider:coding-plan:account:zai-individual-coding-plan:api-key").map(|h| h.0), Some("anthropic"));
+        assert!(pointer_hint("/x/apiKey").is_none());
+    }
+
+    #[test]
+    fn zcode_and_autoclaw_style_agents_are_found() {
+        let home = std::env::temp_dir().join(format!("aide-zc-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&home);
+        let w = |rel: &str, v: Value| {
+            let p = home.join(rel);
+            fs::create_dir_all(p.parent().unwrap()).unwrap();
+            fs::write(p, serde_json::to_string(&v).unwrap()).unwrap();
+        };
+        w(".zcode/v2/credentials.json", json!({
+            "oauth:zai:access_token": "a".repeat(80),
+            "zcodejwttoken": "j".repeat(60),
+            "account-provider:coding-plan:account:zai-individual-coding-plan:account:11111111-2222:api-key": "k".repeat(64)
+        }));
+        w(".zcode/v2/config.json", json!({"provider": {"builtin:zai": {"options": {"apiKey": "", "baseURL": "https://api.z.ai/api/anthropic"}}}}));
+        w("AppData/Roaming/autoclaw/auth.json", json!({
+            "userInfo": {"user_name": "Abubakr", "email": "me@example.com", "account_type": "personal"},
+            "token": "t".repeat(80), "refreshToken": "r".repeat(80)
+        }));
+        let list = scan(&home);
+        let z = list.iter().find(|a| a.id == "found-zcode").expect("zcode");
+        assert!(z.signed_in && z.plan.as_deref() == Some("Zai individual coding plan"), "{z:#?}");
+        let keys = list_keys(&home, "found-zcode").unwrap();
+        let k = keys.iter().find(|k| k.field.contains("api-key")).expect("coding plan key");
+        assert_eq!(k.kind, "anthropic");
+        assert_eq!(k.base_url.as_deref(), Some("https://api.z.ai/api/anthropic"));
+        let a = list.iter().find(|a| a.id == "found-autoclaw").expect("autoclaw");
+        assert!(a.signed_in && a.account.as_deref() == Some("me***@example.com"), "{a:#?}");
+        assert!(a.facts.iter().any(|(k, v)| k == "Оплата" && v == "personal"), "{:?}", a.facts);
+        let dump = format!("{list:?}{keys:?}");
+        assert!(!dump.contains("aaaaaaaaaa") && !dump.contains("kkkkkkkkkk") && !dump.contains("tttttttttt") && !dump.contains("me@example.com"));
+        let _ = fs::remove_dir_all(&home);
     }
 
     #[test]
