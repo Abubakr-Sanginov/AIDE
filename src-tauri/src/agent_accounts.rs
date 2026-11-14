@@ -335,7 +335,7 @@ const AI_WORDS: &[&str] = &[
     "ai", "llm", "gpt", "agent", "agents", "copilot", "assistant", "claude", "codex", "gemini", "cursor", "windsurf", "cline",
     "aider", "kimi", "qwen", "mistral", "deepseek", "grok", "perplexity", "genspark", "accio", "codebuddy", "cagent", "dust", "droid",
     "opencode", "antigravity", "openrouter", "anthropic", "openai", "chatgpt", "crush", "goose", "zed", "tabnine", "codeium", "continue",
-    "autoclaw", "openclaw", "zcode", "hermes", "bigmodel", "zai", "glm", "kiro", "trae",
+    "autoclaw", "openclaw", "zcode", "hermes", "bigmodel", "zai", "glm", "kiro", "trae", "sharrowkin",
 ];
 
 fn name_tokens(name: &str) -> Vec<String> {
@@ -1289,6 +1289,24 @@ mod tests {
         // не больше 100
         let many = json!({"p": {"apiKey": "k".repeat(40), "models": (0..300).map(|i| format!("m{i}")).collect::<Vec<_>>()}});
         assert_eq!(models_near(&many, "/p/apiKey").len(), 100);
+    }
+
+    #[test]
+    fn sharrowkin_is_listed_by_name_and_its_dpapi_keys_stay_unread() {
+        let home = std::env::temp_dir().join(format!("aide-sk-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&home);
+        fs::create_dir_all(home.join(".sharrowkin/plugins")).unwrap();
+        fs::create_dir_all(home.join("AppData/Local/com.narelabs.sharrowkin/provider-keys")).unwrap();
+        // зашифрованный Windows файл ключа (DPAPI): это не JSON, читать его не нужно и нельзя
+        fs::write(home.join("AppData/Local/com.narelabs.sharrowkin/provider-keys/custom-x.dpapi"), [1u8, 0, 0, 0, 0xd0, 0x8c, 0x9d, 0xdf]).unwrap();
+        let list = scan(&home);
+        let ids: Vec<&str> = list.iter().map(|a| a.id.as_str()).collect();
+        assert!(ids.contains(&"found-sharrowkin"), "{ids:?}");
+        assert!(ids.contains(&"found-com.narelabs.sharrowkin") || ids.iter().any(|i| i.contains("sharrowkin")), "{ids:?}");
+        assert!(list.iter().filter(|a| a.id.contains("sharrowkin")).all(|a| a.plan.is_none() && a.account.is_none()));
+        // ключей для подключения нет: файлы .dpapi не входят в список файлов входа
+        assert!(list_keys(&home, "found-sharrowkin").unwrap().is_empty());
+        let _ = fs::remove_dir_all(&home);
     }
 
     #[test]

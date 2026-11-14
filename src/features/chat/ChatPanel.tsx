@@ -360,8 +360,8 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
   }, [input]);
 
   // Messages written while the agent works wait and are sent when it finishes.
-  // They stay visible as a numbered list («В очереди N») above the input: the arrow sends the
-  // first one right away (once the current step ends), pencil edits, trash removes, chevron folds.
+  // They stay visible as a numbered list («В очереди N») above the input: the arrow sends that one right away
+  // (it stops the running agent first), pencil edits, trash removes, chevron folds.
   const [queued, setQueued] = useState<QueuedItem[]>([]);
   const [queuedOpen, setQueuedOpen] = useState(true);
   useEffect(() => {
@@ -634,12 +634,14 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
                     </span>
                     <span className="min-w-0 flex-1 truncate text-[13px] text-ink-100">{item.text}</span>
                     <button
-                      title={ru ? rt("Отправить первым, как только агент закончит шаг") : "Send first, as soon as the agent finishes the step"}
-                      aria-label={ru ? rt("Отправить первым") : "Send first"}
+                      title={ru ? rt("Отправить сейчас: прервать агента и отправить это сообщение") : "Send now: stop the agent and send this message"}
+                      aria-label={ru ? rt("Отправить сейчас") : "Send now"}
                       onClick={() => {
                         if (streaming) {
-                          // The arrow never drops the message: it jumps to the front of the queue.
+                          // Forced send: the message goes to the front of the queue and the running work is stopped
+                          // (the answer so far stays); the queue effect then sends the first message right away.
                           setQueued((q) => prioritizeQueued(q, item.id));
+                          stop();
                           return;
                         }
                         setQueued((q) => removeQueued(q, item.id));

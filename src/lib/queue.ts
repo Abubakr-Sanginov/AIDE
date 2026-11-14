@@ -20,7 +20,7 @@ export function nextQueued(list: QueuedItem[]): { first: QueuedItem; rest: Queue
   return { first, rest };
 }
 
-/** The arrow in the queue row: send this one first, right after the current step ends. */
+/** The arrow in the queue row (forced send): this message goes first; the caller stops the running agent so it is sent at once. */
 export function prioritizeQueued(list: QueuedItem[], id: string): QueuedItem[] {
   const item = list.find((x) => x.id === id);
   if (!item) return list;
