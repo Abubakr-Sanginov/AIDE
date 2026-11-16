@@ -8,8 +8,8 @@
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![Версия](https://img.shields.io/github/v/release/Abubakr-Sanginov/AIDE)
 
-Сайт: [aide-site-nine.vercel.app](https://aide-site-nine.vercel.app/)
-Документация: [aide-site-nine.vercel.app/docs](https://aide-site-nine.vercel.app/docs/)
+Сайт: [aide-site-nine.vercel.app](https://aide.victoryapp.online/)
+Документация: [aide-site-nine.vercel.app/docs](https://aide.victoryapp.online/docs/)
 Релизы: [github.com/Abubakr-Sanginov/AIDE/releases](https://github.com/Abubakr-Sanginov/AIDE/releases)
 
 ---
@@ -85,7 +85,7 @@ AIDE — настольное приложение для Windows, в котор
 
 ### Готовый установщик
 
-1. Откройте [страницу загрузки](https://aide-site-nine.vercel.app/#start) или
+1. Откройте [страницу загрузки](https://aide.victoryapp.online/#start) или
    [релизы](https://github.com/Abubakr-Sanginov/AIDE/releases).
 2. Скачайте `AIDE_<версия>_x64-setup.exe` и запустите.
 3. Windows покажет предупреждение SmartScreen: установщик не подписан платным сертификатом издателя. Это не вирус;
@@ -255,14 +255,14 @@ npm run build       # сборка фронтенда
 - Телеметрии нет: приложение не отправляет статистику использования. Наружу уходит только запрос к выбранной вами
   модели, а с локальной моделью — ничего.
 
-Подробности: [политика конфиденциальности](https://aide-site-nine.vercel.app/privacy/) и
-[условия использования](https://aide-site-nine.vercel.app/terms/).
+Подробности: [политика конфиденциальности](https://aide.victoryapp.online/privacy/) и
+[условия использования](https://aide.victoryapp.online/terms/).
 
 ## Ссылки
 
-- Сайт: [aide-site-nine.vercel.app](https://aide-site-nine.vercel.app/)
-- Документация: [aide-site-nine.vercel.app/docs](https://aide-site-nine.vercel.app/docs/)
-- Что нового: [aide-site-nine.vercel.app/changelog](https://aide-site-nine.vercel.app/changelog/)
+- Сайт: [aide-site-nine.vercel.app](https://aide.victoryapp.online/)
+- Документация: [aide-site-nine.vercel.app/docs](https://aide.victoryapp.online/docs/)
+- Что нового: [aide-site-nine.vercel.app/changelog](https://aide.victoryapp.online/changelog/)
 - Релизы: [github.com/Abubakr-Sanginov/AIDE/releases](https://github.com/Abubakr-Sanginov/AIDE/releases)
 
 ## Автор

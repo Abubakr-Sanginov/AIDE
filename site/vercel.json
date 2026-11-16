@@ -5,6 +5,14 @@
   "installCommand": "npm ci",
   "trailingSlash": true,
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "aide-site-nine.vercel.app" }],
+      "destination": "https://aide.victoryapp.online/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
