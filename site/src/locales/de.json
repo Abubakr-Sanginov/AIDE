@@ -260,5 +260,6 @@
   "head.8": "Nutzungsbedingungen — AIDE",
   "head.9": "Nutzungsbedingungen für AIDE: was mit der App und der Website erlaubt ist und was nicht, wer für die Ergebnisse des Agenten haftet und wie Streitigkeiten gelöst werden.",
   "head.10": "Datenschutzerklärung — AIDE",
-  "head.11": "Datenschutz bei AIDE: welche Daten auf dem Rechner bleiben, was beim Aufruf eines Modells das Gerät verlässt, wo Schlüssel liegen und warum es keine Telemetrie gibt."
+  "head.11": "Datenschutz bei AIDE: welche Daten auf dem Rechner bleiben, was beim Aufruf eines Modells das Gerät verlässt, wo Schlüssel liegen und warum es keine Telemetrie gibt.",
+  "start.7": "Quellcode auf GitHub"
 }

@@ -330,6 +330,12 @@ main, .foot { position: relative; z-index: 2; }
 .start__btn:active { transform: scale(0.98); }
 .start__btn:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
 .start__dl-meta { display: flex; flex-wrap: wrap; gap: 6px; color: var(--muted); font-size: 12px; }
+/* A secondary action next to the download button: the source code. */
+.start__ghost { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 22px; border-radius: 14px; border: 1px solid var(--line-strong); color: var(--cream); text-decoration: none; font-weight: 500; font-size: 15px; transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease); }
+.start__ghost:hover { border-color: var(--peach); color: var(--peach); background: rgba(255, 255, 255, 0.03); }
+.start__ghost:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+.start__ghost svg { flex: none; opacity: .85; }
+
 .cmds { display: grid; gap: 12px; }
 .cmd { display: flex; align-items: center; gap: 16px; padding: 8px 8px 8px 20px; border-radius: 18px; border: 1px solid var(--line-strong); background: rgba(29, 24, 20, 0.7); }
 .cmd__n { color: var(--peach); }
