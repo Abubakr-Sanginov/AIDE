@@ -112,6 +112,8 @@
   "start.2": "Copier npm install",
   "start.3": "Copier",
   "start.4": "Copier npm run tauri dev",
+  "start.5": "Télécharger pour Windows",
+  "start.6": "Programme d'installation · Windows 10/11 · 64 bits",
   "tab-design.1": "Design",
   "top.1": "Plan du logo AIDE",
   "top.2": "Plan n° 01 — AIDE",
@@ -246,5 +248,11 @@
   "live.23": "Tablette",
   "live.24": "Ordinateur",
   "live.25": "pas de défilement latéral",
-  "live.26": "boutons à partir de 44 px"
+  "live.26": "boutons à partir de 44 px",
+  "h-023.1": "Mises à jour depuis l'application",
+  "v0-2-3.1": "Version actuelle",
+  "v0-2-3.2": "L'application se met à jour elle-même : la nouvelle version se télécharge et s'installe depuis AIDE.",
+  "v0-2-3.3": "Les versions sont compilées et signées sur GitHub — les fichiers de mise à jour sont vérifiés par signature.",
+  "v0-2-3.4": "Le nom de l'auteur dans le coin supérieur droit de la fenêtre.",
+  "v0-2-3.5": "Un bouton Télécharger sur le site : l'installateur en un clic."
 }

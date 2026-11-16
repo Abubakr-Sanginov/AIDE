@@ -112,6 +112,8 @@
   "start.2": "npm install kopieren",
   "start.3": "Kopieren",
   "start.4": "npm run tauri dev kopieren",
+  "start.5": "Für Windows herunterladen",
+  "start.6": "Installer · Windows 10/11 · 64-Bit",
   "tab-design.1": "Design",
   "top.1": "Bauplan des AIDE-Logos",
   "top.2": "Bauplan Nr. 01 – AIDE",
@@ -246,5 +248,11 @@
   "live.23": "Tablet",
   "live.24": "Desktop",
   "live.25": "kein seitliches Scrollen",
-  "live.26": "Buttons ab 44 px"
+  "live.26": "Buttons ab 44 px",
+  "h-023.1": "Updates aus der App",
+  "v0-2-3.1": "Aktuelle Version",
+  "v0-2-3.2": "Die App aktualisiert sich selbst: eine neue Version wird direkt aus AIDE geladen und installiert.",
+  "v0-2-3.3": "Releases werden auf GitHub gebaut und signiert — Updatedateien werden gegen die Signatur geprüft.",
+  "v0-2-3.4": "Der Name des Autors oben rechts im Fenster.",
+  "v0-2-3.5": "Ein Download-Knopf auf der Website: Installer mit einem Klick."
 }

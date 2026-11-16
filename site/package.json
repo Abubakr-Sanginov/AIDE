@@ -6,6 +6,7 @@
   "scripts": {
     "prebuild": "node -e \"require('fs').rmSync('js',{recursive:true,force:true})\"",
     "build": "esbuild src/mode.js --bundle --minify --format=iife --target=es2017 --charset=utf8 --outfile=js/mode.js && esbuild src/app.js --bundle --splitting --minify --format=esm --target=es2022 --charset=utf8 --outdir=js --chunk-names=[name]-[hash] && node scripts/build-pages.mjs",
+    "build:vercel": "npm run build && node scripts/collect-dist.mjs",
     "dev": "vite . --port 4321 --strictPort --host 127.0.0.1",
     "i18n:extract": "node scripts/i18n-extract.mjs"
   },

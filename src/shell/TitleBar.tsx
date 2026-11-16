@@ -226,6 +226,13 @@ export function TitleBar() {
             </button>
           </div>
         )}
+        <span
+          data-tauri-drag-region
+          title="Автор"
+          className="mr-3 hidden max-w-[190px] truncate align-middle text-[12px] font-medium text-ink-400 md:inline-block"
+        >
+          Сангинов Абубакр
+        </span>
         <button
           className="aide-icon-button mr-3 size-8"
           title={t("activityBar.settings")}

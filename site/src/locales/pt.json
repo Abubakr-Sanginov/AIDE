@@ -112,6 +112,8 @@
   "start.2": "Copiar npm install",
   "start.3": "Copiar",
   "start.4": "Copiar npm run tauri dev",
+  "start.5": "Baixar para Windows",
+  "start.6": "Instalador · Windows 10/11 · 64 bits",
   "tab-design.1": "Design",
   "top.1": "Planta do logo do AIDE",
   "top.2": "Planta nº 01 — AIDE",
@@ -246,5 +248,11 @@
   "live.23": "Tablet",
   "live.24": "Computador",
   "live.25": "sem rolagem lateral",
-  "live.26": "botões a partir de 44 px"
+  "live.26": "botões a partir de 44 px",
+  "h-023.1": "Atualizações de dentro do app",
+  "v0-2-3.1": "Versão atual",
+  "v0-2-3.2": "O app se atualiza sozinho: a nova versão é baixada e instalada direto do AIDE.",
+  "v0-2-3.3": "As versões são compiladas e assinadas no GitHub: os arquivos de atualização são verificados pela assinatura.",
+  "v0-2-3.4": "O nome do autor no canto superior direito da janela.",
+  "v0-2-3.5": "Um botão Baixar no site: o instalador em um clique."
 }
