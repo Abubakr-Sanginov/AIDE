@@ -462,4 +462,24 @@
     <xhtml:link rel="alternate" hreflang="ko" href="https://aide-site-nine.vercel.app/ko/changelog/"/>
     <xhtml:link rel="alternate" hreflang="tg" href="https://aide-site-nine.vercel.app/tg/changelog/"/>
   </url>
+  <url>
+    <loc>https://aide-site-nine.vercel.app/terms/</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://aide-site-nine.vercel.app/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://aide-site-nine.vercel.app/en/terms/"/>
+  </url>
+  <url>
+    <loc>https://aide-site-nine.vercel.app/en/terms/</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://aide-site-nine.vercel.app/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://aide-site-nine.vercel.app/en/terms/"/>
+  </url>
+  <url>
+    <loc>https://aide-site-nine.vercel.app/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://aide-site-nine.vercel.app/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://aide-site-nine.vercel.app/en/privacy/"/>
+  </url>
+  <url>
+    <loc>https://aide-site-nine.vercel.app/en/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://aide-site-nine.vercel.app/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://aide-site-nine.vercel.app/en/privacy/"/>
+  </url>
 </urlset>

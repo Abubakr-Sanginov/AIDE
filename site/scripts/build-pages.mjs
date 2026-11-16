@@ -10,21 +10,40 @@ import { parse, serialize, defaultTreeAdapter as ta } from "parse5";
 
 const ROOT = new URL("../", import.meta.url);
 const LANGS = ["ru", "en", "de", "fr", "es", "pt", "it", "zh", "ja", "ko", "tg"];
-const PAGES = ["", "docs/", "changelog/"]; // folder of each source page, relative to the site root
+// Every source page and the languages it is published in. The legal pages are authoritative in
+// Russian and English only: the other languages get their language menu and links pointing at the
+// English version instead of a page that does not exist.
+const PAGES = [
+  { dir: "", langs: LANGS },
+  { dir: "docs/", langs: LANGS },
+  { dir: "changelog/", langs: LANGS },
+  { dir: "terms/", langs: ["ru", "en"] },
+  { dir: "privacy/", langs: ["ru", "en"] },
+];
+const FALLBACK_LANG = "en"; // a string missing in a locale is shown in English, never as a blank
 const HTML_NS = "http://www.w3.org/1999/xhtml";
 
+const langsOf = (page) => (PAGES.find((p) => p.dir === page) || { langs: LANGS }).langs;
+/** The language a page is really served in: the requested one, or English when it is not published there. */
+const langOf = (lang, page) => (langsOf(page).includes(lang) ? lang : FALLBACK_LANG);
+const pageDir = (v) => (v.endsWith("/") ? v : v + "/");
+
 const config = existsSync(new URL("site.config.json", ROOT)) ? JSON.parse(readFileSync(new URL("site.config.json", ROOT), "utf8")) : {};
+const EN = JSON.parse(readFileSync(new URL("src/locales/en.json", ROOT), "utf8"));
 const base = typeof config.url === "string" && /^https:\/\/\S+$/.test(config.url) ? config.url.replace(/\/?$/, "/") : "";
 if (!base) console.warn("build-pages: site.config.json has no https \"url\" — hreflang links are relative; canonical, sitemap and robots are skipped.");
 
 const depth = (lang, page) => (lang === "ru" ? 0 : 1) + page.split("/").filter(Boolean).length;
 const pathOf = (lang, page) => (lang === "ru" ? "" : lang + "/") + page;
-/** URL of `page` in `to`, as seen from the same page in `from`. */
-const href = (to, page, from) => (base ? base + pathOf(to, page) : "../".repeat(depth(from, page)) + pathOf(to, page) || "./");
+/** URL of `page` in `to`, as seen from the same page in `from`. Falls back to English when `page` is not published in `to`. */
+const href = (to, page, from) => {
+  const target = pathOf(langOf(to, page), page);
+  return base ? base + target : "../".repeat(depth(from, page)) + target || "./";
+};
 
 const escAttr = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 function headBlock(lang, page) {
-  const links = LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${escAttr(href(l, page, lang))}">`);
+  const links = langsOf(page).map((l) => `<link rel="alternate" hreflang="${l}" href="${escAttr(href(l, page, lang))}">`);
   links.push(`<link rel="alternate" hreflang="x-default" href="${escAttr(href("ru", page, lang))}">`);
   if (base) links.push(`<link rel="canonical" href="${escAttr(href(lang, page, lang))}">`);
   return "<!-- hreflang -->\n  " + links.join("\n  ") + "\n  <!-- /hreflang -->";
@@ -59,6 +78,8 @@ const deeper = (u) => (u === "./" ? "../" : LOCAL.test(u) ? "../" + u.replace(/^
 
 function build(lang, page, source, dict) {
   const missing = [];
+  // A key the locale does not translate yet is shown in English rather than breaking the build.
+  const say = (k) => (typeof dict[k] === "string" ? dict[k] : typeof EN[k] === "string" ? EN[k] : undefined);
   const doc = parse(source.replace(/<!-- hreflang -->[\s\S]*?<!-- \/hreflang -->/, headBlock(lang, page)));
   let head = null;
   walk(doc, (n) => {
@@ -75,13 +96,17 @@ function build(lang, page, source, dict) {
       if (to.value === lang) setAttr(n, "aria-current", "true"); else n.attrs = n.attrs.filter((a) => a.name !== "aria-current");
       return;
     }
+    // Links between pages (data-page): the same language, or the English page when it is not published in this one.
+    const target = attr(n, "data-page");
+    if (n.tagName === "a" && target) setAttr(n, "href", href(lang, pageDir(target.value), lang));
     if (lang === "ru") return; // sources keep their Russian text and paths
     const key = attr(n, "data-i18n");
-    if (key) { if (typeof dict[key.value] === "string") render(n, dict[key.value]); else missing.push(key.value); }
+    if (key) { const text = say(key.value); if (text !== undefined) render(n, text); else missing.push(key.value); }
     const pairs = attr(n, "data-i18n-attr");
     if (pairs) pairs.value.split(";").forEach((p) => {
       const [name, k] = p.split(":");
-      if (name && typeof dict[k] === "string") setAttr(n, name, dict[k]); else if (name) missing.push(k);
+      const text = name ? say(k) : undefined;
+      if (text !== undefined) setAttr(n, name, text); else if (name) missing.push(k);
     });
     const rel = attr(n, "rel");
     if (n.tagName === "link" && rel && /alternate|canonical/.test(rel.value)) return;
@@ -93,7 +118,7 @@ function build(lang, page, source, dict) {
   if (missing.length) throw new Error(`${lang}/${page}: missing keys ${[...new Set(missing)].join(", ")}`);
   if (lang !== "ru") {
     // Strings the script sets at runtime (copy buttons, lite toggle, toast): a JSON data block, not executable.
-    const js = Object.fromEntries(Object.entries(dict).filter(([k]) => k.startsWith("js.")));
+    const js = Object.fromEntries(Object.entries({ ...EN, ...dict }).filter(([k]) => k.startsWith("js.")));
     const block = ta.createElement("script", HTML_NS, [{ name: "type", value: "application/json" }, { name: "id", value: "i18n-js" }]);
     ta.insertText(block, JSON.stringify(js).replace(/</g, "\\u003c"));
     ta.appendChild(head, block);
@@ -105,10 +130,10 @@ function build(lang, page, source, dict) {
 }
 
 let count = 0;
-for (const page of PAGES) {
+for (const { dir: page, langs } of PAGES) {
   const source = readFileSync(new URL(page + "index.html", ROOT), "utf8");
   if (!source.includes("<!-- hreflang -->")) throw new Error(`${page || "/"}index.html: missing <!-- hreflang --><!-- /hreflang --> marker`);
-  for (const lang of LANGS) {
+  for (const lang of langs) {
     const dict = lang === "ru" ? {} : JSON.parse(readFileSync(new URL(`src/locales/${lang}.json`, ROOT), "utf8"));
     build(lang, page, source, dict);
     count++;
@@ -116,11 +141,11 @@ for (const page of PAGES) {
 }
 
 if (base) {
-  const urls = PAGES.flatMap((page) => LANGS.map((l) => {
-    const alts = LANGS.map((a) => `    <xhtml:link rel="alternate" hreflang="${a}" href="${href(a, page, l)}"/>`).join("\n");
+  const urls = PAGES.flatMap(({ dir: page, langs }) => langs.map((l) => {
+    const alts = langs.map((a) => `    <xhtml:link rel="alternate" hreflang="${a}" href="${href(a, page, l)}"/>`).join("\n");
     return `  <url>\n    <loc>${href(l, page, l)}</loc>\n${alts}\n  </url>`;
   })).join("\n");
   writeFileSync(new URL("sitemap.xml", ROOT), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`);
   writeFileSync(new URL("robots.txt", ROOT), `User-agent: *\nAllow: /\n\nSitemap: ${base}sitemap.xml\n`);
 }
-console.log(`build-pages: ${count} pages (${PAGES.length} × ${LANGS.length} languages)` + (base ? " + sitemap.xml, robots.txt" : ""));
+console.log(`build-pages: ${count} pages` + (base ? " + sitemap.xml, robots.txt" : ""));

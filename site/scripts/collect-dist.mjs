@@ -6,8 +6,8 @@ import { cpSync, existsSync, mkdirSync, rmSync, copyFileSync, readdirSync } from
 const ROOT = new URL("../", import.meta.url);
 const DIST = new URL("dist/", ROOT);
 const LANGS = ["en", "de", "fr", "es", "pt", "it", "zh", "ja", "ko", "tg"];
-// Russian pages live in the root (index.html, docs/, changelog/); every other language in its own folder.
-const DIRS = ["js", "fonts", "img", "downloads", "docs", "changelog", ...LANGS];
+// Russian pages live in the root (index.html, docs/, changelog/, terms/, privacy/); every other language in its own folder.
+const DIRS = ["js", "fonts", "img", "downloads", "docs", "changelog", "terms", "privacy", ...LANGS];
 const FILES = ["index.html", "styles.css", "favicon.ico", "site.webmanifest", "sitemap.xml", "robots.txt"];
 
 rmSync(DIST, { recursive: true, force: true });

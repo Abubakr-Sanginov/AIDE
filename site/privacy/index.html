@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru" data-page-path="privacy/"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="head.10">Политика конфиденциальности — AIDE</title>
+  <meta name="description" content="Политика конфиденциальности AIDE: какие данные остаются на компьютере, что уходит в сеть при запросе к модели, где хранятся ключи и почему телеметрии нет." data-i18n-attr="content:head.11">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#110e0c">
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="ru" href="https://aide-site-nine.vercel.app/privacy/">
+  <link rel="alternate" hreflang="en" href="https://aide-site-nine.vercel.app/en/privacy/">
+  <link rel="alternate" hreflang="x-default" href="https://aide-site-nine.vercel.app/privacy/">
+  <link rel="canonical" href="https://aide-site-nine.vercel.app/privacy/">
+  <!-- /hreflang -->
+  <link rel="icon" href="../img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <script src="../js/mode.js"></script>
+  <script type="module" src="../js/app.js"></script>
+</head>
+<body class="page">
+<a class="skip" href="#main" data-i18n="page.1">К содержимому</a>
+<div class="glow glow--static" aria-hidden="true"></div>
+
+<header class="nav glass">
+  <a class="wordmark" href="../" aria-label="AIDE — на главную" data-i18n-attr="aria-label:nav.8">AIDE</a>
+  <nav aria-label="Разделы" data-i18n-attr="aria-label:nav.2">
+    <ul>
+      <li><a href="../#features" data-i18n="nav.4">Возможности</a></li>
+      <li><a href="../#crew" data-i18n="nav.5">Экипаж</a></li>
+      <li><a href="https://aide-site-nine.vercel.app/docs/" data-page="docs" data-i18n="foot.4">Документация</a></li>
+      <li><a href="./" aria-current="page" data-i18n="foot.7">Конфиденциальность</a></li>
+      <li><a href="../changelog/" data-i18n="foot.5">Что нового</a></li>
+      <li class="lang">
+        <button class="lang__btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Язык" data-i18n-attr="aria-label:js.lang"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"></path></svg><span class="lang__code">RU</span></button>
+        <ul class="lang__menu" id="lang-menu" translate="no" hidden="">
+          <li><a href="https://aide-site-nine.vercel.app/privacy/" hreflang="ru" lang="ru" data-lang="ru" aria-current="true"><span class="lang__iso">RU</span>Русский</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="en" lang="en" data-lang="en"><span class="lang__iso">EN</span>English</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="de" lang="de" data-lang="de"><span class="lang__iso">DE</span>Deutsch</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="fr" lang="fr" data-lang="fr"><span class="lang__iso">FR</span>Français</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="es" lang="es" data-lang="es"><span class="lang__iso">ES</span>Español</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="pt" lang="pt" data-lang="pt"><span class="lang__iso">PT</span>Português</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="it" lang="it" data-lang="it"><span class="lang__iso">IT</span>Italiano</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="zh" lang="zh" data-lang="zh"><span class="lang__iso">ZH</span>中文</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="ja" lang="ja" data-lang="ja"><span class="lang__iso">JA</span>日本語</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="ko" lang="ko" data-lang="ko"><span class="lang__iso">KO</span>한국어</a></li>
+          <li><a href="https://aide-site-nine.vercel.app/en/privacy/" hreflang="tg" lang="tg" data-lang="tg"><span class="lang__iso">TG</span>Тоҷикӣ</a></li>
+        </ul>
+      </li>
+      <li><a class="nav__cta" href="../#start" data-i18n="nav.7">Запуск</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main" class="doc wrap">
+
+  <aside class="doc__toc" aria-labelledby="toc-title">
+    <p class="mono" id="toc-title" data-i18n="toc-title.1">Содержание</p>
+    <ol>
+      <li><a href="#p-1" data-i18n="p-sum.1">Коротко о главном</a></li>
+      <li><a href="#p-2" data-i18n="p-who.1">Кто отвечает за обработку</a></li>
+      <li><a href="#p-3" data-i18n="p-none.1">Какие данные мы не собираем</a></li>
+      <li><a href="#p-4" data-i18n="p-local.1">Что хранится на компьютере</a></li>
+      <li><a href="#p-5" data-i18n="p-net.1">Что уходит в сеть</a></li>
+      <li><a href="#p-6" data-i18n="p-keys.1">Ключи доступа</a></li>
+      <li><a href="#p-7" data-i18n="p-lm.1">Локальные модели</a></li>
+      <li><a href="#p-8" data-i18n="p-site.1">Сайт, cookies и журналы</a></li>
+      <li><a href="#p-9" data-i18n="p-dl.1">Скачивание установщика</a></li>
+      <li><a href="#p-10" data-i18n="p-share.1">Передача третьим лицам</a></li>
+      <li><a href="#p-11" data-i18n="p-keep.1">Сроки хранения</a></li>
+      <li><a href="#p-12" data-i18n="p-rights.1">Ваши права</a></li>
+      <li><a href="#p-13" data-i18n="p-sec.1">Безопасность</a></li>
+      <li><a href="#p-14" data-i18n="p-kids.1">Дети</a></li>
+      <li><a href="#p-15" data-i18n="p-change.1">Изменения политики</a></li>
+      <li><a href="#p-16" data-i18n="p-contact.1">Контакты</a></li>
+    </ol>
+  </aside>
+
+  <article class="doc__body">
+    <header class="doc__head">
+      <p class="kicker mono"><span>AIDE</span> <span data-i18n="foot.7">Конфиденциальность</span></p>
+      <h1 class="display display--md" data-i18n="privacy-title.1">Политика<br>конфиденциальности</h1>
+      <p class="doc__lead" data-i18n="privacy-title.2">Что AIDE делает с вашими данными, что хранит на компьютере, что и когда отправляет в сеть — и чего не делает вовсе.</p>
+      <p class="doc__note mono" data-i18n="privacy-title.3">Редакция от 16 ноября 2026 года</p>
+    </header>
+
+    <section id="p-1" aria-labelledby="ph-1">
+      <h2 id="ph-1" data-i18n="p-sum.1">Коротко о главном</h2>
+      <ul class="doc__list">
+        <li data-i18n="p-sum.2">Программа не собирает телеметрию и не ведёт статистику использования.</li>
+        <li data-i18n="p-sum.3">Ваш код остаётся на вашем диске.</li>
+        <li data-i18n="p-sum.4">В сеть уходит только запрос к выбранной вами модели — и только если эта модель внешняя.</li>
+        <li data-i18n="p-sum.5">Ключи доступа хранятся в защищённом хранилище Windows, а не в файлах проекта.</li>
+      </ul>
+    </section>
+
+    <section id="p-2" aria-labelledby="ph-2">
+      <h2 id="ph-2" data-i18n="p-who.1">Кто отвечает за обработку</h2>
+      <p data-i18n="p-who.2">Программу AIDE и сайт, через который она распространяется, ведёт автор проекта — Сангинов Абубакр. Он определяет, какие данные нужны для работы программы, и отвечает за их защиту в пределах своих возможностей.</p>
+      <p data-i18n="p-who.3">Обработка происходит по большей части на вашем компьютере. Серверной части у программы нет: нет учётной записи и нет сервера, который хранил бы ваши проекты.</p>
+    </section>
+
+    <section id="p-3" aria-labelledby="ph-3">
+      <h2 id="ph-3" data-i18n="p-none.1">Какие данные мы не собираем</h2>
+      <ul class="doc__list">
+        <li data-i18n="p-none.2">Ни телеметрии, ни аналитики использования: программа не отправляет отчётов о том, что вы открывали и какие кнопки нажимали.</li>
+        <li data-i18n="p-none.3">Ни содержимого ваших проектов, файлов и переписки с агентом на наши серверы — таких серверов нет.</li>
+        <li data-i18n="p-none.4">Ни списка установленных программ, ни имён файлов, ни истории браузера.</li>
+        <li data-i18n="p-none.5">Ни рекламных идентификаторов и профилей для рекламы.</li>
+      </ul>
+    </section>
+
+    <section id="p-4" aria-labelledby="ph-4">
+      <h2 id="ph-4" data-i18n="p-local.1">Что хранится на компьютере</h2>
+      <p data-i18n="p-local.2">Всё, что нужно программе для работы, лежит у вас локально:</p>
+      <dl class="doc__defs">
+        <div><dt data-i18n="p-local.3">Проекты и файлы</dt><dd data-i18n="p-local.4">В тех папках, которые вы открыли. Программа пишет в них только по вашей команде или с вашего разрешения.</dd></div>
+        <div><dt data-i18n="p-local.5">Настройки и история чата</dt><dd data-i18n="p-local.6">В служебной папке приложения в вашем профиле Windows: тема, язык, размер шрифта, список провайдеров, история разговоров по проектам.</dd></div>
+        <div><dt data-i18n="p-local.7">Ключи API</dt><dd data-i18n="p-local.8">В хранилище учётных данных Windows (Credential Manager), по записи на каждого провайдера. Файлы проекта их не содержат.</dd></div>
+        <div><dt data-i18n="p-local.9">Снимки для отмены</dt><dd data-i18n="p-local.10">Чекпоинты перед правками агента — временные, нужны для кнопки «Отменить».</dd></div>
+      </dl>
+    </section>
+
+    <section id="p-5" aria-labelledby="ph-5">
+      <h2 id="ph-5" data-i18n="p-net.1">Что уходит в сеть</h2>
+      <p data-i18n="p-net.2">Единственный обязательный выход в интернет — запрос к модели, которую вы выбрали. В него попадает то, что вы отправили: текст задачи, приложенные файлы и тот код или фрагменты проекта, которые нужны для ответа.</p>
+      <ul class="doc__list">
+        <li data-i18n="p-net.3"><b>Кому.</b> Провайдеру модели, которого вы настроили: OpenAI, Anthropic, Google или ваш собственный сервер. Дальше действуют его политика и его правила.</li>
+        <li data-i18n="p-net.4"><b>Проверка обновлений.</b> Программа обращается к странице релизов на GitHub, чтобы узнать номер новой версии. Это обычный запрос за файлом, содержимое проектов в нём не передаётся.</li>
+        <li data-i18n="p-net.5"><b>Страницы по просьбе агента.</b> Если задача требует открыть страницу в интернете, адрес уходит на соответствующий сайт — так же, как если бы вы открыли его в браузере.</li>
+        <li data-i18n="p-net.6"><b>Ничего сверх этого.</b> Никаких фоновых отчётов, счётчиков и «обезличенной статистики» программа не отправляет.</li>
+      </ul>
+    </section>
+
+    <section id="p-6" aria-labelledby="ph-6">
+      <h2 id="ph-6" data-i18n="p-keys.1">Ключи доступа</h2>
+      <p data-i18n="p-keys.2">Ключ API — это пароль к вашему аккаунту у провайдера модели. Программа хранит его в Credential Manager Windows, в зашифрованном виде, отдельно для каждого провайдера.</p>
+      <ul class="doc__list">
+        <li data-i18n="p-keys.3">Ключ не пишется в файлы проекта, не попадает в репозиторий и не выводится в журналы.</li>
+        <li data-i18n="p-keys.4">Ключ не пересылается модели в тексте запроса и не показывается в интерфейсе после сохранения.</li>
+        <li data-i18n="p-keys.5">Удалить ключ можно в настройках — запись стирается из хранилища.</li>
+      </ul>
+    </section>
+
+    <section id="p-7" aria-labelledby="ph-7">
+      <h2 id="ph-7" data-i18n="p-lm.1">Локальные модели</h2>
+      <p data-i18n="p-lm.2">Если вы подключили модель, запущенную на этом же компьютере (например, Ollama или LM Studio), запросы идут на локальный адрес и не покидают машину. В этом режиме программа может работать полностью без интернета — кроме проверки обновлений, которую можно не запускать.</p>
+    </section>
+
+    <section id="p-8" aria-labelledby="ph-8">
+      <h2 id="ph-8" data-i18n="p-site.1">Сайт, cookies и журналы</h2>
+      <p data-i18n="p-site.2">Сайт — статические страницы. На нём нет форм с личными данными, нет рекламных сетей и нет сторонних счётчиков: политика безопасности страниц запрещает подключать чужие скрипты.</p>
+      <ul class="doc__list">
+        <li data-i18n="p-site.3"><b>Cookies.</b> Сайт не ставит cookies для отслеживания. Настройки страницы, например облегчённый режим, хранятся в localStorage вашего браузера и никуда не отправляются.</li>
+        <li data-i18n="p-site.4"><b>Журналы хостинга.</b> Страницы размещены на Vercel. Как любой хостинг, он ведёт технические журналы запросов: адрес страницы, время, тип браузера, IP-адрес. Эти журналы нужны для работы и защиты сайта.</li>
+        <li data-i18n="p-site.5"><b>Язык.</b> Язык страницы определяется адресом, а не профилем посетителя.</li>
+      </ul>
+    </section>
+
+    <section id="p-9" aria-labelledby="ph-9">
+      <h2 id="ph-9" data-i18n="p-dl.1">Скачивание установщика</h2>
+      <p data-i18n="p-dl.2">Установщик отдаётся с этого сайта или со страницы релизов на GitHub. При скачивании хостинг и GitHub видят обычные технические данные запроса. Установщик не содержит встроенных счётчиков и не отправляет отчёт об установке.</p>
+    </section>
+
+    <section id="p-10" aria-labelledby="ph-10">
+      <h2 id="ph-10" data-i18n="p-share.1">Передача третьим лицам</h2>
+      <p data-i18n="p-share.2">Мы не продаём и не передаём данные третьим лицам, потому что их у нас нет. Технические данные сайта обрабатывает хостинг, а запросы к модели — выбранный вами провайдер; с каждым из них действуют их собственные правила.</p>
+    </section>
+
+    <section id="p-11" aria-labelledby="ph-11">
+      <h2 id="ph-11" data-i18n="p-keep.1">Сроки хранения</h2>
+      <p data-i18n="p-keep.2">Данные на вашем компьютере хранятся, пока вы их не удалите: настройки — до удаления программы, история чата — до очистки в интерфейсе или удаления служебной папки, ключи — до удаления в настройках. Технические журналы сайта хранятся у хостинга в течение его стандартного срока.</p>
+    </section>
+
+    <section id="p-12" aria-labelledby="ph-12">
+      <h2 id="ph-12" data-i18n="p-rights.1">Ваши права</h2>
+      <p data-i18n="p-rights.2">Поскольку основная обработка идёт на вашем устройстве, вы сами распоряжаетесь данными: можете посмотреть, изменить и удалить настройки, историю и ключи в любой момент. Если вы считаете, что обработка нарушает ваши права, напишите через страницу проекта на GitHub — обращение разберут по существу.</p>
+    </section>
+
+    <section id="p-13" aria-labelledby="ph-13">
+      <h2 id="ph-13" data-i18n="p-sec.1">Безопасность</h2>
+      <ul class="doc__list">
+        <li data-i18n="p-sec.2">Обмен с внешними сервисами идёт по защищённому соединению.</li>
+        <li data-i18n="p-sec.3">Обновления проверяются по криптографической подписи — подменённый файл программа не установит.</li>
+        <li data-i18n="p-sec.4">Запись файлов, команды терминала и выход в интернет выполняются только после вашего подтверждения.</li>
+        <li data-i18n="p-sec.5">Перед правками снимается чекпоинт, чтобы изменения можно было отменить.</li>
+      </ul>
+    </section>
+
+    <section id="p-14" aria-labelledby="ph-14">
+      <h2 id="ph-14" data-i18n="p-kids.1">Дети</h2>
+      <p data-i18n="p-kids.2">Программа предназначена для разработчиков и не адресована детям. Мы сознательно не собираем данные о детях — впрочем, мы вообще не собираем персональные данные через программу.</p>
+    </section>
+
+    <section id="p-15" aria-labelledby="ph-15">
+      <h2 id="ph-15" data-i18n="p-change.1">Изменения политики</h2>
+      <p data-i18n="p-change.2">Политика может обновляться вместе с программой: например, если появится новая функция, работающая с сетью. Актуальная редакция всегда на этой странице, дата указана в начале. Существенные изменения отмечаются в списке обновлений.</p>
+    </section>
+
+    <section id="p-16" aria-labelledby="ph-16">
+      <h2 id="ph-16" data-i18n="p-contact.1">Контакты</h2>
+      <p data-i18n="p-contact.2">Вопросы о данных и приватности: страница проекта на GitHub, раздел сообщений об ошибках. Автор и ответственный за обработку — Сангинов Абубакр.</p>
+      <p data-i18n="p-contact.3">Эта страница описывает, как устроена работа с данными, и не является юридической консультацией.</p>
+    </section>
+  </article>
+</main>
+
+<footer class="foot foot--page">
+  <div class="foot__row mono">
+    <span data-i18n="foot.2">ИИ-студия в вашем редакторе</span>
+    <span>v0.2.3 · Windows</span>
+    <a href="https://aide-site-nine.vercel.app/docs/" data-page="docs" data-i18n="foot.4">Документация</a>
+    <a href="https://aide-site-nine.vercel.app/changelog/" data-page="changelog" data-i18n="foot.5">Что нового</a>
+    <a href="https://aide-site-nine.vercel.app/terms/" data-page="terms" data-i18n="foot.6">Условия</a>
+    <a href="https://aide-site-nine.vercel.app/privacy/" data-page="privacy" data-i18n="foot.7">Конфиденциальность</a>
+    <a href="#main" data-i18n="foot.3">Наверх ↑</a>
+  </div>
+</footer>
+
+
+
+</body></html>

@@ -254,5 +254,11 @@
   "v0-2-3.2": "L'application se met à jour elle-même : la nouvelle version se télécharge et s'installe depuis AIDE.",
   "v0-2-3.3": "Les versions sont compilées et signées sur GitHub — les fichiers de mise à jour sont vérifiés par signature.",
   "v0-2-3.4": "Le nom de l'auteur dans le coin supérieur droit de la fenêtre.",
-  "v0-2-3.5": "Un bouton Télécharger sur le site : l'installateur en un clic."
+  "v0-2-3.5": "Un bouton Télécharger sur le site : l'installateur en un clic.",
+  "foot.6": "Conditions",
+  "foot.7": "Confidentialité",
+  "head.8": "Conditions d'utilisation — AIDE",
+  "head.9": "Conditions d'utilisation d'AIDE : ce qui est permis ou non avec l'application et le site, qui répond de ce que produit l'agent et comment les litiges sont réglés.",
+  "head.10": "Politique de confidentialité — AIDE",
+  "head.11": "Confidentialité chez AIDE : quelles données restent sur votre ordinateur, ce qui sort lors d'un appel au modèle, où sont stockées les clés et pourquoi il n'y a pas de télémétrie."
 }

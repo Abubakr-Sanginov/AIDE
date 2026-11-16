@@ -254,5 +254,11 @@
   "v0-2-3.2": "Die App aktualisiert sich selbst: eine neue Version wird direkt aus AIDE geladen und installiert.",
   "v0-2-3.3": "Releases werden auf GitHub gebaut und signiert — Updatedateien werden gegen die Signatur geprüft.",
   "v0-2-3.4": "Der Name des Autors oben rechts im Fenster.",
-  "v0-2-3.5": "Ein Download-Knopf auf der Website: Installer mit einem Klick."
+  "v0-2-3.5": "Ein Download-Knopf auf der Website: Installer mit einem Klick.",
+  "foot.6": "Bedingungen",
+  "foot.7": "Datenschutz",
+  "head.8": "Nutzungsbedingungen — AIDE",
+  "head.9": "Nutzungsbedingungen für AIDE: was mit der App und der Website erlaubt ist und was nicht, wer für die Ergebnisse des Agenten haftet und wie Streitigkeiten gelöst werden.",
+  "head.10": "Datenschutzerklärung — AIDE",
+  "head.11": "Datenschutz bei AIDE: welche Daten auf dem Rechner bleiben, was beim Aufruf eines Modells das Gerät verlässt, wo Schlüssel liegen und warum es keine Telemetrie gibt."
 }

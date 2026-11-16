@@ -61,15 +61,26 @@
 </header>
 
 <main id="main" class="doc wrap">
+
   <aside class="doc__toc" aria-labelledby="toc-title">
     <p class="mono" id="toc-title" data-i18n="toc-title.1">目次</p>
     <ol>
       <li><a href="#doc-start" data-i18n="main.14">はじめに</a></li>
+      <li><a href="#doc-install" data-i18n="doc-install.1">Install and updates</a></li>
+      <li><a href="#doc-workspace" data-i18n="doc-workspace.1">Workspace</a></li>
+      <li><a href="#doc-editor" data-i18n="doc-editor.1">Editor and languages</a></li>
+      <li><a href="#doc-chat" data-i18n="doc-chat.1">Chat and models</a></li>
       <li><a href="#doc-modes" data-i18n="main.15">3つのモード</a></li>
       <li><a href="#doc-agent" data-i18n="features.1">エージェント</a></li>
+      <li><a href="#doc-term" data-i18n="doc-term.1">Terminal and Git</a></li>
+      <li><a href="#doc-checks" data-i18n="doc-checks.1">Quality checks</a></li>
       <li><a href="#doc-crew" data-i18n="nav.5">クルー</a></li>
       <li><a href="#doc-rules" data-i18n="main.16">ルールとコマンド</a></li>
+      <li><a href="#doc-safe" data-i18n="doc-safe.1">Security and data</a></li>
+      <li><a href="#doc-settings" data-i18n="doc-settings.1">Settings</a></li>
       <li><a href="#doc-keys" data-i18n="main.17">キーボードショートカット</a></li>
+      <li><a href="#doc-faq" data-i18n="doc-faq.1">Frequently asked questions</a></li>
+      <li><a href="#doc-fix" data-i18n="doc-fix.1">When something does not work</a></li>
     </ol>
   </aside>
 
@@ -82,12 +93,63 @@
 
     <section id="doc-start" aria-labelledby="h-start">
       <h2 id="h-start" data-i18n="main.14">はじめに</h2>
+      <p data-i18n="doc-start.0">AIDE is a desktop code editor with an AI studio built in: an agent, a design canvas and a team of twelve roles work in one window. Below is the short path from install to your first edit.</p>
       <ol class="doc__steps">
         <li data-i18n="doc-start.1"><code>Node.js 20+</code>、<code>Rust</code>、Windows向けTauri 2の前提環境をインストールします。</li>
         <li data-i18n="doc-start.2">プロジェクトフォルダーで <code>npm install</code>、続けて <code>npm run tauri dev</code> を実行します。</li>
         <li data-i18n="doc-start.3">コードのフォルダーを開く：<kbd>Ctrl</kbd>+<kbd>O</kbd>。</li>
         <li data-i18n="doc-start.4">設定でモデルを接続します。APIキーはファイルではなくWindowsの資格情報マネージャーに保存されます。</li>
+        <li data-i18n="doc-start.5">Describe the task in the chat on the right. The agent proposes a plan, asks permission for file writes and commands, and reports what it did together with the token count.</li>
       </ol>
+      <p class="doc__note mono" data-i18n="doc-start.6">If you just use the installer, Node.js and Rust are not needed — everything is already inside.</p>
+    </section>
+
+    <section id="doc-install" aria-labelledby="h-install">
+      <h2 id="h-install" data-i18n="doc-install.1">Install and updates</h2>
+      <p data-i18n="doc-install.2">The ready-made installer is on this site: the “Download for Windows” button in the Start section. You need Windows 10 or 11 and WebView2 — current builds already have it.</p>
+      <ul class="doc__list">
+        <li data-i18n="doc-install.3"><b>Building from source.</b> <code>npm install</code>, then <code>npm run tauri build</code>. The files land in the <code>bundle</code> folder next to the project: an NSIS installer and an MSI package.</li>
+        <li data-i18n="doc-install.4"><b>Updates arrive by themselves.</b> Once a day AIDE compares its version with the latest GitHub release and offers to update. You can also check manually.</li>
+        <li data-i18n="doc-install.5"><b>Signature.</b> Update files are checked against a cryptographic signature: the app will not trust a build from an outside source.</li>
+        <li data-i18n="doc-install.6"><b>Windows warning.</b> The installer is not signed with a paid publisher certificate, so SmartScreen may ask for confirmation on first launch. It does not affect the editor itself.</li>
+        <li data-i18n="doc-install.7"><b>Uninstalling.</b> The usual Windows uninstall. Your projects, settings and keys stay in place — remove them separately if you want to.</li>
+      </ul>
+    </section>
+
+    <section id="doc-workspace" aria-labelledby="h-workspace">
+      <h2 id="h-workspace" data-i18n="doc-workspace.1">Workspace</h2>
+      <p data-i18n="doc-workspace.2">The project tree is on the left. Files and folders are created, renamed and deleted from the context menu, and changes on disk are picked up right away: an outside edit is never lost.</p>
+      <ul class="doc__list">
+        <li data-i18n="doc-workspace.3"><b>Tabs.</b> They keep their cursor position and undo history and close with the middle mouse button. Images, PDFs and fonts open for preview right in the editor.</li>
+        <li data-i18n="doc-workspace.4"><b>Panels.</b> Explorer, project search, Git, snippets and extensions switch in the left panel and stay out of each other's way.</li>
+        <li data-i18n="doc-workspace.5"><b>Text search.</b> <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> searches by text, with case and file masks.</li>
+        <li data-i18n="doc-workspace.6"><b>Search by meaning.</b> A query like “parse config file” finds the right places even when the code uses other words: function and path names count separately from plain text.</li>
+        <li data-i18n="doc-workspace.7"><b>Command palette.</b> <kbd>Ctrl</kbd>+<kbd>P</kbd> — files and actions without the mouse.</li>
+      </ul>
+    </section>
+
+    <section id="doc-editor" aria-labelledby="h-editor">
+      <h2 id="h-editor" data-i18n="doc-editor.1">Editor and languages</h2>
+      <p data-i18n="doc-editor.2">The editor is built on CodeMirror 6: highlighting, line numbers, completion, search and replace, multiple cursors and folding.</p>
+      <ul class="doc__list">
+        <li data-i18n="doc-editor.3"><b>Language servers.</b> Type hints, error squiggles, go to definition and back, rename a symbol and format a file — the same servers VS Code uses.</li>
+        <li data-i18n="doc-editor.4"><b>Works without a server.</b> If no language server is installed for a language, highlighting, navigation and symbol search remain.</li>
+        <li data-i18n="doc-editor.5"><b>Git conflicts.</b> Shown as a merge view: accept your side or theirs with a button, no need to edit the file by hand.</li>
+        <li data-i18n="doc-editor.6"><b>Agent edits.</b> <kbd>Ctrl</kbd>+<kbd>K</kbd> on selected code — the agent proposes a new version and you accept or reject it by diff.</li>
+      </ul>
+    </section>
+
+    <section id="doc-chat" aria-labelledby="h-chat">
+      <h2 id="h-chat" data-i18n="doc-chat.1">Chat and models</h2>
+      <p data-i18n="doc-chat.2">OpenAI, Anthropic, Google and any compatible server are supported: the address and the model list are set in the provider settings.</p>
+      <ul class="doc__list">
+        <li data-i18n="doc-chat.3"><b>Local models.</b> Ollama or LM Studio on this computer — then requests never leave the machine.</li>
+        <li data-i18n="doc-chat.4"><b>Keys.</b> Stored in the Windows Credential Manager, separately per provider. A key never reaches the project, the model's reply or a log.</li>
+        <li data-i18n="doc-chat.5"><b>Tokens.</b> Every answer shows what it cost, so models can be compared by price rather than by feel.</li>
+        <li data-i18n="doc-chat.6"><b>History.</b> Lives in the project: come back to the folder and the conversation continues where it stopped.</li>
+        <li data-i18n="doc-chat.7"><b>Attachments.</b> Attach a file or an image to a message and its text joins the model's context.</li>
+        <li data-i18n="doc-chat.8"><b>Queue.</b> If the agent is still working, a new message waits in the queue; the arrow next to it sends it immediately and stops the current answer.</li>
+      </ul>
     </section>
 
     <section id="doc-modes" aria-labelledby="h-modes">
@@ -108,19 +170,64 @@
         <li data-i18n="doc-agent.3"><b>元に戻す。</b>編集の前にチェックポイントを作成。「元に戻す」で変更したファイルを復元します。</li>
         <li data-i18n="doc-agent.4"><b>停止。</b>モデルへのリクエストを即座に中断します。</li>
         <li data-i18n="doc-agent.5"><b>選択範囲の編集。</b>コードを選択して <kbd>Ctrl</kbd>+<kbd>K</kbd>：変更が diff で表示され、採用か却下を選べます。</li>
+        <li data-i18n="doc-agent.6"><b>Clarifications.</b> When a task can be read in different ways, the agent asks first and then works — it does not decide for you.</li>
+      </ul>
+    </section>
+
+    <section id="doc-term" aria-labelledby="h-term">
+      <h2 id="h-term" data-i18n="doc-term.1">Terminal and Git</h2>
+      <ul class="doc__list">
+        <li data-i18n="doc-term.2"><b>A real pty.</b> Interactive programs, colours, arrows and <kbd>Ctrl</kbd>+<kbd>C</kbd> all work. As many terminal tabs as you need.</li>
+        <li data-i18n="doc-term.3"><b>Git panel.</b> Changed files, a line-by-line diff, branch and history; commits are made from there too.</li>
+        <li data-i18n="doc-term.4"><b>Agent commands.</b> It can run them, but only with your confirmation: you see exactly what is about to run.</li>
+      </ul>
+    </section>
+
+    <section id="doc-checks" aria-labelledby="h-checks">
+      <h2 id="h-checks" data-i18n="doc-checks.1">Quality checks</h2>
+      <ul class="doc__list">
+        <li data-i18n="doc-checks.2"><b>After edits.</b> AIDE runs the project's checks — types, linter, tests — and reports back if something broke.</li>
+        <li data-i18n="doc-checks.3"><b>Before “done”.</b> The verify-before-done skill requires re-reading the diff, building the project and running the tests.</li>
+        <li data-i18n="doc-checks.4"><b>Diagnostics.</b> Language server errors show up in the panel immediately, before the project is even run.</li>
+        <li data-i18n="doc-checks.5"><b>Turning off.</b> Self-checks can be disabled in settings when a project is big and the checks take long.</li>
       </ul>
     </section>
 
     <section id="doc-crew" aria-labelledby="h-crew">
       <h2 id="h-crew" data-i18n="nav.5">クルー</h2>
-      <p data-i18n="doc-crew.1">顔と声とスキルを持つ12のロール：チームリード、デザイン、フロント、バック、QA、DevOps、アナリスト、法務、経理、マーケター、インターン、ムードメーカー。あなたはCEO。タスクを出すと、ロールたちが話し合って作業を分担します。</p>
-      <p data-i18n="doc-crew.2">ファイルの変更やコマンドの実行ができるのは「手」を持つロールだけで、他は助言とレビューを担当します。ロールの操作もエージェントと同じ許可の仕組みを通ります。</p>
+      <ul class="doc__list">
+        <li data-i18n="doc-crew.1">顔と声とスキルを持つ12のロール：チームリード、デザイン、フロント、バック、QA、DevOps、アナリスト、法務、経理、マーケター、インターン、ムードメーカー。あなたはCEO。タスクを出すと、ロールたちが話し合って作業を分担します。</li>
+        <li data-i18n="doc-crew.2">ファイルの変更やコマンドの実行ができるのは「手」を持つロールだけで、他は助言とレビューを担当します。ロールの操作もエージェントと同じ許可の仕組みを通ります。</li>
+      </ul>
+      <p data-i18n="doc-crew.3">You are the CEO: you decide what of it makes it into the code.</p>
     </section>
 
     <section id="doc-rules" aria-labelledby="h-rules">
       <h2 id="h-rules" data-i18n="main.16">ルールとコマンド</h2>
       <p data-i18n="doc-rules.1">プロジェクトのルートに <code>AGENTS.md</code> か <code>CLAUDE.md</code> を置くと、エージェントは作業前にそのルールを読みます。</p>
       <p data-i18n="doc-rules.2">独自のチャットコマンド：プロンプトを書いたファイル <code>.aide/commands/名前.md</code> を作ると、チャットに <code>/名前</code> として表示され、<code>$ARGUMENTS</code> はコマンドの後に入力した内容に置き換わります。</p>
+      <p data-i18n="doc-rules.3">Project rules beat the agent's habits: if a file forbids changing something, the agent asks instead of doing it silently.</p>
+    </section>
+
+    <section id="doc-safe" aria-labelledby="h-safe">
+      <h2 id="h-safe" data-i18n="doc-safe.1">Security and data</h2>
+      <ul class="doc__list">
+        <li data-i18n="doc-safe.2"><b>Keys.</b> In the Windows Credential Manager. Not in the project, the repository or the logs.</li>
+        <li data-i18n="doc-safe.3"><b>Permissions.</b> File writes, commands and network access only after confirmation.</li>
+        <li data-i18n="doc-safe.4"><b>Your code.</b> Stays on disk: AIDE sends it only to the model you chose.</li>
+        <li data-i18n="doc-safe.5"><b>A local model.</b> Then nothing leaves the computer at all.</li>
+        <li data-i18n="doc-safe.6"><b>No telemetry.</b> The app collects no usage statistics and sends no hidden reports.</li>
+      </ul>
+    </section>
+
+    <section id="doc-settings" aria-labelledby="h-settings">
+      <h2 id="h-settings" data-i18n="doc-settings.1">Settings</h2>
+      <ul class="doc__list">
+        <li data-i18n="doc-settings.2"><b>Appearance.</b> Interface language, theme, editor font size, panel and terminal behaviour.</li>
+        <li data-i18n="doc-settings.3"><b>Providers.</b> A fixed model list for servers that cannot list models themselves.</li>
+        <li data-i18n="doc-settings.4"><b>Skills.</b> Built-in rule sets can be switched on and off: verify before done, careful changes, secure code, debugging, tests, frontend.</li>
+        <li data-i18n="doc-settings.5"><b>Permissions.</b> What the agent may do without asking and what always needs a confirmation.</li>
+      </ul>
     </section>
 
     <section id="doc-keys" aria-labelledby="h-keys">
@@ -141,6 +248,32 @@
         </tbody>
       </table>
     </section>
+
+    <section id="doc-faq" aria-labelledby="h-faq">
+      <h2 id="h-faq" data-i18n="doc-faq.1">Frequently asked questions</h2>
+      <dl class="doc__defs">
+        <div><dt data-i18n="doc-faq.2">Do I need Node.js and Rust just to use AIDE?</dt><dd data-i18n="doc-faq.3">No. The installer already contains everything the app needs. Node is only needed for checks in your own project, and Rust only if you build AIDE yourself.</dd></div>
+        <div><dt data-i18n="doc-faq.4">Where does my code go?</dt><dd data-i18n="doc-faq.5">Only to the model you chose. With a local model it goes nowhere.</dd></div>
+        <div><dt data-i18n="doc-faq.6">Where are API keys stored?</dt><dd data-i18n="doc-faq.7">In the Windows Credential Manager, encrypted, separately for each provider.</dd></div>
+        <div><dt data-i18n="doc-faq.8">Can I work without internet?</dt><dd data-i18n="doc-faq.9">Yes, with a local model: the editor, terminal and Git always work, and the agent works with the local model.</dd></div>
+        <div><dt data-i18n="doc-faq.10">What if the agent makes a mistake?</dt><dd data-i18n="doc-faq.11">A checkpoint is taken before edits and Undo restores the files. Permissions stop it from doing anything without your consent.</dd></div>
+        <div><dt data-i18n="doc-faq.12">Does AIDE run on macOS or Linux?</dt><dd data-i18n="doc-faq.13">The build is for Windows today. The Tauri and React code is portable, but there are no ready builds for other systems.</dd></div>
+        <div><dt data-i18n="doc-faq.14">How do I update?</dt><dd data-i18n="doc-faq.15">By itself: the app checks for an update and offers to install it. Or download the new installer from this site.</dd></div>
+        <div><dt data-i18n="doc-faq.16">Why does Windows warn when installing?</dt><dd data-i18n="doc-faq.17">The installer is not signed with a paid publisher certificate — that is a SmartScreen warning, not a virus. Update signatures are verified separately.</dd></div>
+      </dl>
+    </section>
+
+    <section id="doc-fix" aria-labelledby="h-fix">
+      <h2 id="h-fix" data-i18n="doc-fix.1">When something does not work</h2>
+      <ul class="doc__list">
+        <li data-i18n="doc-fix.2"><b>The model does not answer.</b> Check the key and the provider address in settings and your internet access. Error 401 means a wrong key, 429 means a rate limit.</li>
+        <li data-i18n="doc-fix.3"><b>It will not install.</b> Close the running AIDE and try again.</li>
+        <li data-i18n="doc-fix.4"><b>Panels disappeared.</b> <kbd>Ctrl</kbd>+<kbd>B</kbd> and <kbd>Ctrl</kbd>+<kbd>J</kbd> bring back the side panel and the terminal.</li>
+        <li data-i18n="doc-fix.5"><b>The terminal is empty.</b> Open a new terminal tab — the old session may have ended.</li>
+        <li data-i18n="doc-fix.6"><b>No highlighting or hints.</b> A language server may be missing for that language: install it in the system and the editor picks it up.</li>
+        <li data-i18n="doc-fix.7"><b>Checks fail.</b> Paste the check output into the chat — the agent reads the error and fixes the cause, not the symptom.</li>
+      </ul>
+    </section>
   </article>
 </main>
 
@@ -148,10 +281,13 @@
   <div class="foot__row mono">
     <span data-i18n="foot.2">エディターの中のAIスタジオ</span>
     <span>v0.2.3 · Windows</span>
-    <a href="../changelog/" data-i18n="foot.5">新機能</a>
+    <a href="https://aide-site-nine.vercel.app/ja/changelog/" data-page="changelog" data-i18n="foot.5">新機能</a>
+    <a href="https://aide-site-nine.vercel.app/en/terms/" data-page="terms" data-i18n="foot.6">利用規約</a>
+    <a href="https://aide-site-nine.vercel.app/en/privacy/" data-page="privacy" data-i18n="foot.7">プライバシー</a>
     <a href="#main" data-i18n="foot.3">トップへ ↑</a>
   </div>
 </footer>
+
 
 
 </body></html>
