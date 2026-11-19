@@ -37,7 +37,7 @@ struct BvTab {
     url: String,
 }
 
-struct TabsState {
+pub(crate) struct TabsState {
     tabs: Vec<BvTab>,
     active: Option<String>,
     counter: u32,
@@ -116,15 +116,6 @@ fn agent_label(app: &AppHandle) -> Option<String> {
             label_for(id)
         }
     })
-}
-
-fn take_active_or_display(app: &AppHandle, tab_id: Option<&str>) -> String {
-    if let Some(id) = agent_label(app) {
-        if tab_id.is_none() {
-            return id;
-        }
-    }
-    active_label(app, tab_id)
 }
 
 /// Хук консоли: копит записи в кольцевом буфере страницы; AIDE забирает их порциями.
@@ -506,10 +497,6 @@ pub fn bv_devtools(app: AppHandle, tab_id: Option<String>) -> Result<(), String>
         let _ = app;
         Err("Инструменты разработчика доступны только в отладочной сборке".into())
     }
-}
-
-async fn eval_json(app: &AppHandle, js: String) -> Result<String, String> {
-    eval_json_tab(app, js, None).await
 }
 
 async fn eval_json_label(app: &AppHandle, js: String, label: &str) -> Result<String, String> {

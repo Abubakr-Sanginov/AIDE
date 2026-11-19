@@ -587,7 +587,6 @@ mod win {
     struct Win {
         hwnd: HWND,
         title: String,
-        rect: RECT,
     }
 
     fn title_of(hwnd: HWND) -> String {
@@ -615,7 +614,7 @@ mod win {
             if rect.right - rect.left < 50 || rect.bottom - rect.top < 50 {
                 return BOOL(1);
             }
-            out.push(Win { hwnd, title, rect });
+            out.push(Win { hwnd, title });
             BOOL(1)
         }
         let mut list: Vec<Win> = Vec::new();
