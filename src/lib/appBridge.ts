@@ -81,7 +81,8 @@ async function navigate(a: Record<string, unknown>): Promise<string> {
   const tab = str(a.right_tab, 20);
   if (tab) {
     if (!RIGHT_TABS.includes(tab)) fail(`right_tab: допустимо ${RIGHT_TABS.join(", ")}`);
-    if (tab === "browser" && useUi.getState().mode !== "ide") useUi.setState({ settingsOpen: false, browserDock: true });
+    if (tab === "browser" && useUi.getState().mode !== "ide") useUi.setState({ settingsOpen: false, browserDock: true, sideDockTab: "browser" });
+    else if (tab === "context" && useUi.getState().mode !== "ide") useUi.setState({ settingsOpen: false, browserDock: true, sideDockTab: "context" });
     else useUi.setState({ settingsOpen: false, rightPanelVisible: true, rightTab: tab });
     done.push(`вкладка ${tab}`);
   }

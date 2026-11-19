@@ -25,6 +25,8 @@ function transitionOf(prev: UiState, next: Partial<UiState>): { region: VtRegion
 /** "chat", "kins", "browser", or the id of an extension webview. */
 export type RightTab = string;
 export type DockTab = "problems" | "output" | "terminal" | "agent";
+/** The side dock of Vibe and Design: the context panel (plan, window fill) or the page. */
+export type SideDockTab = "context" | "browser";
 
 interface UiState {
   mode: AppMode;
@@ -34,6 +36,9 @@ interface UiState {
   /** Built-in browser as a side panel in Vibe and Design (IDE uses a tab of the right panel). */
   browserDock: boolean;
   setBrowserDock: (open: boolean) => void;
+  /** Which tab the side dock shows: the context panel or the page. */
+  sideDockTab: SideDockTab;
+  setSideDockTab: (t: SideDockTab) => void;
   setRightTab: (t: RightTab) => void;
   settingsOpen: boolean;
   closeSettings: () => void;
@@ -60,7 +65,10 @@ export const useUi = create<UiState>(withViewTransitions<UiState>(transitionOf, 
   dockTab: "terminal",
   setDockTab: (dockTab) => set({ dockTab }),
   browserDock: false,
-  setBrowserDock: (browserDock) => set({ browserDock }),
+  // Opening the dock from the title bar shows the page; the context panel is one click away.
+  setBrowserDock: (browserDock) => set(browserDock ? { browserDock, sideDockTab: "browser" } : { browserDock }),
+  sideDockTab: "context",
+  setSideDockTab: (sideDockTab) => set({ sideDockTab }),
   setRightTab: (rightTab) => set({ rightTab }),
   settingsOpen: false,
   closeSettings: () => set({ settingsOpen: false }),

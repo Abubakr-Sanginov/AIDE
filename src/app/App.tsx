@@ -198,7 +198,7 @@ function AppInner() {
       // The page opens where the user is: the right panel's tab in IDE, a side panel in Vibe and Design.
       // The window never jumps to another mode.
       if (useUi.getState().mode === "ide") useUi.setState({ settingsOpen: false, rightPanelVisible: true, rightTab: "browser" });
-      else useUi.setState({ settingsOpen: false, browserDock: true });
+      else useUi.setState({ settingsOpen: false, browserDock: true, sideDockTab: "browser" });
       const url = typeof e.payload === "string" ? e.payload : e.payload.url;
       if (typeof url === "string") useBrowserIntent.getState().set(url);
     });
