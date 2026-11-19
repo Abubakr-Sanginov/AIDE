@@ -266,5 +266,10 @@
   "h-024.1": "Contexto, plano e compactação",
   "v0-2-4.2": "Uma aba «Contexto» no painel direito: quanto da janela do modelo está ocupado, o custo das mensagens e das chamadas de ferramentas, anexos e o arquivo ativo.",
   "v0-2-4.3": "Plano: os passos de uma resposta no modo Plano aparecem como lista, os itens feitos ficam marcados.",
-  "v0-2-4.4": "O comando [code]/compact[/code]: a conversa vira um resumo e as mensagens anteriores continuam na tela."
+  "v0-2-4.4": "O comando [code]/compact[/code]: a conversa vira um resumo e as mensagens anteriores continuam na tela.",
+  "v0-2-5.1": "Versão atual",
+  "h-025.1": "Painel direito: abas e contexto",
+  "v0-2-5.2": "«Contexto» fica na mesma linha de «Navegador» e abre ao lado dele.",
+  "v0-2-5.3": "As abas do painel direito sempre cabem na largura: nomes longos são abreviados e nada passa da borda.",
+  "v0-2-5.4": "As seções de «Contexto» ficam uma sob a outra: ambiente, preenchimento da janela, plano e histórico de compactações."
 }

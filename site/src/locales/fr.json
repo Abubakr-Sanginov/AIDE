@@ -266,5 +266,10 @@
   "h-024.1": "Contexte, plan et compactage",
   "v0-2-4.2": "Un onglet « Contexte » dans le panneau de droite : le remplissage de la fenêtre du modèle, le coût des messages et des appels d'outils, les pièces jointes et le fichier actif.",
   "v0-2-4.3": "Plan : les étapes d'une réponse en mode Plan s'affichent en liste, les points faits sont marqués.",
-  "v0-2-4.4": "La commande [code]/compact[/code] : la conversation se réduit à un résumé, les messages précédents restent à l'écran."
+  "v0-2-4.4": "La commande [code]/compact[/code] : la conversation se réduit à un résumé, les messages précédents restent à l'écran.",
+  "v0-2-5.1": "Version actuelle",
+  "h-025.1": "Panneau de droite : onglets et contexte",
+  "v0-2-5.2": "« Contexte » se trouve sur la même ligne que « Navigateur » et s'ouvre à côté.",
+  "v0-2-5.3": "Les onglets du panneau de droite tiennent toujours dans la largeur : les noms longs sont abrégés, rien ne dépasse.",
+  "v0-2-5.4": "Les sections de « Contexte » sont empilées : environnement, remplissage de la fenêtre, plan et historique des compressions."
 }

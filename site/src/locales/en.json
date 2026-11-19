@@ -471,5 +471,10 @@
   "h-024.1": "Context, plan and compaction",
   "v0-2-4.2": "A Context tab in the right panel: how full the model window is, what the messages and tool calls cost, attachments and the active file.",
   "v0-2-4.3": "Plan: the steps of a Plan-mode answer are shown as a list, finished items are marked.",
-  "v0-2-4.4": "The [code]/compact[/code] command: the conversation folds into one summary, and the earlier messages stay on screen."
+  "v0-2-4.4": "The [code]/compact[/code] command: the conversation folds into one summary, and the earlier messages stay on screen.",
+  "v0-2-5.1": "Current version",
+  "h-025.1": "Right panel: tabs and context",
+  "v0-2-5.2": "Context sits in the same row as Browser and opens next to it.",
+  "v0-2-5.3": "The right panel tabs always fit the width: long names are shortened, nothing runs past the edge.",
+  "v0-2-5.4": "The Context sections are stacked: environment, window fill, plan and compaction history."
 }

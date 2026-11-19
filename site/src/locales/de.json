@@ -266,5 +266,10 @@
   "h-024.1": "Kontext, Plan und Komprimierung",
   "v0-2-4.2": "Eine Registerkarte „Kontext“ im rechten Bereich: wie voll das Modellfenster ist, was Nachrichten und Werkzeugaufrufe kosten, Anhänge und die aktive Datei.",
   "v0-2-4.3": "Plan: die Schritte einer Antwort im Plan-Modus erscheinen als Liste, erledigte Punkte sind markiert.",
-  "v0-2-4.4": "Der Befehl [code]/compact[/code]: das Gespräch wird zu einer Zusammenfassung, die früheren Nachrichten bleiben sichtbar."
+  "v0-2-4.4": "Der Befehl [code]/compact[/code]: das Gespräch wird zu einer Zusammenfassung, die früheren Nachrichten bleiben sichtbar.",
+  "v0-2-5.1": "Aktuelle Version",
+  "h-025.1": "Rechter Bereich: Registerkarten und Kontext",
+  "v0-2-5.2": "„Kontext“ steht in derselben Reihe wie „Browser“ und öffnet sich daneben.",
+  "v0-2-5.3": "Die Registerkarten des rechten Bereichs passen immer in die Breite: lange Namen werden gekürzt, nichts läuft über den Rand.",
+  "v0-2-5.4": "Die Abschnitte von „Kontext“ stehen untereinander: Umgebung, Füllstand des Fensters, Plan und Verlauf der Zusammenfassungen."
 }

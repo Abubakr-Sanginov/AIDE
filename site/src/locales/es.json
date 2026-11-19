@@ -266,5 +266,10 @@
   "h-024.1": "Contexto, plan y compactación",
   "v0-2-4.2": "Una pestaña «Contexto» en el panel derecho: cuánto se llena la ventana del modelo, cuánto cuestan los mensajes y las llamadas a herramientas, los adjuntos y el archivo activo.",
   "v0-2-4.3": "Plan: los pasos de una respuesta en modo Plan se muestran como lista y los puntos hechos quedan marcados.",
-  "v0-2-4.4": "El comando [code]/compact[/code]: la conversación se reduce a un resumen y los mensajes anteriores siguen en pantalla."
+  "v0-2-4.4": "El comando [code]/compact[/code]: la conversación se reduce a un resumen y los mensajes anteriores siguen en pantalla.",
+  "v0-2-5.1": "Versión actual",
+  "h-025.1": "Panel derecho: pestañas y contexto",
+  "v0-2-5.2": "«Contexto» está en la misma fila que «Navegador» y se abre a su lado.",
+  "v0-2-5.3": "Las pestañas del panel derecho siempre caben en el ancho: los nombres largos se abrevian y nada se sale del borde.",
+  "v0-2-5.4": "Las secciones de «Contexto» van una debajo de otra: entorno, llenado de la ventana, plan e historial de compresiones."
 }

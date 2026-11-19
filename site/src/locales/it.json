@@ -266,5 +266,10 @@
   "h-024.1": "Contesto, piano e compattazione",
   "v0-2-4.2": "Una scheda «Contesto» nel pannello di destra: quanto è piena la finestra del modello, quanto costano messaggi e chiamate agli strumenti, allegati e file attivo.",
   "v0-2-4.3": "Piano: i passi di una risposta in modalità Piano compaiono come elenco, le voci fatte sono segnate.",
-  "v0-2-4.4": "Il comando [code]/compact[/code]: la conversazione si riduce a un riassunto e i messaggi precedenti restano sullo schermo."
+  "v0-2-4.4": "Il comando [code]/compact[/code]: la conversazione si riduce a un riassunto e i messaggi precedenti restano sullo schermo.",
+  "v0-2-5.1": "Versione attuale",
+  "h-025.1": "Pannello destro: schede e contesto",
+  "v0-2-5.2": "«Contesto» sta nella stessa riga di «Browser» e si apre accanto.",
+  "v0-2-5.3": "Le schede del pannello destro entrano sempre nella larghezza: i nomi lunghi si accorciano e nulla esce dal bordo.",
+  "v0-2-5.4": "Le sezioni di «Contesto» sono una sotto l'altra: ambiente, riempimento della finestra, piano e cronologia delle compressioni."
 }
