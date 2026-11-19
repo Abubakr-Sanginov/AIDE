@@ -65,15 +65,17 @@ export function RightPanel() {
 
   return (
     <aside style={{ width: rightPanelWidth }} className="aide-flat aide-vt-right flex shrink-0 select-none flex-col">
-      <div ref={indicator.ref} role="tablist" className="aide-scroll relative isolate flex h-9 shrink-0 items-end gap-2 overflow-x-auto border-b border-line/60 px-2">
+      <div ref={indicator.ref} role="tablist" className="aide-scroll relative isolate flex h-9 shrink-0 items-end gap-1 overflow-x-auto border-b border-line/60 px-2">
         <Indicator box={indicator.box} variant="underline" />
         {tabs.map((t) => (
-          <span key={t.key} className="-mb-px flex shrink-0 items-center gap-1">
+          // Tabs share the strip (flex-[1_1_auto]) and ellipsize instead of overflowing the panel.
+          <span key={t.key} className="-mb-px flex min-w-0 flex-[1_1_auto] items-center justify-center gap-1">
             <button
               role="tab"
               aria-selected={tab === t.key}
+              title={t.label}
               onClick={t.onClick}
-              className="border-b-2 border-transparent pb-1.5 text-[12.5px] font-medium text-ink-400 transition-colors hover:text-ink-50 aria-selected:text-ink-50"
+              className="w-full truncate border-b-2 border-transparent pb-1.5 text-[12.5px] font-medium text-ink-400 transition-colors hover:text-ink-50 aria-selected:text-ink-50"
             >
               {t.label}
             </button>
