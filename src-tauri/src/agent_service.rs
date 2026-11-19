@@ -746,7 +746,7 @@ fn tool_parameters(
 боковую панель, терминал, настройки, открыть файл проекта в редакторе. Все поля необязательные, можно задать несколько сразу.",
             json!({
                 "mode": str_prop("ide, design или vibe"),
-                "right_tab": str_prop("chat, kins или browser"),
+                "right_tab": str_prop("chat, context, kins или browser"),
                 "panel": str_prop("explorer, search, git, snippets или settings"),
                 "terminal": json!({ "type": "boolean", "description": "Показать (true) или скрыть (false) терминал" }),
                 "open_file": str_prop("Путь к файлу относительно корня проекта: открыть в редакторе"),

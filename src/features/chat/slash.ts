@@ -8,7 +8,7 @@ export interface SlashItem {
   desc: string;
   source: "builtin" | "project" | "skill";
   /** "builtin": an action id handled by the chat; "project": a prompt template. */
-  action?: "new" | "clear" | "chat" | "plan" | "agent";
+  action?: "new" | "clear" | "chat" | "plan" | "agent" | "compact";
   /** Prompt text for "project" commands and the preset prompts (`$ARGUMENTS` is replaced by what follows the name). */
   prompt?: string;
 }

@@ -23,7 +23,7 @@ interface BridgeCall {
 
 const MODES: AppMode[] = ["ide", "design", "vibe"];
 const PANELS: SidebarPanel[] = ["explorer", "search", "git", "snippets", "settings"];
-const RIGHT_TABS = ["chat", "kins", "browser"];
+const RIGHT_TABS = ["chat", "context", "kins", "browser"];
 const MAX_HTML = 120_000;
 const MAX_REPLY = 9_000;
 

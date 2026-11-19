@@ -22,6 +22,7 @@ import {
   Clock,
   FileText,
   FolderCode,
+  Archive,
   Monitor,
   Paperclip,
   Pencil,
@@ -222,6 +223,15 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
     addFiles, removeAttachment,
     send, retry, stop, clear, setAttachFile,
   } = useAi();
+
+  // After /compact the earlier messages stay on screen but out of the request: they can be folded away.
+  const [showOlder, setShowOlder] = useState(false);
+  const summaryAt = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) if (messages[i].summary) return i;
+    return -1;
+  })();
+  const olderCount = summaryAt > 0 ? summaryAt : 0;
+  const shown = olderCount > 0 && !showOlder ? messages.slice(summaryAt) : messages;
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -392,13 +402,14 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
     return () => { live = false; };
   }, [slashActive, root]);
   const skills = useSkills((x) => x.skills);
-  const BUILTIN_NAMES = ["new", "clear", "chat", "plan", "agent", "explain", "bugs", "tests"];
+  const BUILTIN_NAMES = ["new", "clear", "chat", "plan", "agent", "compact", "explain", "bugs", "tests"];
   const slashItems: SlashItem[] = [
     { name: "new", desc: ru ? rt("Новый чат") : "New chat", source: "builtin", action: "new" },
     { name: "clear", desc: ru ? rt("Очистить этот чат") : "Clear this chat", source: "builtin", action: "clear" },
     { name: "chat", desc: ru ? rt("Режим: вопросы без изменений") : "Mode: ask only", source: "builtin", action: "chat" },
     { name: "plan", desc: ru ? rt("Режим: план без изменений файлов") : "Mode: plan, no file changes", source: "builtin", action: "plan" },
     { name: "agent", desc: ru ? rt("Режим: агент сам правит проект") : "Mode: the agent edits the project", source: "builtin", action: "agent" },
+    { name: "compact", desc: ru ? rt("Сжать переписку в резюме и освободить контекст") : "Compact the conversation into a summary", source: "builtin", action: "compact" },
     { name: "explain", desc: t("chat.suggestExplain"), source: "builtin", prompt: t("chat.suggestExplain") },
     { name: "bugs", desc: t("chat.suggestBugs"), source: "builtin", prompt: t("chat.suggestBugs") },
     { name: "tests", desc: t("chat.suggestTests"), source: "builtin", prompt: t("chat.suggestTests") },
@@ -411,6 +422,7 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
   const runSlash = (item: SlashItem, args: string) => {
     if (item.action === "new") useChats.getState().newChat();
     else if (item.action === "clear") clear();
+    else if (item.action === "compact") void useAi.getState().compact();
     else if (item.action) setMode(item.action);
     else if (item.prompt) {
       const text = fillPrompt(item.prompt, args).trim();
@@ -516,7 +528,18 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
           </div>
         )}
 
-        {messages.map((m) =>
+        {olderCount > 0 && (
+          <div className="flex justify-center">
+            <button
+              onClick={() => setShowOlder((v) => !v)}
+              className="rounded-full border border-line/60 px-3 py-1 text-[11.5px] text-ink-500 transition-colors hover:border-teal-300/30 hover:text-ink-200"
+            >
+              {showOlder ? t("chat.hideOlder") : t("chat.showOlder", { n: String(olderCount) })}
+            </button>
+          </div>
+        )}
+
+        {shown.map((m) =>
           m.role === "user" ? (
             <div key={m.id} className="aide-msg-user flex justify-end">
               <div className="max-w-[85%]">
@@ -529,6 +552,13 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
           ) : (
             <div key={m.id} className="aide-msg-ai flex justify-start">
               <div className="min-w-0 max-w-[95%] flex-1">
+                {m.summary && (
+                  <div className="mb-1.5 flex items-center gap-1.5 pl-1 text-[11px] text-ink-600">
+                    <Archive size={11} />
+                    <span>{t("chat.compactSummary")}</span>
+                    <div className="h-px flex-1 bg-ink-800/40" />
+                  </div>
+                )}
                 {m.tools && m.tools.length > 0 && (
                   <div className="mb-1.5 flex items-center gap-1.5 pl-1 text-[11px] text-ink-600">
                     <div className="h-px flex-1 bg-ink-800/40" />

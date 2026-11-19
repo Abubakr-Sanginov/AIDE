@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useUi } from "@/stores/ui";
 import { useI18n } from "@/i18n";
 import { ChatPanel } from "@/features/chat/ChatPanel";
+import { ContextPane } from "@/features/context/ContextPane";
 import { BrowserPane } from "@/features/browser/BrowserPane";
 import { KinsPane } from "@/features/kins/KinsView";
 import { useExtHost, type WebviewInfo } from "@/features/exthost/store";
@@ -48,6 +49,7 @@ export function RightPanel() {
 
   const tabs: { key: string; label: string; onClick: () => void; close?: () => void }[] = [
     { key: "chat", label: isRuLike(lang) ? rt("Агент") : "Agent", onClick: () => setTab("chat") },
+    { key: "context", label: isRuLike(lang) ? rt("Контекст") : "Context", onClick: () => setTab("context") },
     { key: "computer", label: isRuLike(lang) ? rt("Компьютер") : "Computer", onClick: () => setTab("computer") },
     { key: "kins", label: isRuLike(lang) ? rt("Экипаж") : "Crew", onClick: () => setTab("kins") },
     { key: "browser", label: isRuLike(lang) ? rt("Браузер") : "Browser", onClick: () => setTab("browser") },
@@ -92,6 +94,7 @@ export function RightPanel() {
       </div>
       <div className="aide-vt-right-body min-h-0 flex-1">
         {tab === "chat" && <div className="h-full"><ChatPanel /></div>}
+        {tab === "context" && <div className="h-full"><ContextPane /></div>}
         {tab === "computer" && <div className="h-full"><ChatPanel computerTab /></div>}
         {tab === "kins" && <div className="h-full"><KinsPane /></div>}
         {tab === "browser" && <div className="h-full"><BrowserPane /></div>}

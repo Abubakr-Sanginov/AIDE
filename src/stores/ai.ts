@@ -30,6 +30,7 @@ import {
 } from "@/api/ai";
 import { useTabs } from "@/stores/tabs";
 import { currentRoot, keyFor, projectScope, sameRoot } from "@/lib/workspaceKey";
+import { historyFor } from "@/lib/chatHistoryWindow";
 import { t } from "@/i18n/t";
 import { usePermissionGate } from "@/features/chat/PermissionGate";
 import { agentNotice } from "@/lib/notify";
@@ -135,7 +136,19 @@ export interface ChatMessage {
   /** Tokens this answer cost; shown under it. */
   usage?: TokenUsage;
   attachments?: Attachment[];
+  /** The answer was written in Plan mode: its steps are listed in the Context tab. */
+  plan?: boolean;
+  /** A compacted handover note that stands in for the messages before it. */
+  summary?: boolean;
+  /** How many messages this summary replaced. */
+  compactOf?: number;
 }
+
+/** Cap for the transcript sent to the model when compacting: the summary must not cost more than it saves. */
+const MAX_COMPACT_CHARS = 60_000;
+
+// The model only sees the messages from the last compaction summary on (see historyFor).
+export { historyFor };
 
 interface AiState {
   providers: ProviderConfig[];
@@ -163,6 +176,10 @@ interface AiState {
   streaming: boolean;
   streamingId: string | null;
   error: string | null;
+  /** The running request is a /compact summarisation, not a normal answer. */
+  compacting: boolean;
+  /** Replaces the conversation with one summary so the model has room to work (/compact). */
+  compact: () => Promise<void>;
   provider: () => ProviderConfig;
   setProvider: (providerId: string) => void;
   setModel: (model: string) => void;
@@ -269,6 +286,7 @@ export const useAi = create<AiState>((set, get) => ({
   streaming: false,
   streamingId: null,
   error: null,
+  compacting: false,
 
   provider: () =>
     get().providers.find((p) => p.id === get().providerId) ?? BUILTIN_PROVIDERS[0],
@@ -590,8 +608,8 @@ export const useAi = create<AiState>((set, get) => ({
     });
     persistMessages([...get().messages]);
     const context = s.attachFile ? buildContext() : null;
-    const history = get()
-      .messages.slice(0, -2)
+    // Everything from the last compaction summary on: earlier messages stay on screen, out of the request.
+    const history = historyFor(s.messages)
       .filter((m) => !m.error || !!m.content || !!m.thinking || !!m.tools?.length)
       .map((m) => ({
         role: m.role,
@@ -650,6 +668,70 @@ export const useAi = create<AiState>((set, get) => ({
     await get().send(CONTINUE_REQUEST);
   },
 
+  /**
+   * /compact: ask the model to fold the conversation into one handover note.
+   *
+   * The note replaces the history in the request (see historyFor), so the next task starts with
+   * room to work instead of a full window. The messages themselves stay on screen — compacting
+   * must never feel like losing the thread.
+   */
+  compact: async () => {
+    const s = get();
+    if (s.streaming) return;
+    if (!s.model) {
+      set({ error: t("inlineEdit.noModels") });
+      return;
+    }
+    const base = historyFor(s.messages).filter((m) => m.content.trim() || m.tools?.length);
+    if (base.length < 3) {
+      set({ error: t("chat.compactNothing") });
+      return;
+    }
+    const cfg = s.provider();
+    const requestId = crypto.randomUUID();
+    const transcript = base
+      .map((m) => {
+        const tools = (m.tools ?? [])
+          .map((x) => `\n  - ${x.tool} (${x.status}): ${x.result.slice(0, 400)}`)
+          .join("");
+        return `${m.role === "user" ? "USER" : "ASSISTANT"}: ${m.content}${tools}`;
+      })
+      .join("\n\n")
+      .slice(-MAX_COMPACT_CHARS);
+    const summary: ChatMessage = {
+      id: requestId,
+      role: "assistant",
+      content: "",
+      summary: true,
+      compactOf: base.length,
+    };
+    set({
+      messages: [...s.messages, summary],
+      streaming: true,
+      streamingId: requestId,
+      error: null,
+      compacting: true,
+    });
+    persistMessages(get().messages);
+    try {
+      await ai.chat({
+        requestId,
+        providerId: cfg.id,
+        kind: cfg.kind,
+        baseUrl: cfg.baseUrl,
+        model: s.model,
+        // The transcript goes as the only message: the model must summarise, not continue the dialogue.
+        messages: [{ role: "user", content: transcript }],
+        context: null,
+        system: t("chat.compactPrompt"),
+        auth: authOf(cfg.id),
+        userAgent: uaOf(cfg.id),
+      });
+    } catch (e) {
+      get().fail(requestId, String(e));
+    }
+  },
+
   stop: () => {
     const id = get().streamingId;
     if (!id) return;
@@ -661,6 +743,7 @@ export const useAi = create<AiState>((set, get) => ({
     set((s) => ({
       streaming: false,
       streamingId: null,
+      compacting: false,
       error: null,
       messages: s.messages.map((m) =>
         m.id === id ? { ...m, tools: m.tools?.map((x) => (x.status === "running" ? { ...x, status: "error" as const, result: "stopped" } : x)) } : m,
@@ -671,7 +754,7 @@ export const useAi = create<AiState>((set, get) => ({
 
   clear: () => {
     if (get().streamingId) outputFilters.delete(get().streamingId!);
-    set({ messages: [], streaming: false, streamingId: null, error: null });
+    set({ messages: [], streaming: false, streamingId: null, compacting: false, error: null });
     persistMessages([]);
   },
 
@@ -697,16 +780,33 @@ export const useAi = create<AiState>((set, get) => ({
 
   done: (requestId, iterations, usage) => {
     if (get().streamingId !== requestId) return;
+    const wasCompacting = get().compacting;
+    const wrotePlan = get().mode === "plan";
     set((s) => ({
       streaming: false,
       streamingId: null,
       error: null,
+      compacting: false,
       messages: s.messages.map((m) =>
-        m.id === requestId ? { ...m, content: stripToolCallEcho(m.content), iterations, usage, retryStatus: undefined } : m,
+        m.id === requestId
+          ? {
+              ...m,
+              content: stripToolCallEcho(m.content),
+              iterations,
+              usage,
+              retryStatus: undefined,
+              // A summary is not a plan, even when it was written in Plan mode.
+              plan: m.summary ? undefined : wrotePlan || undefined,
+            }
+          : m,
       ),
     }));
     persistMessages(get().messages);
     const last = get().messages.find((m) => m.id === requestId);
+    if (wasCompacting) {
+      agentNotice("done", t("chat.compacted", { n: String(last?.compactOf ?? 0) }));
+      return;
+    }
     const snippet = (last?.content ?? "").replace(/\s+/g, " ").trim().slice(0, 140);
     agentNotice(
       "done",
@@ -725,17 +825,21 @@ export const useAi = create<AiState>((set, get) => ({
     set((s) => ({
       streaming: false,
       streamingId: null,
+      compacting: false,
       error: canceled ? null : message,
-      messages: s.messages.map((m) =>
-        m.id === requestId
-          ? {
-              ...m,
-              error: canceled ? false : true,
-              errorText: canceled ? undefined : message,
-              retryStatus: undefined,
-            }
-          : m,
-      ),
+      // A compaction that failed before writing a word leaves no empty bubble behind.
+      messages: s.messages
+        .filter((m) => !(m.id === requestId && m.summary && !m.content))
+        .map((m) =>
+          m.id === requestId
+            ? {
+                ...m,
+                error: canceled ? false : true,
+                errorText: canceled ? undefined : message,
+                retryStatus: undefined,
+              }
+            : m,
+        ),
     }));
     persistMessages(get().messages);
     if (!canceled) agentNotice("error", message);

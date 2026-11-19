@@ -232,6 +232,29 @@ type TranslationKeys = {
   "inlineEdit.returnOnly": string;
   "inlineEdit.noKey": string;
   "inlineEdit.noModels": string;
+  "context.title": string;
+  "context.total": string;
+  "context.window": string;
+  "context.windowHint": string;
+  "context.messages": string;
+  "context.tools": string;
+  "context.files": string;
+  "context.activeFile": string;
+  "context.activeFileOff": string;
+  "context.plan": string;
+  "context.planEmpty": string;
+  "context.compact": string;
+  "context.compactHint": string;
+  "context.clearChat": string;
+  "context.free": string;
+  "context.compactedInfo": string;
+  "chat.compact": string;
+  "chat.compacted": string;
+  "chat.compactNothing": string;
+  "chat.compactSummary": string;
+  "chat.compactPrompt": string;
+  "chat.showOlder": string;
+  "chat.hideOlder": string;
 };
 
 const en: TranslationKeys = {
@@ -435,6 +458,29 @@ const en: TranslationKeys = {
   "inlineEdit.returnOnly": "Return ONLY the new code of the selected fragment: no explanations, no surrounding code fence markers.",
   "inlineEdit.noKey": "API key not configured — add it in Settings",
   "inlineEdit.noModels": "Failed to load models — check the key in Settings",
+  "context.title": "Request context",
+  "context.total": "Estimated",
+  "context.window": "Model window",
+  "context.windowHint": "Used only for the fill bar. Set the window size of the model you picked.",
+  "context.messages": "Messages",
+  "context.tools": "Tool calls",
+  "context.files": "Attachments",
+  "context.activeFile": "Active file",
+  "context.activeFileOff": "not sent (off in settings)",
+  "context.plan": "Plan",
+  "context.planEmpty": "Switch to Plan mode: the agent writes the steps before touching any file.",
+  "context.compact": "Compact history",
+  "context.compactHint": "Folds the conversation into one summary, so the model has room for the next task.",
+  "context.clearChat": "Clear chat",
+  "context.free": "free",
+  "context.compactedInfo": "Compacted: {n} messages are kept as one summary.",
+  "chat.compact": "Compacting the history…",
+  "chat.compacted": "History compacted: {n} messages → one summary.",
+  "chat.compactNothing": "Nothing to compact yet: the conversation is too short.",
+  "chat.compactSummary": "Compacted summary",
+  "chat.compactPrompt": "You compress conversations. Write a handover note for whoever continues this work: decisions made, files and symbols touched, what already works, what is left, and what must not be repeated. Keep exact paths, names and numbers. No greetings, no filler, no headings. At most 400 words.",
+  "chat.showOlder": "Show history before compaction ({n})",
+  "chat.hideOlder": "Hide history before compaction",
 };
 
 const ru: TranslationKeys = {
@@ -638,6 +684,29 @@ const ru: TranslationKeys = {
   "inlineEdit.returnOnly": "Верни ТОЛЬКО новый код выделенного фрагмента: без пояснений, без обрамляющих маркеров кода.",
   "inlineEdit.noKey": "API-ключ не настроен — добавьте его в Настройках",
   "inlineEdit.noModels": "Не удалось получить список моделей — проверьте ключ в Настройках",
+  "context.title": "Контекст запроса",
+  "context.total": "Оценка",
+  "context.window": "Окно модели",
+  "context.windowHint": "Нужно только для шкалы заполнения. Укажите размер окна выбранной модели.",
+  "context.messages": "Сообщений",
+  "context.tools": "Вызовов инструментов",
+  "context.files": "Вложения",
+  "context.activeFile": "Активный файл",
+  "context.activeFileOff": "не отправляется (выключено в настройках)",
+  "context.plan": "План",
+  "context.planEmpty": "Включите режим «План»: агент напишет шаги, прежде чем трогать файлы.",
+  "context.compact": "Сжать историю",
+  "context.compactHint": "Свернёт переписку в одно резюме, чтобы у модели осталось место для следующей задачи.",
+  "context.clearChat": "Очистить чат",
+  "context.free": "свободно",
+  "context.compactedInfo": "Сжато: {n} сообщений свёрнуты в одно резюме.",
+  "chat.compact": "Сжимаю историю…",
+  "chat.compacted": "История сжата: {n} сообщений → одно резюме.",
+  "chat.compactNothing": "Пока нечего сжимать: переписка слишком короткая.",
+  "chat.compactSummary": "Сжатое резюме",
+  "chat.compactPrompt": "Ты сжимаешь переписку. Напиши передаточную записку для того, кто продолжит работу: какие решения приняты, какие файлы и символы затронуты, что уже работает, что осталось и что нельзя повторять. Сохраняй точные пути, имена и числа. Без приветствий, без воды, без заголовков. Не больше 400 слов.",
+  "chat.showOlder": "Показать историю до сжатия ({n})",
+  "chat.hideOlder": "Скрыть историю до сжатия",
 };
 
 const de: TranslationKeys = {
@@ -841,6 +910,29 @@ const de: TranslationKeys = {
   "inlineEdit.returnOnly": "Gib NUR den neuen Code des ausgewählten Abschnitts zurück: ohne Erklärungen, ohne umschließende Code-Marker.",
   "inlineEdit.noKey": "API-Schlüssel nicht konfiguriert — fügen Sie ihn in den Einstellungen hinzu",
   "inlineEdit.noModels": "Modellliste konnte nicht geladen werden — prüfen Sie den Schlüssel in den Einstellungen",
+  "context.title": "Kontext der Anfrage",
+  "context.total": "Schätzung",
+  "context.window": "Fenster des Modells",
+  "context.windowHint": "Nur für den Füllbalken. Trage die Fenstergröße des gewählten Modells ein.",
+  "context.messages": "Nachrichten",
+  "context.tools": "Werkzeugaufrufe",
+  "context.files": "Anhänge",
+  "context.activeFile": "Aktive Datei",
+  "context.activeFileOff": "wird nicht gesendet (in den Einstellungen aus)",
+  "context.plan": "Plan",
+  "context.planEmpty": "Schalte in den Plan-Modus: der Agent schreibt die Schritte, bevor er Dateien anfasst.",
+  "context.compact": "Verlauf komprimieren",
+  "context.compactHint": "Fasst das Gespräch zu einer Zusammenfassung zusammen, damit Platz für die nächste Aufgabe bleibt.",
+  "context.clearChat": "Chat leeren",
+  "context.free": "frei",
+  "context.compactedInfo": "Komprimiert: {n} Nachrichten stehen als eine Zusammenfassung.",
+  "chat.compact": "Verlauf wird komprimiert…",
+  "chat.compacted": "Verlauf komprimiert: {n} Nachrichten → eine Zusammenfassung.",
+  "chat.compactNothing": "Noch nichts zu komprimieren: das Gespräch ist zu kurz.",
+  "chat.compactSummary": "Komprimierte Zusammenfassung",
+  "chat.compactPrompt": "Du komprimierst Gespräche. Schreibe eine Übergabenotiz für die Person, die weiterarbeitet: welche Entscheidungen getroffen wurden, welche Dateien und Symbole berührt wurden, was schon funktioniert, was offen ist und was nicht wiederholt werden darf. Behalte genaue Pfade, Namen und Zahlen. Keine Begrüßung, keine Füllwörter, keine Überschriften. Höchstens 400 Wörter.",
+  "chat.showOlder": "Verlauf vor der Komprimierung zeigen ({n})",
+  "chat.hideOlder": "Verlauf vor der Komprimierung ausblenden",
 };
 
 const fr: TranslationKeys = {
@@ -1044,6 +1136,29 @@ const fr: TranslationKeys = {
   "inlineEdit.returnOnly": "Renvoyez UNIQUEMENT le nouveau code du fragment sélectionné : sans explications, sans marqueurs de code environnants.",
   "inlineEdit.noKey": "Clé API non configurée — ajoutez-la dans les paramètres",
   "inlineEdit.noModels": "Échec du chargement des modèles — vérifiez la clé dans les paramètres",
+  "context.title": "Contexte de la requête",
+  "context.total": "Estimation",
+  "context.window": "Fenêtre du modèle",
+  "context.windowHint": "Sert uniquement à la barre de remplissage. Indiquez la taille de fenêtre du modèle choisi.",
+  "context.messages": "Messages",
+  "context.tools": "Appels d'outils",
+  "context.files": "Pièces jointes",
+  "context.activeFile": "Fichier actif",
+  "context.activeFileOff": "non envoyé (désactivé dans les réglages)",
+  "context.plan": "Plan",
+  "context.planEmpty": "Passez en mode Plan : l'agent écrit les étapes avant de toucher aux fichiers.",
+  "context.compact": "Compacter l'historique",
+  "context.compactHint": "Réduit la conversation à un résumé pour laisser de la place à la tâche suivante.",
+  "context.clearChat": "Vider le chat",
+  "context.free": "libre",
+  "context.compactedInfo": "Compacté : {n} messages tiennent en un résumé.",
+  "chat.compact": "Compactage de l'historique…",
+  "chat.compacted": "Historique compacté : {n} messages → un résumé.",
+  "chat.compactNothing": "Rien à compacter : la conversation est trop courte.",
+  "chat.compactSummary": "Résumé compacté",
+  "chat.compactPrompt": "Tu compresses des conversations. Rédige une note de passation pour la personne qui continue : décisions prises, fichiers et symboles touchés, ce qui fonctionne déjà, ce qui reste, ce qu'il ne faut pas refaire. Garde les chemins, noms et chiffres exacts. Sans salutations, sans remplissage, sans titres. 400 mots maximum.",
+  "chat.showOlder": "Afficher l'historique avant compactage ({n})",
+  "chat.hideOlder": "Masquer l'historique avant compactage",
 };
 
 const zh: TranslationKeys = {
@@ -1246,6 +1361,29 @@ const zh: TranslationKeys = {
   "inlineEdit.returnOnly": "只返回选中片段的新的代码: 不要解释, 不要包含代码围栏标记。",
   "inlineEdit.noKey": "未配置 API 密钥 — 请在设置中添加",
   "inlineEdit.noModels": "无法加载模型列表 — 请在设置中检查密钥",
+  "context.title": "请求上下文",
+  "context.total": "估算",
+  "context.window": "模型窗口",
+  "context.windowHint": "只用于填充条。填写所选模型的窗口大小。",
+  "context.messages": "消息",
+  "context.tools": "工具调用",
+  "context.files": "附件",
+  "context.activeFile": "当前文件",
+  "context.activeFileOff": "不发送（在设置中关闭）",
+  "context.plan": "计划",
+  "context.planEmpty": "切换到计划模式：代理先写步骤，再动文件。",
+  "context.compact": "压缩历史",
+  "context.compactHint": "把对话压缩成一份摘要，给下一个任务留出空间。",
+  "context.clearChat": "清空对话",
+  "context.free": "可用",
+  "context.compactedInfo": "已压缩：{n} 条消息合并为一份摘要。",
+  "chat.compact": "正在压缩历史…",
+  "chat.compacted": "历史已压缩：{n} 条消息 → 一份摘要。",
+  "chat.compactNothing": "暂无可压缩内容：对话太短。",
+  "chat.compactSummary": "压缩摘要",
+  "chat.compactPrompt": "你负责压缩对话。为接手的人写一份交接说明：已经做出的决定、改动过的文件和符号、哪些已经可用、还剩什么、哪些不要重复。保留准确的路径、名称和数字。不要问候语、不要空话、不要标题。不超过 400 字。",
+  "chat.showOlder": "显示压缩前的历史（{n} 条）",
+  "chat.hideOlder": "隐藏压缩前的历史",
 };
 
 const ja: TranslationKeys = {
@@ -1449,6 +1587,29 @@ const ja: TranslationKeys = {
   "inlineEdit.returnOnly": "選択した部分の新しいコードのみを返してください: 説明なし、コードフェンスマーカーなし。",
   "inlineEdit.noKey": "APIキーが未設定です — 設定で追加してください",
   "inlineEdit.noModels": "モデルリストを取得できませんでした — 設定でキーを確認してください",
+  "context.title": "リクエストのコンテキスト",
+  "context.total": "推定",
+  "context.window": "モデルのウィンドウ",
+  "context.windowHint": "塗りバーにのみ使用します。選んだモデルのウィンドウサイズを入力してください。",
+  "context.messages": "メッセージ",
+  "context.tools": "ツール呼び出し",
+  "context.files": "添付ファイル",
+  "context.activeFile": "開いているファイル",
+  "context.activeFileOff": "送信されません（設定でオフ）",
+  "context.plan": "計画",
+  "context.planEmpty": "計画モードに切り替えると、エージェントはファイルを触る前に手順を書きます。",
+  "context.compact": "履歴を圧縮",
+  "context.compactHint": "会話を要約にまとめ、次の作業のための余白を空けます。",
+  "context.clearChat": "チャットを消去",
+  "context.free": "空き",
+  "context.compactedInfo": "圧縮済み：{n} 件のメッセージを1つの要約にまとめました。",
+  "chat.compact": "履歴を圧縮しています…",
+  "chat.compacted": "履歴を圧縮しました：{n} 件 → 1つの要約。",
+  "chat.compactNothing": "圧縮する内容がありません：会話が短すぎます。",
+  "chat.compactSummary": "圧縮された要約",
+  "chat.compactPrompt": "会話を圧縮します。作業を引き継ぐ人への申し送りを書いてください：決まったこと、触ったファイルとシンボル、すでに動くもの、残っていること、繰り返してはいけないこと。パス・名前・数値は正確に。挨拶や冗長な説明、見出しは不要。400語以内。",
+  "chat.showOlder": "圧縮前の履歴を表示（{n} 件）",
+  "chat.hideOlder": "圧縮前の履歴を隠す",
 };
 
 const ko: TranslationKeys = {
@@ -1652,6 +1813,29 @@ const ko: TranslationKeys = {
   "inlineEdit.returnOnly": "선택한 조각의 새 코드만 반환하세요: 설명 없이, 코드 펜스 마커 없이.",
   "inlineEdit.noKey": "API 키가 구성되지 않음 — 설정에서 추가하세요",
   "inlineEdit.noModels": "모델 목록을 가져오지 못했습니다 — 설정에서 키를 확인하세요",
+  "context.title": "요청 컨텍스트",
+  "context.total": "추정",
+  "context.window": "모델 창",
+  "context.windowHint": "채움 막대에만 사용합니다. 선택한 모델의 창 크기를 입력하세요.",
+  "context.messages": "메시지",
+  "context.tools": "도구 호출",
+  "context.files": "첨부 파일",
+  "context.activeFile": "열린 파일",
+  "context.activeFileOff": "전송되지 않음 (설정에서 꺼짐)",
+  "context.plan": "계획",
+  "context.planEmpty": "계획 모드로 바꾸면 에이전트가 파일을 건드리기 전에 단계를 작성합니다.",
+  "context.compact": "기록 압축",
+  "context.compactHint": "대화를 요약 하나로 줄여 다음 작업 공간을 확보합니다.",
+  "context.clearChat": "채팅 비우기",
+  "context.free": "여유",
+  "context.compactedInfo": "압축됨: {n}개 메시지를 요약 하나로 합쳤습니다.",
+  "chat.compact": "기록을 압축하는 중…",
+  "chat.compacted": "기록이 압축되었습니다: {n}개 메시지 → 요약 하나.",
+  "chat.compactNothing": "압축할 내용이 없습니다: 대화가 너무 짧습니다.",
+  "chat.compactSummary": "압축된 요약",
+  "chat.compactPrompt": "대화를 압축합니다. 이어서 작업할 사람에게 인수인계 메모를 작성하세요: 내린 결정, 건드린 파일과 심볼, 이미 동작하는 것, 남은 일, 반복하면 안 되는 것. 경로·이름·숫자는 정확히 유지하세요. 인사말, 군더더기, 제목 없이. 400단어 이내.",
+  "chat.showOlder": "압축 이전 기록 보기 ({n}개)",
+  "chat.hideOlder": "압축 이전 기록 숨기기",
 };
 
 const es: TranslationKeys = {
@@ -1855,6 +2039,29 @@ const es: TranslationKeys = {
   "inlineEdit.returnOnly": "Devuelve SOLO el nuevo código del fragmento seleccionado: sin explicaciones, sin marcadores de código circundantes.",
   "inlineEdit.noKey": "Clave API no configurada — agréguela en Configuración",
   "inlineEdit.noModels": "No se pudieron cargar los modelos — verifique la clave en Configuración",
+  "context.title": "Contexto de la petición",
+  "context.total": "Estimación",
+  "context.window": "Ventana del modelo",
+  "context.windowHint": "Solo se usa para la barra de llenado. Indica el tamaño de ventana del modelo elegido.",
+  "context.messages": "Mensajes",
+  "context.tools": "Llamadas a herramientas",
+  "context.files": "Adjuntos",
+  "context.activeFile": "Archivo activo",
+  "context.activeFileOff": "no se envía (desactivado en ajustes)",
+  "context.plan": "Plan",
+  "context.planEmpty": "Activa el modo Plan: el agente escribe los pasos antes de tocar archivos.",
+  "context.compact": "Compactar historial",
+  "context.compactHint": "Reduce la conversación a un resumen para dejar espacio a la siguiente tarea.",
+  "context.clearChat": "Vaciar el chat",
+  "context.free": "libre",
+  "context.compactedInfo": "Compactado: {n} mensajes caben en un resumen.",
+  "chat.compact": "Compactando el historial…",
+  "chat.compacted": "Historial compactado: {n} mensajes → un resumen.",
+  "chat.compactNothing": "Nada que compactar: la conversación es demasiado corta.",
+  "chat.compactSummary": "Resumen compactado",
+  "chat.compactPrompt": "Comprimes conversaciones. Escribe una nota de traspaso para quien continúe el trabajo: decisiones tomadas, archivos y símbolos tocados, qué ya funciona, qué queda y qué no debe repetirse. Conserva rutas, nombres y números exactos. Sin saludos, sin relleno, sin títulos. Máximo 400 palabras.",
+  "chat.showOlder": "Mostrar historial anterior a la compactación ({n})",
+  "chat.hideOlder": "Ocultar el historial anterior a la compactación",
 };
 
 const pt: TranslationKeys = {
@@ -2058,6 +2265,29 @@ const pt: TranslationKeys = {
   "inlineEdit.returnOnly": "Retorne APENAS o novo código do fragmento selecionado: sem explicações, sem marcadores de código ao redor.",
   "inlineEdit.noKey": "Chave API não configurada — adicione-a nas Configurações",
   "inlineEdit.noModels": "Falha ao carregar modelos — verifique a chave nas Configurações",
+  "context.title": "Contexto do pedido",
+  "context.total": "Estimativa",
+  "context.window": "Janela do modelo",
+  "context.windowHint": "Serve apenas para a barra de preenchimento. Informe o tamanho da janela do modelo escolhido.",
+  "context.messages": "Mensagens",
+  "context.tools": "Chamadas de ferramentas",
+  "context.files": "Anexos",
+  "context.activeFile": "Arquivo ativo",
+  "context.activeFileOff": "não é enviado (desativado nas configurações)",
+  "context.plan": "Plano",
+  "context.planEmpty": "Ative o modo Plano: o agente escreve os passos antes de tocar nos arquivos.",
+  "context.compact": "Compactar histórico",
+  "context.compactHint": "Reduz a conversa a um resumo para sobrar espaço para a próxima tarefa.",
+  "context.clearChat": "Limpar chat",
+  "context.free": "livre",
+  "context.compactedInfo": "Compactado: {n} mensagens cabem em um resumo.",
+  "chat.compact": "Compactando o histórico…",
+  "chat.compacted": "Histórico compactado: {n} mensagens → um resumo.",
+  "chat.compactNothing": "Nada para compactar: a conversa é curta demais.",
+  "chat.compactSummary": "Resumo compactado",
+  "chat.compactPrompt": "Você compacta conversas. Escreva uma nota de passagem para quem continuar o trabalho: decisões tomadas, arquivos e símbolos tocados, o que já funciona, o que falta e o que não deve ser repetido. Mantenha caminhos, nomes e números exatos. Sem saudações, sem enrolação, sem títulos. No máximo 400 palavras.",
+  "chat.showOlder": "Mostrar histórico anterior à compactação ({n})",
+  "chat.hideOlder": "Ocultar o histórico anterior à compactação",
 };
 
 const it: TranslationKeys = {
@@ -2261,6 +2491,29 @@ const it: TranslationKeys = {
   "inlineEdit.returnOnly": "Restituisci SOLO il nuovo codice del frammento selezionato: senza spiegazioni, senza marcatori di codice circostanti.",
   "inlineEdit.noKey": "Chiave API non configurata — aggiungila nelle Impostazioni",
   "inlineEdit.noModels": "Impossibile caricare i modelli — controlla la chiave nelle Impostazioni",
+  "context.title": "Contesto della richiesta",
+  "context.total": "Stima",
+  "context.window": "Finestra del modello",
+  "context.windowHint": "Serve solo alla barra di riempimento. Indica la dimensione della finestra del modello scelto.",
+  "context.messages": "Messaggi",
+  "context.tools": "Chiamate agli strumenti",
+  "context.files": "Allegati",
+  "context.activeFile": "File attivo",
+  "context.activeFileOff": "non viene inviato (disattivato nelle impostazioni)",
+  "context.plan": "Piano",
+  "context.planEmpty": "Attiva la modalità Piano: l'agente scrive i passi prima di toccare i file.",
+  "context.compact": "Compatta la cronologia",
+  "context.compactHint": "Riduce la conversazione a un riassunto per lasciare spazio al prossimo compito.",
+  "context.clearChat": "Svuota la chat",
+  "context.free": "libero",
+  "context.compactedInfo": "Compattato: {n} messaggi stanno in un riassunto.",
+  "chat.compact": "Compattazione della cronologia…",
+  "chat.compacted": "Cronologia compattata: {n} messaggi → un riassunto.",
+  "chat.compactNothing": "Niente da compattare: la conversazione è troppo corta.",
+  "chat.compactSummary": "Riassunto compattato",
+  "chat.compactPrompt": "Compatti conversazioni. Scrivi una nota di passaggio per chi continuerà il lavoro: decisioni prese, file e simboli toccati, cosa funziona già, cosa resta e cosa non va ripetuto. Mantieni percorsi, nomi e numeri esatti. Niente saluti, niente riempitivi, niente titoli. Massimo 400 parole.",
+  "chat.showOlder": "Mostra la cronologia precedente alla compattazione ({n})",
+  "chat.hideOlder": "Nascondi la cronologia precedente alla compattazione",
 };
 
 const tg: TranslationKeys = {
@@ -2464,6 +2717,29 @@ const tg: TranslationKeys = {
   "inlineEdit.returnOnly": "ФАҚАТ коди нави порчаи интихобшударо баргардон: бе шарҳ ва бе аломатҳои иҳотакунандаи код.",
   "inlineEdit.noKey": "Калиди API танзим нашудааст — онро дар Танзимот илова кунед",
   "inlineEdit.noModels": "Рӯйхати моделҳо гирифта нашуд — калидро дар Танзимот санҷед",
+  "context.title": "Контексти дархост",
+  "context.total": "Тақрибӣ",
+  "context.window": "Тирезаи модел",
+  "context.windowHint": "Танҳо барои хати пуркунӣ. Андозаи тирезаи модели интихобшударо нависед.",
+  "context.messages": "Паёмҳо",
+  "context.tools": "Даъватҳои абзор",
+  "context.files": "Замимаҳо",
+  "context.activeFile": "Файли кушода",
+  "context.activeFileOff": "фиристода намешавад (дар танзимот хомӯш аст)",
+  "context.plan": "Нақша",
+  "context.planEmpty": "Ба реҷаи «Нақша» гузаред: агент пеш аз даст задан ба файлҳо қадамҳоро менависад.",
+  "context.compact": "Таърихро ҷамъбаст кардан",
+  "context.compactHint": "Гуфтугӯро ба як ҷамъбаст меорад, то барои вазифаи нав ҷой монад.",
+  "context.clearChat": "Чатро тоза кардан",
+  "context.free": "озод",
+  "context.compactedInfo": "Ҷамъбаст шуд: {n} паём ба як ҷамъбаст оварда шуд.",
+  "chat.compact": "Таърих ҷамъбаст мешавад…",
+  "chat.compacted": "Таърих ҷамъбаст шуд: {n} паём → як ҷамъбаст.",
+  "chat.compactNothing": "Ҳоло чизе барои ҷамъбаст нест: гуфтугӯ хеле кӯтоҳ аст.",
+  "chat.compactSummary": "Ҷамъбасти фишурдашуда",
+  "chat.compactPrompt": "Ту гуфтугӯро ҷамъбаст мекунӣ. Барои касе, ки корро идома медиҳад, ёддошти супориш нависед: кадом қарорҳо қабул шуданд, кадом файлҳо ва рамзҳо тағйир ёфтанд, чӣ аллакай кор мекунад, чӣ боқӣ мондааст ва чӣ такрор нашавад. Роҳҳо, номҳо ва рақамҳоро дақиқ нигоҳ дор. Бе салом, бе оби даҳон, бе сарлавҳа. На бештар аз 400 калима.",
+  "chat.showOlder": "Нишон додани таърихи пеш аз ҷамъбаст ({n})",
+  "chat.hideOlder": "Пинҳон кардани таърихи пеш аз ҷамъбаст",
 };
 
 const translations: Record<Lang, TranslationKeys> = {
