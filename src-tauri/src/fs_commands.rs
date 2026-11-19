@@ -418,33 +418,46 @@ mod tests {
 
     #[test]
     fn resolve_existing_roundtrip() {
-        let root = PathBuf::from(r"D:\Projects\AIDE");
-        let canonical_root = crate::strip_verbatim(root.canonicalize().unwrap());
-        let p = resolve_existing(&canonical_root, r"D:\Projects\AIDE").unwrap();
+        let dir = std::env::temp_dir().join(format!("aide-resolve-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(dir.join("src")).unwrap();
+        let canonical_root = crate::strip_verbatim(dir.canonicalize().unwrap());
+        let p = resolve_existing(&canonical_root, &canonical_root.to_string_lossy()).unwrap();
         assert_eq!(p, canonical_root, "root itself resolves");
-        let src = resolve_existing(&canonical_root, r"D:\Projects\AIDE\src").unwrap();
+        let src = resolve_existing(&canonical_root, "src").unwrap();
         assert!(src.starts_with(&canonical_root), "child within root");
-        assert!(resolve_existing(&canonical_root, r"C:\Windows").is_err(), "outside rejected");
+        assert!(resolve_existing(&canonical_root, "..").is_err(), "outside rejected");
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn relative_paths_resolve_from_root() {
-        let root = crate::strip_verbatim(PathBuf::from(r"D:\Projects\AIDE").canonicalize().unwrap());
+        let dir = std::env::temp_dir().join(format!("aide-rel-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(dir.join("src/app")).unwrap();
+        fs::create_dir_all(dir.join("dist")).unwrap();
+        fs::write(dir.join("src/app/App.tsx"), "x").unwrap();
+        let root = crate::strip_verbatim(dir.canonicalize().unwrap());
         let src = resolve_existing(&root, "src").unwrap();
         assert!(src.starts_with(&root) && src.ends_with("src"), "relative dir");
         let app = resolve_existing(&root, "src/app/App.tsx").unwrap();
         assert!(app.ends_with("App.tsx"), "relative nested file");
-        assert!(resolve_existing(&root, r"..\..\Windows").is_err(), "relative escape");
+        assert!(resolve_existing(&root, "..").is_err(), "relative escape");
         let f = resolve_new(&root, "dist/probe_new_file.txt").unwrap();
         assert!(f.starts_with(&root) && f.ends_with("probe_new_file.txt"), "resolve_new relative");
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn watcher_can_watch_project() {
+        let dir = std::env::temp_dir().join(format!("aide-watch-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
         let mut watcher = notify::recommended_watcher(|_| {}).unwrap();
         watcher
-            .watch(Path::new(r"D:\Projects\AIDE"), notify::RecursiveMode::Recursive)
+            .watch(&dir, notify::RecursiveMode::Recursive)
             .unwrap();
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
