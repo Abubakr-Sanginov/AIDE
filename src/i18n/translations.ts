@@ -255,6 +255,11 @@ type TranslationKeys = {
   "chat.compactPrompt": string;
   "chat.showOlder": string;
   "chat.hideOlder": string;
+  "context.env": string;
+  "context.project": string;
+  "context.mode": string;
+  "context.model": string;
+  "context.planMode": string;
 };
 
 const en: TranslationKeys = {
@@ -481,6 +486,11 @@ const en: TranslationKeys = {
   "chat.compactPrompt": "You compress conversations. Write a handover note for whoever continues this work: decisions made, files and symbols touched, what already works, what is left, and what must not be repeated. Keep exact paths, names and numbers. No greetings, no filler, no headings. At most 400 words.",
   "chat.showOlder": "Show history before compaction ({n})",
   "chat.hideOlder": "Hide history before compaction",
+  "context.env": "Environment",
+  "context.project": "Project",
+  "context.mode": "Mode",
+  "context.model": "Model",
+  "context.planMode": "Plan mode",
 };
 
 const ru: TranslationKeys = {
@@ -707,6 +717,11 @@ const ru: TranslationKeys = {
   "chat.compactPrompt": "Ты сжимаешь переписку. Напиши передаточную записку для того, кто продолжит работу: какие решения приняты, какие файлы и символы затронуты, что уже работает, что осталось и что нельзя повторять. Сохраняй точные пути, имена и числа. Без приветствий, без воды, без заголовков. Не больше 400 слов.",
   "chat.showOlder": "Показать историю до сжатия ({n})",
   "chat.hideOlder": "Скрыть историю до сжатия",
+  "context.env": "Окружение",
+  "context.project": "Проект",
+  "context.mode": "Режим",
+  "context.model": "Модель",
+  "context.planMode": "Режим «План»",
 };
 
 const de: TranslationKeys = {
@@ -933,6 +948,11 @@ const de: TranslationKeys = {
   "chat.compactPrompt": "Du komprimierst Gespräche. Schreibe eine Übergabenotiz für die Person, die weiterarbeitet: welche Entscheidungen getroffen wurden, welche Dateien und Symbole berührt wurden, was schon funktioniert, was offen ist und was nicht wiederholt werden darf. Behalte genaue Pfade, Namen und Zahlen. Keine Begrüßung, keine Füllwörter, keine Überschriften. Höchstens 400 Wörter.",
   "chat.showOlder": "Verlauf vor der Komprimierung zeigen ({n})",
   "chat.hideOlder": "Verlauf vor der Komprimierung ausblenden",
+  "context.env": "Umgebung",
+  "context.project": "Projekt",
+  "context.mode": "Modus",
+  "context.model": "Modell",
+  "context.planMode": "Plan-Modus",
 };
 
 const fr: TranslationKeys = {
@@ -1159,6 +1179,11 @@ const fr: TranslationKeys = {
   "chat.compactPrompt": "Tu compresses des conversations. Rédige une note de passation pour la personne qui continue : décisions prises, fichiers et symboles touchés, ce qui fonctionne déjà, ce qui reste, ce qu'il ne faut pas refaire. Garde les chemins, noms et chiffres exacts. Sans salutations, sans remplissage, sans titres. 400 mots maximum.",
   "chat.showOlder": "Afficher l'historique avant compactage ({n})",
   "chat.hideOlder": "Masquer l'historique avant compactage",
+  "context.env": "Environnement",
+  "context.project": "Projet",
+  "context.mode": "Mode",
+  "context.model": "Modèle",
+  "context.planMode": "Mode Plan",
 };
 
 const zh: TranslationKeys = {
@@ -1384,6 +1409,11 @@ const zh: TranslationKeys = {
   "chat.compactPrompt": "你负责压缩对话。为接手的人写一份交接说明：已经做出的决定、改动过的文件和符号、哪些已经可用、还剩什么、哪些不要重复。保留准确的路径、名称和数字。不要问候语、不要空话、不要标题。不超过 400 字。",
   "chat.showOlder": "显示压缩前的历史（{n} 条）",
   "chat.hideOlder": "隐藏压缩前的历史",
+  "context.env": "环境",
+  "context.project": "项目",
+  "context.mode": "模式",
+  "context.model": "模型",
+  "context.planMode": "计划模式",
 };
 
 const ja: TranslationKeys = {
@@ -1610,6 +1640,11 @@ const ja: TranslationKeys = {
   "chat.compactPrompt": "会話を圧縮します。作業を引き継ぐ人への申し送りを書いてください：決まったこと、触ったファイルとシンボル、すでに動くもの、残っていること、繰り返してはいけないこと。パス・名前・数値は正確に。挨拶や冗長な説明、見出しは不要。400語以内。",
   "chat.showOlder": "圧縮前の履歴を表示（{n} 件）",
   "chat.hideOlder": "圧縮前の履歴を隠す",
+  "context.env": "環境",
+  "context.project": "プロジェクト",
+  "context.mode": "モード",
+  "context.model": "モデル",
+  "context.planMode": "計画モード",
 };
 
 const ko: TranslationKeys = {
@@ -1836,6 +1871,11 @@ const ko: TranslationKeys = {
   "chat.compactPrompt": "대화를 압축합니다. 이어서 작업할 사람에게 인수인계 메모를 작성하세요: 내린 결정, 건드린 파일과 심볼, 이미 동작하는 것, 남은 일, 반복하면 안 되는 것. 경로·이름·숫자는 정확히 유지하세요. 인사말, 군더더기, 제목 없이. 400단어 이내.",
   "chat.showOlder": "압축 이전 기록 보기 ({n}개)",
   "chat.hideOlder": "압축 이전 기록 숨기기",
+  "context.env": "환경",
+  "context.project": "프로젝트",
+  "context.mode": "모드",
+  "context.model": "모델",
+  "context.planMode": "계획 모드",
 };
 
 const es: TranslationKeys = {
@@ -2062,6 +2102,11 @@ const es: TranslationKeys = {
   "chat.compactPrompt": "Comprimes conversaciones. Escribe una nota de traspaso para quien continúe el trabajo: decisiones tomadas, archivos y símbolos tocados, qué ya funciona, qué queda y qué no debe repetirse. Conserva rutas, nombres y números exactos. Sin saludos, sin relleno, sin títulos. Máximo 400 palabras.",
   "chat.showOlder": "Mostrar historial anterior a la compactación ({n})",
   "chat.hideOlder": "Ocultar el historial anterior a la compactación",
+  "context.env": "Entorno",
+  "context.project": "Proyecto",
+  "context.mode": "Modo",
+  "context.model": "Modelo",
+  "context.planMode": "Modo Plan",
 };
 
 const pt: TranslationKeys = {
@@ -2288,6 +2333,11 @@ const pt: TranslationKeys = {
   "chat.compactPrompt": "Você compacta conversas. Escreva uma nota de passagem para quem continuar o trabalho: decisões tomadas, arquivos e símbolos tocados, o que já funciona, o que falta e o que não deve ser repetido. Mantenha caminhos, nomes e números exatos. Sem saudações, sem enrolação, sem títulos. No máximo 400 palavras.",
   "chat.showOlder": "Mostrar histórico anterior à compactação ({n})",
   "chat.hideOlder": "Ocultar o histórico anterior à compactação",
+  "context.env": "Ambiente",
+  "context.project": "Projeto",
+  "context.mode": "Modo",
+  "context.model": "Modelo",
+  "context.planMode": "Modo Plano",
 };
 
 const it: TranslationKeys = {
@@ -2514,6 +2564,11 @@ const it: TranslationKeys = {
   "chat.compactPrompt": "Compatti conversazioni. Scrivi una nota di passaggio per chi continuerà il lavoro: decisioni prese, file e simboli toccati, cosa funziona già, cosa resta e cosa non va ripetuto. Mantieni percorsi, nomi e numeri esatti. Niente saluti, niente riempitivi, niente titoli. Massimo 400 parole.",
   "chat.showOlder": "Mostra la cronologia precedente alla compattazione ({n})",
   "chat.hideOlder": "Nascondi la cronologia precedente alla compattazione",
+  "context.env": "Ambiente",
+  "context.project": "Progetto",
+  "context.mode": "Modalità",
+  "context.model": "Modello",
+  "context.planMode": "Modalità Piano",
 };
 
 const tg: TranslationKeys = {
@@ -2740,6 +2795,11 @@ const tg: TranslationKeys = {
   "chat.compactPrompt": "Ту гуфтугӯро ҷамъбаст мекунӣ. Барои касе, ки корро идома медиҳад, ёддошти супориш нависед: кадом қарорҳо қабул шуданд, кадом файлҳо ва рамзҳо тағйир ёфтанд, чӣ аллакай кор мекунад, чӣ боқӣ мондааст ва чӣ такрор нашавад. Роҳҳо, номҳо ва рақамҳоро дақиқ нигоҳ дор. Бе салом, бе оби даҳон, бе сарлавҳа. На бештар аз 400 калима.",
   "chat.showOlder": "Нишон додани таърихи пеш аз ҷамъбаст ({n})",
   "chat.hideOlder": "Пинҳон кардани таърихи пеш аз ҷамъбаст",
+  "context.env": "Муҳит",
+  "context.project": "Лоиҳа",
+  "context.mode": "Реҷа",
+  "context.model": "Модел",
+  "context.planMode": "Реҷаи «Нақша»",
 };
 
 const translations: Record<Lang, TranslationKeys> = {

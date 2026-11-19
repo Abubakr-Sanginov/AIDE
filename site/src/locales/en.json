@@ -466,5 +466,10 @@
   "p-contact.2": "Questions about data and privacy: the project page on GitHub, in the issues section. The author and the data controller is Abubakr Sanginov.",
   "p-contact.3": "This page describes how data is handled and is not legal advice.",
   "doc-crew.3": "You are the CEO: you decide what of it makes it into the code.",
-  "start.7": "Source code on GitHub"
+  "start.7": "Source code on GitHub",
+  "v0-2-4.1": "Current version",
+  "h-024.1": "Context, plan and compaction",
+  "v0-2-4.2": "A Context tab in the right panel: how full the model window is, what the messages and tool calls cost, attachments and the active file.",
+  "v0-2-4.3": "Plan: the steps of a Plan-mode answer are shown as a list, finished items are marked.",
+  "v0-2-4.4": "The [code]/compact[/code] command: the conversation folds into one summary, and the earlier messages stay on screen."
 }

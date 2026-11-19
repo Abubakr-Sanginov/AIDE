@@ -49,9 +49,9 @@ export function RightPanel() {
 
   const tabs: { key: string; label: string; onClick: () => void; close?: () => void }[] = [
     { key: "chat", label: isRuLike(lang) ? rt("Агент") : "Agent", onClick: () => setTab("chat") },
-    { key: "context", label: isRuLike(lang) ? rt("Контекст") : "Context", onClick: () => setTab("context") },
     { key: "computer", label: isRuLike(lang) ? rt("Компьютер") : "Computer", onClick: () => setTab("computer") },
     { key: "kins", label: isRuLike(lang) ? rt("Экипаж") : "Crew", onClick: () => setTab("kins") },
+    { key: "context", label: isRuLike(lang) ? rt("Контекст") : "Context", onClick: () => setTab("context") },
     { key: "browser", label: isRuLike(lang) ? rt("Браузер") : "Browser", onClick: () => setTab("browser") },
   ];
   for (const def of viewDefs) {
@@ -65,7 +65,7 @@ export function RightPanel() {
 
   return (
     <aside style={{ width: rightPanelWidth }} className="aide-flat aide-vt-right flex shrink-0 select-none flex-col">
-      <div ref={indicator.ref} role="tablist" className="aide-scroll relative isolate flex h-9 shrink-0 items-end gap-4 overflow-x-auto border-b border-line/60 px-3">
+      <div ref={indicator.ref} role="tablist" className="aide-scroll relative isolate flex h-9 shrink-0 items-end gap-2 overflow-x-auto border-b border-line/60 px-2">
         <Indicator box={indicator.box} variant="underline" />
         {tabs.map((t) => (
           <span key={t.key} className="-mb-px flex shrink-0 items-center gap-1">
@@ -73,7 +73,7 @@ export function RightPanel() {
               role="tab"
               aria-selected={tab === t.key}
               onClick={t.onClick}
-              className="border-b-2 border-transparent pb-1.5 text-[13px] font-medium text-ink-400 transition-colors hover:text-ink-50 aria-selected:text-ink-50"
+              className="border-b-2 border-transparent pb-1.5 text-[12.5px] font-medium text-ink-400 transition-colors hover:text-ink-50 aria-selected:text-ink-50"
             >
               {t.label}
             </button>

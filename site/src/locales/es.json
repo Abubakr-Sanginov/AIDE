@@ -261,5 +261,10 @@
   "head.9": "Términos de uso de AIDE: qué se puede y qué no se puede hacer con la aplicación y el sitio, quién responde por lo que produce el agente y cómo se resuelven las disputas.",
   "head.10": "Política de privacidad — AIDE",
   "head.11": "Privacidad en AIDE: qué datos permanecen en tu equipo, qué sale al llamar a un modelo, dónde se guardan las claves y por qué no hay telemetría.",
-  "start.7": "Código fuente en GitHub"
+  "start.7": "Código fuente en GitHub",
+  "v0-2-4.1": "Versión actual",
+  "h-024.1": "Contexto, plan y compactación",
+  "v0-2-4.2": "Una pestaña «Contexto» en el panel derecho: cuánto se llena la ventana del modelo, cuánto cuestan los mensajes y las llamadas a herramientas, los adjuntos y el archivo activo.",
+  "v0-2-4.3": "Plan: los pasos de una respuesta en modo Plan se muestran como lista y los puntos hechos quedan marcados.",
+  "v0-2-4.4": "El comando [code]/compact[/code]: la conversación se reduce a un resumen y los mensajes anteriores siguen en pantalla."
 }
