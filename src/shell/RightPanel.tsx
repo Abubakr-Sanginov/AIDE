@@ -69,7 +69,7 @@ export function RightPanel() {
         <Indicator box={indicator.box} variant="underline" />
         {tabs.map((t) => (
           // Tabs share the strip (flex-[1_1_auto]) and ellipsize instead of overflowing the panel.
-          <span key={t.key} className="-mb-px flex min-w-0 flex-[1_1_auto] items-center justify-center gap-1">
+          <span key={t.key} className="-mb-px flex min-w-[3.25rem] flex-[1_1_auto] items-center justify-center gap-1">
             <button
               role="tab"
               aria-selected={tab === t.key}
