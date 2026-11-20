@@ -684,6 +684,15 @@ pub struct TokenClass {
 }
 
 /// По виду значения: что это за ключ, куда он, по всей видимости, относится и можно ли его использовать.
+/// Если строка — ссылка на переменную окружения (`$NAME`), возвращает имя переменной.
+pub(crate) fn split_env_ref(s: &str) -> Option<&str> {
+    let name = s.strip_prefix('$')?;
+    if name.is_empty() || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+        return None;
+    }
+    Some(name)
+}
+
 pub fn classify_token(secret: &str) -> TokenClass {
     let ok = |kind, base_url| TokenClass { kind, base_url, blocked: None };
     let no = |reason| TokenClass { kind: "openai", base_url: None, blocked: Some(reason) };
@@ -1010,6 +1019,19 @@ pub fn import_key(home: &Path, candidate_id: &str, provider_id: &str, store: imp
     }
     let (_file, value, pointer) = resolve_candidate(home, candidate_id)?;
     let secret = value.pointer(&pointer).and_then(Value::as_str).map(str::trim).filter(|s| !s.is_empty()).ok_or("Значение не найдено: файл изменился?")?;
+    // Ключ может быть ссылкой на переменную окружения ($NAME): подставляем её значение,
+    // а не сохраняем имя переменной как будто это сам ключ.
+    if let Some(name) = split_env_ref(secret) {
+        match std::env::var(name) {
+            Ok(v) if !v.trim().is_empty() => return store(provider_id, v.trim()),
+            _ => {
+                return Err(format!(
+                    "Ключ задан через переменную окружения ${name}, но она не установлена \
+                     в окружении AIDE. Задайте её или введите ключ вручную."
+                ));
+            }
+        }
+    }
     if let Some(reason) = classify_token(secret).blocked {
         return Err(reason.into());
     }
@@ -1223,6 +1245,17 @@ mod tests {
         for bad in ["openai", "anthropic", "agent-", "agent-X", "agent_x_y_z", "agent-a/b", "agent-ends-", &format!("agent-{}", "a".repeat(40))] {
             assert!(!valid_provider_id(bad), "{bad}");
         }
+    }
+
+    #[test]
+    fn env_key_reference_is_resolved_or_rejected() {
+        // "$NAME" распознаётся как ссылка на переменную окружения.
+        assert_eq!(split_env_ref("$T3_DEEPAI_TOKEN"), Some("T3_DEEPAI_TOKEN"));
+        assert_eq!(split_env_ref("$OPENAI_API_KEY"), Some("OPENAI_API_KEY"));
+        // Не env: обычный ключ, пустой, с недопустимыми символами.
+        assert_eq!(split_env_ref("sk-ant-api03-abcdef"), None);
+        assert_eq!(split_env_ref("$"), None);
+        assert_eq!(split_env_ref("$has-dash"), None);
     }
 
     #[test]

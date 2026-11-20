@@ -381,7 +381,20 @@ pub(crate) fn api_key(provider_id: &str) -> Result<String, String> {
     }
     let entry = keyring::Entry::new(KEYRING_SERVICE, provider_id).map_err(|e| e.to_string())?;
     match entry.get_password() {
-        Ok(key) => Ok(key),
+        Ok(key) => {
+            // Ключ из хранилища может оказаться ссылкой на переменную окружения
+            // (например, "$T3_DEEPAI_TOKEN") — подставляем реальное значение.
+            if let Some(name) = crate::agent_accounts::split_env_ref(&key) {
+                match std::env::var(name) {
+                    Ok(v) if !v.trim().is_empty() => Ok(v.trim().to_string()),
+                    _ => Err(format!(
+                        "Переменная окружения ${name} не задана — невозможно получить ключ провайдера."
+                    )),
+                }
+            } else {
+                Ok(key)
+            }
+        }
         Err(keyring::Error::NoEntry) => Err("API-ключ не настроен: откройте Настройки".into()),
         Err(e) => Err(e.to_string()),
     }
