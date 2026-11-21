@@ -271,5 +271,9 @@
   "h-025.1": "Panel derecho: pestañas y contexto",
   "v0-2-5.2": "«Contexto» está en la misma fila que «Navegador» y se abre a su lado.",
   "v0-2-5.3": "Las pestañas del panel derecho siempre caben en el ancho: los nombres largos se abrevian y nada se sale del borde.",
-  "v0-2-5.4": "Las secciones de «Contexto» van una debajo de otra: entorno, llenado de la ventana, plan e historial de compresiones."
+  "v0-2-5.4": "Las secciones de «Contexto» van una debajo de otra: entorno, llenado de la ventana, plan e historial de compresiones.",
+  "v0-2-6.1": "Versión actual",
+  "h-026.1": "Vibe: contexto junto al navegador y claves del entorno",
+  "v0-2-6.2": "En Vibe y «Diseño», la parte derecha tiene las pestañas «Contexto» y «Navegador»: el plan y el llenado de la ventana van junto a la página.",
+  "v0-2-6.3": "Las claves de agente como [code]$T3_DEEPAI_TOKEN[/code] ahora se expanden desde las variables de entorno en lugar de guardarse como texto [code]$NAME[/code]: adiós al error 403 «Model transport authentication required»."
 }

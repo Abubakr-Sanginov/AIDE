@@ -476,5 +476,9 @@
   "h-025.1": "Right panel: tabs and context",
   "v0-2-5.2": "Context sits in the same row as Browser and opens next to it.",
   "v0-2-5.3": "The right panel tabs always fit the width: long names are shortened, nothing runs past the edge.",
-  "v0-2-5.4": "The Context sections are stacked: environment, window fill, plan and compaction history."
+  "v0-2-5.4": "The Context sections are stacked: environment, window fill, plan and compaction history.",
+  "v0-2-6.1": "Current version",
+  "h-026.1": "Vibe: context next to the browser, keys from the environment",
+  "v0-2-6.2": "In Vibe and Design the right side has Context and Browser tabs: the plan and the window fill sit next to the page.",
+  "v0-2-6.3": "Agent keys like [code]$T3_DEEPAI_TOKEN[/code] are now expanded from environment variables instead of storing the literal [code]$NAME[/code] — the 403 “Model transport authentication required” error is gone."
 }

@@ -271,5 +271,9 @@
   "h-025.1": "Pannello destro: schede e contesto",
   "v0-2-5.2": "«Contesto» sta nella stessa riga di «Browser» e si apre accanto.",
   "v0-2-5.3": "Le schede del pannello destro entrano sempre nella larghezza: i nomi lunghi si accorciano e nulla esce dal bordo.",
-  "v0-2-5.4": "Le sezioni di «Contesto» sono una sotto l'altra: ambiente, riempimento della finestra, piano e cronologia delle compressioni."
+  "v0-2-5.4": "Le sezioni di «Contesto» sono una sotto l'altra: ambiente, riempimento della finestra, piano e cronologia delle compressioni.",
+  "v0-2-6.1": "Versione attuale",
+  "h-026.1": "Vibe: contesto accanto al browser, chiavi dall’ambiente",
+  "v0-2-6.2": "In Vibe e «Design», il lato destro ha le schede «Contesto» e «Browser»: il piano e il riempimento della finestra stanno accanto alla pagina.",
+  "v0-2-6.3": "Le chiavi agente come [code]$T3_DEEPAI_TOKEN[/code] vengono ora espanse dalle variabili d’ambiente invece di essere salvate come testo [code]$NAME[/code] — niente più errore 403 «Model transport authentication required»."
 }

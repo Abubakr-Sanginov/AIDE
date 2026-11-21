@@ -271,5 +271,9 @@
   "h-025.1": "Rechter Bereich: Registerkarten und Kontext",
   "v0-2-5.2": "„Kontext“ steht in derselben Reihe wie „Browser“ und öffnet sich daneben.",
   "v0-2-5.3": "Die Registerkarten des rechten Bereichs passen immer in die Breite: lange Namen werden gekürzt, nichts läuft über den Rand.",
-  "v0-2-5.4": "Die Abschnitte von „Kontext“ stehen untereinander: Umgebung, Füllstand des Fensters, Plan und Verlauf der Zusammenfassungen."
+  "v0-2-5.4": "Die Abschnitte von „Kontext“ stehen untereinander: Umgebung, Füllstand des Fensters, Plan und Verlauf der Zusammenfassungen.",
+  "v0-2-6.1": "Aktuelle Version",
+  "h-026.1": "Vibe: Kontext neben dem Browser, Schlüssel aus der Umgebung",
+  "v0-2-6.2": "In Vibe und „Design“ hat die rechte Seite die Registerkarten „Kontext“ und „Browser“: Plan und Füllstand des Fensters sitzen neben der Seite.",
+  "v0-2-6.3": "Agentenschlüssel wie [code]$T3_DEEPAI_TOKEN[/code] werden nun aus Umgebungsvariablen aufgelöst statt als Text [code]$NAME[/code] gespeichert — der 403-Fehler „Model transport authentication required“ ist weg."
 }

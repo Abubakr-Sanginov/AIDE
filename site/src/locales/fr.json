@@ -271,5 +271,9 @@
   "h-025.1": "Panneau de droite : onglets et contexte",
   "v0-2-5.2": "« Contexte » se trouve sur la même ligne que « Navigateur » et s'ouvre à côté.",
   "v0-2-5.3": "Les onglets du panneau de droite tiennent toujours dans la largeur : les noms longs sont abrégés, rien ne dépasse.",
-  "v0-2-5.4": "Les sections de « Contexte » sont empilées : environnement, remplissage de la fenêtre, plan et historique des compressions."
+  "v0-2-5.4": "Les sections de « Contexte » sont empilées : environnement, remplissage de la fenêtre, plan et historique des compressions.",
+  "v0-2-6.1": "Version actuelle",
+  "h-026.1": "Vibe : le contexte à côté du navigateur, clés depuis l’environnement",
+  "v0-2-6.2": "Dans Vibe et « Design », la partie de droite propose les onglets « Contexte » et « Navigateur » : le plan et le remplissage de la fenêtre sont à côté de la page.",
+  "v0-2-6.3": "Les clés d’agent comme [code]$T3_DEEPAI_TOKEN[/code] sont maintenant développées depuis les variables d’environnement au lieu d’être stockées littéralement ([code]$NAME[/code]) — l’erreur 403 « Model transport authentication required » a disparu."
 }

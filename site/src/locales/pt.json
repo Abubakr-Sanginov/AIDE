@@ -271,5 +271,9 @@
   "h-025.1": "Painel direito: abas e contexto",
   "v0-2-5.2": "«Contexto» fica na mesma linha de «Navegador» e abre ao lado dele.",
   "v0-2-5.3": "As abas do painel direito sempre cabem na largura: nomes longos são abreviados e nada passa da borda.",
-  "v0-2-5.4": "As seções de «Contexto» ficam uma sob a outra: ambiente, preenchimento da janela, plano e histórico de compactações."
+  "v0-2-5.4": "As seções de «Contexto» ficam uma sob a outra: ambiente, preenchimento da janela, plano e histórico de compactações.",
+  "v0-2-6.1": "Versão atual",
+  "h-026.1": "Vibe: contexto ao lado do navegador, chaves do ambiente",
+  "v0-2-6.2": "No Vibe e no «Design», o lado direito tem as abas «Contexto» e «Navegador»: o plano e o preenchimento da janela ficam ao lado da página.",
+  "v0-2-6.3": "Chaves de agente como [code]$T3_DEEPAI_TOKEN[/code] agora são expandidas a partir das variáveis de ambiente em vez de guardadas como texto [code]$NAME[/code] — sem mais o erro 403 «Model transport authentication required»."
 }
