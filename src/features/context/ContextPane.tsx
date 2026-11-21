@@ -8,7 +8,7 @@ import { useTabs } from "@/stores/tabs";
 import { useWorkspace } from "@/stores/workspace";
 import { t } from "@/i18n/t";
 import { estimateTokens, loadWindow, saveWindow, windowFromModel } from "@/lib/contextSize";
-import { parsePlan } from "@/lib/plan";
+import { latestAgentPlan, parsePlan } from "@/lib/plan";
 
 /** A picture is not text: one screen-sized image costs about this much of a context window. */
 const IMAGE_TOKENS = 1_500;
@@ -108,8 +108,11 @@ export function ContextPane() {
 
   const winSize = win > 0 ? win : 1;
   const pct = Math.min(100, Math.round((stats.total / winSize) * 100));
-  const planMsg = [...messages].reverse().find((m) => m.plan && m.content.trim());
-  const steps = planMsg ? parsePlan(planMsg.content) : [];
+  const planIdx = messages.map((m) => !!(m.plan && m.content.trim())).lastIndexOf(true);
+  // The plan the agent keeps up to date itself (update_plan) wins over an older Plan-mode answer.
+  const agentPlan = latestAgentPlan(messages);
+  const steps: { text: string; done: boolean; active?: boolean }[] =
+    agentPlan && agentPlan.index >= planIdx ? agentPlan.steps : planIdx >= 0 ? parsePlan(messages[planIdx].content) : [];
   const canCompact =
     !streaming &&
     historyFor(messages).filter((m) => m.content.trim() || m.tools?.length).length >= 3;
@@ -214,7 +217,7 @@ export function ContextPane() {
                       "mt-[1px] shrink-0 font-mono text-[11px] " + (s.done ? "text-teal-300" : "text-ink-600")
                     }
                   >
-                    {s.done ? "✓" : String(i + 1).padStart(2, "0")}
+                    {s.done ? "✓" : s.active ? "▸" : String(i + 1).padStart(2, "0")}
                   </span>
                   <span className={s.done ? "text-ink-500 line-through" : "text-ink-300"}>{s.text}</span>
                 </li>

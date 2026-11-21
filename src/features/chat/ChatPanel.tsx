@@ -39,6 +39,8 @@ import { ChatSessionButtons, type ChatItem } from "@/ui/ChatHistory";
 import { titleOf, useChats } from "@/stores/chats";
 import { useAi, type AiMode, type ToolEvent } from "@/stores/ai";
 import { ToolActivity } from "@/ui/ToolActivity";
+import { PlanCard } from "@/ui/PlanCard";
+import { planOfTools } from "@/lib/plan";
 import { AgentChanges } from "@/features/chat/AgentChanges";
 import { Indicator, useIndicator } from "@/ui/Indicator";
 import { type Attachment, type PermissionMode, type TokenUsage } from "@/api/ai";
@@ -123,7 +125,11 @@ function AssistantMessage({
         {live ? <div className="whitespace-pre-wrap break-words">{content}</div> : <Markdown content={content} />}
         </div>
       )}
-      {tools && tools.length > 0 && <ToolActivity items={tools} live={live} />}
+      {(() => {
+        const plan = planOfTools(tools);
+        return plan ? <PlanCard steps={plan} /> : null;
+      })()}
+      {tools && tools.length > 0 && <ToolActivity items={tools.filter((x) => x.tool !== "update_plan")} live={live} />}
       {content && (
         <button
           title={t("chat.copyTitle")}

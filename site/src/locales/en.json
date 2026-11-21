@@ -480,5 +480,10 @@
   "v0-2-6.1": "Current version",
   "h-026.1": "Vibe: context next to the browser, keys from the environment",
   "v0-2-6.2": "In Vibe and Design the right side has Context and Browser tabs: the plan and the window fill sit next to the page.",
-  "v0-2-6.3": "Agent keys like [code]$T3_DEEPAI_TOKEN[/code] are now expanded from environment variables instead of storing the literal [code]$NAME[/code] — the 403 “Model transport authentication required” error is gone."
+  "v0-2-6.3": "Agent keys like [code]$T3_DEEPAI_TOKEN[/code] are now expanded from environment variables instead of storing the literal [code]$NAME[/code] — the 403 “Model transport authentication required” error is gone.",
+  "v0-2-7.1": "Current version",
+  "h-027.1": "The agent plans on its own",
+  "v0-2-7.2": "For a complex task the agent first writes a short plan and ticks off steps as it works. The plan shows as a card in the chat and in the Context tab.",
+  "v0-2-7.3": "The right-panel button in Vibe and Design now has a panel icon instead of a globe and opens the panel on the tab you used last: Context, with the plan, by default.",
+  "v0-2-7.4": "Plan mode is still there for when you want only a plan without file changes."
 }

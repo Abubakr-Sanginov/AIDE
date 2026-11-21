@@ -275,5 +275,10 @@
   "v0-2-6.1": "Version actuelle",
   "h-026.1": "Vibe : le contexte à côté du navigateur, clés depuis l’environnement",
   "v0-2-6.2": "Dans Vibe et « Design », la partie de droite propose les onglets « Contexte » et « Navigateur » : le plan et le remplissage de la fenêtre sont à côté de la page.",
-  "v0-2-6.3": "Les clés d’agent comme [code]$T3_DEEPAI_TOKEN[/code] sont maintenant développées depuis les variables d’environnement au lieu d’être stockées littéralement ([code]$NAME[/code]) — l’erreur 403 « Model transport authentication required » a disparu."
+  "v0-2-6.3": "Les clés d’agent comme [code]$T3_DEEPAI_TOKEN[/code] sont maintenant développées depuis les variables d’environnement au lieu d’être stockées littéralement ([code]$NAME[/code]) — l’erreur 403 « Model transport authentication required » a disparu.",
+  "v0-2-7.1": "Version actuelle",
+  "h-027.1": "L’agent planifie lui-même",
+  "v0-2-7.2": "Pour une tâche complexe, l’agent écrit d’abord un court plan et coche les étapes au fil du travail. Le plan s’affiche sous forme de carte dans le chat et dans l’onglet « Contexte ».",
+  "v0-2-7.3": "Le bouton du panneau de droite dans Vibe et « Design » a désormais une icône de panneau au lieu d’un globe et ouvre le dernier onglet utilisé : « Contexte », avec le plan, par défaut.",
+  "v0-2-7.4": "Le mode Plan reste disponible quand vous voulez seulement un plan, sans modification de fichiers."
 }

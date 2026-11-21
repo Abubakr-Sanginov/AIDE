@@ -275,5 +275,10 @@
   "v0-2-6.1": "Versione attuale",
   "h-026.1": "Vibe: contesto accanto al browser, chiavi dall’ambiente",
   "v0-2-6.2": "In Vibe e «Design», il lato destro ha le schede «Contesto» e «Browser»: il piano e il riempimento della finestra stanno accanto alla pagina.",
-  "v0-2-6.3": "Le chiavi agente come [code]$T3_DEEPAI_TOKEN[/code] vengono ora espanse dalle variabili d’ambiente invece di essere salvate come testo [code]$NAME[/code] — niente più errore 403 «Model transport authentication required»."
+  "v0-2-6.3": "Le chiavi agente come [code]$T3_DEEPAI_TOKEN[/code] vengono ora espanse dalle variabili d’ambiente invece di essere salvate come testo [code]$NAME[/code] — niente più errore 403 «Model transport authentication required».",
+  "v0-2-7.1": "Versione attuale",
+  "h-027.1": "L’agente fa il piano da solo",
+  "v0-2-7.2": "Per un compito complesso l’agente scrive prima un breve piano e spunta i passi mentre lavora. Il piano appare come una scheda nella chat e nella scheda «Contesto».",
+  "v0-2-7.3": "Il pulsante del pannello destro in Vibe e «Design» ora ha un’icona di pannello al posto del globo e apre l’ultima scheda usata: di default «Contesto», con il piano.",
+  "v0-2-7.4": "La modalità Piano resta per quando vuoi solo un piano, senza modificare file."
 }

@@ -275,5 +275,10 @@
   "v0-2-6.1": "Versión actual",
   "h-026.1": "Vibe: contexto junto al navegador y claves del entorno",
   "v0-2-6.2": "En Vibe y «Diseño», la parte derecha tiene las pestañas «Contexto» y «Navegador»: el plan y el llenado de la ventana van junto a la página.",
-  "v0-2-6.3": "Las claves de agente como [code]$T3_DEEPAI_TOKEN[/code] ahora se expanden desde las variables de entorno en lugar de guardarse como texto [code]$NAME[/code]: adiós al error 403 «Model transport authentication required»."
+  "v0-2-6.3": "Las claves de agente como [code]$T3_DEEPAI_TOKEN[/code] ahora se expanden desde las variables de entorno en lugar de guardarse como texto [code]$NAME[/code]: adiós al error 403 «Model transport authentication required».",
+  "v0-2-7.1": "Versión actual",
+  "h-027.1": "El agente hace su propio plan",
+  "v0-2-7.2": "En una tarea compleja el agente escribe primero un plan corto y marca los pasos mientras trabaja. El plan se ve como una tarjeta en el chat y en la pestaña «Contexto».",
+  "v0-2-7.3": "El botón del panel derecho en Vibe y «Diseño» ahora tiene un icono de panel en lugar de un globo y abre la última pestaña usada: por defecto «Contexto», con el plan.",
+  "v0-2-7.4": "El modo Plan sigue ahí para cuando solo quieres un plan sin cambios en los archivos."
 }

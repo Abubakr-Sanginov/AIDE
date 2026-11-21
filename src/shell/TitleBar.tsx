@@ -5,10 +5,11 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
   Code2,
   Copy,
-  Globe,
   MessageSquare,
   Palette,
   PanelRight,
+  PanelRightClose,
+  PanelRightOpen,
   Minus,
   Search,
   Settings,
@@ -198,12 +199,13 @@ export function TitleBar() {
           <button
             className="aide-icon-button mr-1 size-8"
             aria-pressed={browserDock}
-            title={isRuLike(lang) ? rt("Браузер") : "Browser"}
-            aria-label={isRuLike(lang) ? rt("Браузер") : "Browser"}
+            title={isRuLike(lang) ? rt("Правая панель: контекст и план, браузер") : "Side panel: context and plan, browser"}
+            aria-label={isRuLike(lang) ? rt("Правая панель") : "Side panel"}
             onDoubleClick={(e) => e.stopPropagation()}
-            onClick={() => useUi.getState().setBrowserDock(!browserDock)}
+            // Opens the panel on the tab the person used last (Context by default); only the agent's browser_open forces Browser.
+            onClick={() => useUi.setState({ browserDock: !browserDock })}
           >
-            <Globe size={16} />
+            {browserDock ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
           </button>
         )}
         {designMode && <CreateInProjectButton />}

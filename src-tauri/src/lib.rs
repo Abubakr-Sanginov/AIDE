@@ -10,6 +10,7 @@ mod browser_view;
 mod agent_accounts;
 mod browser_viewport;
 mod computer;
+mod plan_tool;
 mod mcp;
 mod project_context;
 mod skills;
