@@ -284,5 +284,10 @@
   "v0-2-8.1": "Version actuelle",
   "h-028.1": "Les clés des variables d’environnement sont trouvées toutes seules",
   "v0-2-8.2": "Quand une clé d’agent est écrite [code]$NAME[/code], AIDE cherche la valeur dans l’environnement, dans les variables Windows (pas besoin de redémarrer AIDE), dans le bloc [code]env[/code] des réglages de l’agent et dans un fichier [code].env[/code].",
-  "v0-2-8.3": "Si la valeur est introuvable, le message d’erreur indique où l’ajouter."
+  "v0-2-8.3": "Si la valeur est introuvable, le message d’erreur indique où l’ajouter.",
+  "v0-2-9.1": "Version actuelle",
+  "h-029.1": "Studio 3D, actions sur les messages, « Contexte » plus clair",
+  "v0-2-9.2": "Un nouveau mode « Studio 3D » : l’agent travaille avec Blender, Unity, Unreal Engine et Godot via leurs serveurs MCP (préréglages prêts dans les réglages), connaît les bonnes pratiques grâce aux compétences intégrées et affiche captures de viewport et rendus dans un aperçu directement dans l’application.",
+  "v0-2-9.3": "Les messages du chat ont désormais des actions : copier, modifier une question et la renvoyer, répondre à nouveau, supprimer.",
+  "v0-2-9.4": "L’onglet « Contexte » est plus lisible : une barre colorée de remplissage de la fenêtre du modèle et la liste de ce qui la remplit (messages, outils, MCP, prompt, compétences, mémoire et règles du projet)."
 }

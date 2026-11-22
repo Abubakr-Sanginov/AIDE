@@ -489,5 +489,10 @@
   "v0-2-8.1": "Current version",
   "h-028.1": "Keys from environment variables are found on their own",
   "v0-2-8.2": "When an agent key is written as [code]$NAME[/code], AIDE looks for the value in the environment, in the Windows variables (no AIDE restart needed), in the [code]env[/code] block of the agent's settings and in a [code].env[/code] file.",
-  "v0-2-8.3": "If the value is nowhere to be found, the error message tells you where to add it."
+  "v0-2-8.3": "If the value is nowhere to be found, the error message tells you where to add it.",
+  "v0-2-9.1": "Current version",
+  "h-029.1": "3D Studio, message actions, a clearer Context tab",
+  "v0-2-9.2": "A new \"3D Studio\" mode: the agent works with Blender, Unity, Unreal Engine and Godot through their MCP servers (ready presets in settings), knows good practice from built-in skills and shows viewport screenshots and renders in a preview inside the app.",
+  "v0-2-9.3": "Chat messages now have actions: copy, edit a question and send it again, answer again, delete.",
+  "v0-2-9.4": "The Context tab is clearer: a coloured fill bar for the model window and a list of what fills it (messages, tools, MCP, prompt, skills, memory and project rules)."
 }

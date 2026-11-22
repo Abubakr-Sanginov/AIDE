@@ -51,6 +51,16 @@ const BUILTINS: &[Builtin] = &[
         keywords: &["сайт", "дизайн", "интерфейс", "лендинг", "макет", "website", "landing", "design", " ui ", "css", "красив"] },
     Builtin { name: "webapp-testing", source: "https://skills.sh/anthropics/skills/webapp-testing", raw: include_str!("../skills/webapp-testing/SKILL.md"),
         keywords: &["браузер", "в браузере", "playwright", "e2e", "browser", "screenshot", "скриншот", "console"] },
+    Builtin { name: "3d-studio-workflow", source: "AIDE", raw: include_str!("../skills/3d-studio-workflow/SKILL.md"),
+        keywords: &["3d", "3д", "blender", "блендер", "unity", "юнити", "unreal", "анрил", "godot", "годот", "сцен", "модел", "рендер", "полигон", "текстур", "материал", "scene", "render", "mesh", "polygon", "texture", "game engine"] },
+    Builtin { name: "blender-bpy", source: "AIDE", raw: include_str!("../skills/blender-bpy/SKILL.md"),
+        keywords: &["blender", "блендер", "bpy", ".blend"] },
+    Builtin { name: "unity-scene-csharp", source: "AIDE", raw: include_str!("../skills/unity-scene-csharp/SKILL.md"),
+        keywords: &["unity", "юнити", "monobehaviour", "prefab", "префаб"] },
+    Builtin { name: "unreal-blueprint-cpp", source: "AIDE", raw: include_str!("../skills/unreal-blueprint-cpp/SKILL.md"),
+        keywords: &["unreal", "анрил", "блюпринт", "blueprint", "lumen", "nanite", "uasset"] },
+    Builtin { name: "godot-gdscript", source: "AIDE", raw: include_str!("../skills/godot-gdscript/SKILL.md"),
+        keywords: &["godot", "годот", "gdscript", ".tscn"] },
 ];
 
 #[derive(Clone, Serialize)]
@@ -409,6 +419,18 @@ mod tests {
         assert!(bug.len() < MAX_INDEX_CHARS + AUTO_WITH_TOOLS + 2_500, "prompt stays small: {}", bug.len());
         let named = build_prompt(&skills, "use writing-tests please", true);
         assert!(named.contains("Подключённый навык (подходит к задаче): writing-tests"));
+    }
+    #[test]
+    fn three_d_skills_attach_to_matching_tasks() {
+        let skills = catalog(None, None);
+        for id in ["3d-studio-workflow", "blender-bpy", "unity-scene-csharp", "unreal-blueprint-cpp", "godot-gdscript"] {
+            assert!(skills.iter().any(|s| s.id == format!("builtin:{id}") && s.size > 1_000), "{id}");
+        }
+        let p = build_prompt(&skills, "Сделай в Blender сцену: стул и стол, настрой свет и рендер", true);
+        assert!(p.contains("Подключённый навык"), "a 3D skill is attached");
+        assert!(p.contains("builtin:3d-studio-workflow") && p.contains("builtin:blender-bpy"));
+        let plain = build_prompt(&skills, "сколько будет два плюс два", false);
+        assert!(!plain.contains("Подключённый навык"));
     }
     #[test]
     fn disabled_skills_are_hidden() {

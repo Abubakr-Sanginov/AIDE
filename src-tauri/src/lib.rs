@@ -12,6 +12,7 @@ mod browser_viewport;
 mod computer;
 mod plan_tool;
 mod mcp;
+mod studio;
 mod project_context;
 mod skills;
 mod skills_remote;
@@ -478,6 +479,8 @@ pub fn run() {
             mcp::mcp_remove,
             mcp::mcp_set_enabled,
             mcp::mcp_restart,
+            studio::studio_list_assets,
+            studio::studio_read_asset,
             speech::stt_has_key,
             speech::stt_save_key,
             speech::stt_clear_key,
@@ -534,6 +537,7 @@ pub fn run() {
             terminal::respond_question,
             app_bridge::app_bridge_reply,
             local_models::local_probe,
+            agent_service::context_breakdown,
             agent_accounts::scan_agent_accounts,
             agent_accounts::list_agent_keys,
             agent_accounts::import_agent_key,

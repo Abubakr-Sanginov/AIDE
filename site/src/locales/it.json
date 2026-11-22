@@ -284,5 +284,10 @@
   "v0-2-8.1": "Versione attuale",
   "h-028.1": "Le chiavi dalle variabili d’ambiente si trovano da sole",
   "v0-2-8.2": "Quando la chiave di un agente è scritta come [code]$NAME[/code], AIDE cerca il valore nell’ambiente, nelle variabili di Windows (non serve riavviare AIDE), nel blocco [code]env[/code] delle impostazioni dell’agente e in un file [code].env[/code].",
-  "v0-2-8.3": "Se il valore non si trova da nessuna parte, il messaggio di errore indica dove aggiungerlo."
+  "v0-2-8.3": "Se il valore non si trova da nessuna parte, il messaggio di errore indica dove aggiungerlo.",
+  "v0-2-9.1": "Versione attuale",
+  "h-029.1": "Studio 3D, azioni sui messaggi, «Contesto» più chiaro",
+  "v0-2-9.2": "Una nuova modalità «Studio 3D»: l’agente lavora con Blender, Unity, Unreal Engine e Godot tramite i loro server MCP (preset pronti nelle impostazioni), conosce le buone pratiche con le competenze integrate e mostra screenshot del viewport e render in un’anteprima dentro l’app.",
+  "v0-2-9.3": "I messaggi della chat hanno ora delle azioni: copia, modifica una domanda e rinviala, rispondi di nuovo, elimina.",
+  "v0-2-9.4": "La scheda «Contesto» è più chiara: una barra colorata del riempimento della finestra del modello e l’elenco di ciò che la riempie (messaggi, strumenti, MCP, prompt, competenze, memoria e regole del progetto)."
 }

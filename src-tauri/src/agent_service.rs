@@ -333,8 +333,8 @@ pub fn agent_chat(
     cancels: State<AiCancels>,
     request: AgentRequest,
 ) -> Result<(), String> {
-    if !["plan", "agent", "computer"].contains(&request.mode.as_str()) {
-        return Err("Неизвестный режим: ожидался plan, agent или computer".into());
+    if !["plan", "agent", "computer", "studio"].contains(&request.mode.as_str()) {
+        return Err("Неизвестный режим: ожидался plan, agent, computer или studio".into());
     }
     let key = ai_service::api_key(&request.provider_id)?;
     let cancel = Arc::new(AtomicBool::new(false));
@@ -374,6 +374,78 @@ pub fn agent_chat(
     Ok(())
 }
 
+/* ───────────── из чего состоит контекст запроса (панель «Контекст») ───────────── */
+
+/// Грубая оценка токенов: кириллица «дороже» латиницы (так же считает интерфейс).
+pub(crate) fn estimate_tokens(text: &str) -> u32 {
+    let cyr = text.chars().filter(|c| ('\u{0400}'..='\u{04ff}').contains(c)).count();
+    let rest = text.chars().count() - cyr;
+    (cyr as f64 / 2.4 + rest as f64 / 4.0).ceil() as u32
+}
+
+#[derive(Serialize)]
+pub struct ContextPart {
+    pub name: String,
+    pub tokens: u32,
+}
+
+#[derive(Serialize)]
+pub struct ContextBreakdown {
+    pub system_prompt: u32,
+    pub tools: u32,
+    pub tools_count: u32,
+    pub mcp_tools: u32,
+    pub mcp_count: u32,
+    pub mcp_names: Vec<String>,
+    pub mcp_instructions: u32,
+    pub skills: u32,
+    pub skills_count: u32,
+    pub memory: u32,
+    pub memory_files: Vec<ContextPart>,
+}
+
+/// Сколько токенов займёт всё, что AIDE добавляет к вашему разговору: промпт, определения инструментов, серверы MCP,
+/// навыки, память и правила проекта. Оценка по тому же набору, который реально уходит в запрос выбранного режима.
+#[tauri::command]
+pub fn context_breakdown(app: AppHandle, mode: String, compact: bool) -> Result<ContextBreakdown, String> {
+    if !["plan", "agent", "computer", "studio"].contains(&mode.as_str()) {
+        return Err("Неизвестный режим".into());
+    }
+    // Серверы MCP и их описание уходят в запрос в режимах «Агент» и «Студия 3D».
+    let with_mcp = mode == "agent" || mode == "studio";
+    let compact = compact && mode == "agent";
+    let prompt = if compact { agent_system_prompt_compact() } else { agent_system_prompt(&mode, &None) };
+    let mut defs = tool_defs(&mode);
+    if compact {
+        defs.retain(|t| t["name"].as_str().is_some_and(|n| COMPACT_TOOLS.contains(&n)));
+    }
+    let tools_json = serde_json::to_string(&defs).unwrap_or_default();
+    let mut mcp_defs: Vec<Value> = Vec::new();
+    if !compact && with_mcp {
+        mcp_defs.extend(crate::mcp::tool_defs(&app));
+        mcp_defs.extend(crate::mcp::manage_tool_defs());
+    }
+    let mcp_names: Vec<String> = mcp_defs.iter().filter_map(|t| t["name"].as_str().map(|n| n.chars().take(80).collect())).take(200).collect();
+    let mcp_json = serde_json::to_string(&mcp_defs).unwrap_or_default();
+    let memory_files: Vec<ContextPart> = crate::project_context::sent_parts(&app, compact)
+        .into_iter()
+        .map(|(name, text)| ContextPart { name, tokens: estimate_tokens(&text) })
+        .collect();
+    Ok(ContextBreakdown {
+        system_prompt: estimate_tokens(&prompt),
+        tools: estimate_tokens(&tools_json),
+        tools_count: defs.len() as u32,
+        mcp_tools: if mcp_defs.is_empty() { 0 } else { estimate_tokens(&mcp_json) },
+        mcp_count: mcp_defs.len() as u32,
+        mcp_names,
+        mcp_instructions: if compact { 0 } else { estimate_tokens(&crate::mcp::prompt_summary(&app, with_mcp)) },
+        skills: estimate_tokens(&crate::skills::prompt(&app, "", true)),
+        skills_count: crate::skills::list(&app).iter().filter(|s| s.enabled).count() as u32,
+        memory: memory_files.iter().map(|p| p.tokens).sum(),
+        memory_files,
+    })
+}
+
 fn agent_system_prompt(mode: &str, context: &Option<String>) -> String {
     let mut prompt = match mode {
         "plan" => {
@@ -383,6 +455,7 @@ fn agent_system_prompt(mode: &str, context: &Option<String>) -> String {
 НЕ изменяй, не создавай и не удаляй файлы. \
 Отвечай на языке пользователя."
         }
+        "studio" => crate::studio::PROMPT,
         "computer" => {
             "Ты — ИИ-агент в IDE AIDE, работаешь в режиме «Компьютер»: управляешь компьютером пользователя, как человек — смотришь на экран, кликаешь мышью и печатаешь. \
 Типичные задачи: проверить программу или сайт, протестировать бота в Telegram, пройти сценарий в приложении. \
@@ -643,7 +716,7 @@ fn tool_parameters(
             json!({ "target": str_prop("https://… или notepad, или путь к программе") }),
             vec!["target"],
         )),
-        "update_plan" if mode == "agent" || mode == "computer" => Some((
+        "update_plan" if mode == "agent" || mode == "computer" || mode == "studio" => Some((
             "update_plan".into(),
             "План работы для сложной задачи (больше двух-трёх шагов, несколько файлов). Вызови ПЕРВЫМ делом, до правок: 3–8 коротких шагов. Затем после каждого шага вызывай снова с обновлёнными статусами (done — сделано, in_progress — делается сейчас, pending — впереди); всегда передавай ВЕСЬ список шагов. Пользователь видит план в чате. Для простых задач не нужен.",
             json!({
@@ -695,7 +768,7 @@ fn tool_parameters(
             }),
             vec!["questions"],
         )),
-        "write_file" if mode == "agent" => Some((
+        "write_file" if mode == "agent" || mode == "studio" => Some((
             "write_file".into(),
             "Записать содержимое в файл (создаёт или перезаписывает).",
             json!({
@@ -704,7 +777,7 @@ fn tool_parameters(
             }),
             vec!["path", "content"],
         )),
-        "create_file" if mode == "agent" => Some((
+        "create_file" if mode == "agent" || mode == "studio" => Some((
             "create_file".into(),
             "Создать новый файл. Ошибка, если файл уже существует.",
             json!({
@@ -713,13 +786,13 @@ fn tool_parameters(
             }),
             vec!["path", "content"],
         )),
-        "delete_file" if mode == "agent" => Some((
+        "delete_file" if mode == "agent" || mode == "studio" => Some((
             "delete_file".into(),
             "Удалить файл или папку.",
             json!({ "path": str_prop("Путь к объекту") }),
             vec!["path"],
         )),
-        "apply_edit" if mode == "agent" => Some((
+        "apply_edit" if mode == "agent" || mode == "studio" => Some((
             "apply_edit".into(),
             "Найти фрагмент old_text в файле (должен встречаться ровно один раз) и заменить его на new_text.",
             json!({
@@ -877,6 +950,19 @@ fn strip_images(turns: &mut [Turn]) -> usize {
 }
 
 fn tool_defs(mode: &str) -> Vec<Value> {
+    if mode == "studio" {
+        return crate::studio::TOOLS
+            .iter()
+            .filter_map(|n| {
+                if crate::studio::is_studio_tool(n) {
+                    return Some(crate::studio::tool_def());
+                }
+                tool_parameters(n, mode).map(|(_, desc, parameters, required)| {
+                    json!({ "name": n, "description": desc, "parameters": parameters, "required": required })
+                })
+            })
+            .collect();
+    }
     let names = if mode == "computer" {
         vec![
             "computer_screenshot", "computer_click", "computer_move", "computer_drag", "computer_scroll", "computer_type",
@@ -1180,7 +1266,7 @@ async fn call_provider(
     let mut tools = tool_defs(&request.mode);
     if request.is_compact() {
         tools.retain(|t| t["name"].as_str().is_some_and(|n| COMPACT_TOOLS.contains(&n)));
-    } else if request.mode == "agent" {
+    } else if request.mode == "agent" || request.mode == "studio" {
         tools.extend(crate::mcp::tool_defs(app));
         tools.extend(crate::mcp::manage_tool_defs());
     }
@@ -1611,7 +1697,7 @@ async fn run_agent(
     system.push_str(&if compact { crate::project_context::extra_prompt_compact(app) } else { crate::project_context::extra_prompt(app) });
     system.push_str(&crate::skills::prompt(app, &request.instruction, true));
     if !compact {
-        system.push_str(&crate::mcp::prompt_summary(app, request.mode == "agent"));
+        system.push_str(&crate::mcp::prompt_summary(app, request.mode == "agent" || request.mode == "studio"));
     }
     let result_limit = if compact { COMPACT_RESULT_CHARS } else { MAX_RESULT_CHARS };
     let mut turns: Vec<Turn> = Vec::new();
@@ -1874,6 +1960,12 @@ async fn run_agent(
                 r = async {
                     if crate::mcp::is_manage_tool(&call.name) {
                         crate::mcp::add_from_agent(app, &call.arguments).await.map(|t| (t, Vec::new()))
+                    } else if crate::studio::is_studio_tool(&call.name) {
+                        if request.mode == "studio" {
+                            crate::studio::show(app, &request.request_id, &call.arguments)
+                        } else {
+                            Err("studio_show доступен только в режиме «Студия 3D»".to_string())
+                        }
                     } else if crate::computer::is_computer_tool(&call.name) {
                         if request.mode == "computer" {
                             crate::computer::agent_tool(&call.name, &call.arguments).await
@@ -1885,7 +1977,7 @@ async fn run_agent(
                     } else if crate::app_bridge::is_bridge_tool(&call.name) {
                         crate::app_bridge::call(app, &call.name, &call.arguments).await.map(|t| (t, Vec::new()))
                     } else if crate::mcp::is_mcp_tool(&call.name) {
-                        crate::mcp::call_tool(app, &call.name, &call.arguments).await.map(|t| (t, Vec::new()))
+                        crate::mcp::call_tool(app, &call.name, &call.arguments).await
                     } else {
                         // Файлы, поиск и особенно терминал блокируют поток: в async-рантайме это занимало бы рабочие потоки,
                         // и при нескольких задачах сразу всё приложение переставало отвечать.
@@ -1901,6 +1993,10 @@ async fn run_agent(
             let result: Result<(String, Vec<AiScreenshot>), String> = raw;
             match result {
                 Ok((result, images)) => {
+                    // Картинки от MCP показываем и в панели предпросмотра (там своя копия: модель помнит только последние кадры).
+                    if crate::mcp::is_mcp_tool(&call.name) {
+                        crate::studio::emit_preview(app, &request.request_id, &call.name, &images);
+                    }
                     // Модель без зрения: картинку не отправляем, остаётся текстовое описание из результата.
                     let (result, images) = if !images.is_empty() && no_vision(request) {
                         (format!("{result}\n{NO_IMAGE_NOTE}"), Vec::new())
@@ -2518,6 +2614,19 @@ mod local_model_tests {
 mod unknown_tool_tests {
     use super::*;
 
+    #[test]
+    fn token_estimate_counts_cyrillic_as_more_expensive() {
+        assert_eq!(estimate_tokens(""), 0);
+        assert_eq!(estimate_tokens("abcdefgh"), 2);
+        // 24 кириллических букв ≈ 10 токенов, столько же латинских ≈ 6
+        assert_eq!(estimate_tokens(&"я".repeat(24)), 10);
+        assert_eq!(estimate_tokens(&"a".repeat(24)), 6);
+        assert!(estimate_tokens(&agent_system_prompt("agent", &None)) > estimate_tokens(&agent_system_prompt_compact()));
+        let all = serde_json::to_string(&tool_defs("agent")).unwrap();
+        let plan = serde_json::to_string(&tool_defs("plan")).unwrap();
+        assert!(estimate_tokens(&all) > estimate_tokens(&plan));
+    }
+
     fn result(text: &str) -> Turn {
         Turn::ToolResult { id: "i".into(), name: "read_file".into(), result: text.into(), images: Vec::new() }
     }
@@ -2649,5 +2758,43 @@ mod unknown_tool_tests {
         assert!(map.contains("ОБЗОР") && map.contains("search_code"), "{map}");
         assert!(!map.contains("Начни с неё"), "карта не должна звать себя первой");
         assert!(agent_system_prompt_compact().contains("search_code FIRST"));
+    }
+}
+
+#[cfg(test)]
+mod studio_mode_tests {
+    use super::*;
+
+    fn names(mode: &str) -> Vec<String> {
+        tool_defs(mode).iter().filter_map(|t| t["name"].as_str().map(String::from)).collect()
+    }
+
+    #[test]
+    fn studio_mode_has_planning_files_preview_but_no_shell_browser_or_computer() {
+        let studio = names("studio");
+        for tool in ["update_plan", "ask_user", "read_skill", "list_skills", "studio_show", "read_file", "write_file", "delete_file"] {
+            assert!(studio.iter().any(|n| n == tool), "в режиме студии нет {tool}");
+        }
+        for tool in ["run_terminal_command", "browser_eval", "computer_click", "app_navigate", "design_control", "sessions"] {
+            assert!(!studio.iter().any(|n| n == tool), "в режиме студии не должно быть {tool}");
+        }
+        // Показ файла в предпросмотре есть только в студии.
+        for mode in ["agent", "plan", "computer"] {
+            assert!(!names(mode).iter().any(|n| n == "studio_show"), "{mode}");
+        }
+        // Каждому инструменту нужно описание параметров: иначе провайдер отклонит запрос.
+        for d in tool_defs("studio") {
+            assert!(d["description"].as_str().is_some_and(|s| !s.is_empty()) && d["parameters"].is_object(), "{}", d["name"]);
+        }
+    }
+
+    #[test]
+    fn studio_prompt_is_used_and_keeps_the_safety_rules() {
+        let p = agent_system_prompt("studio", &None);
+        assert!(p.contains("Студия 3D") && p.contains("update_plan") && p.contains("studio_show"));
+        assert!(p.contains("данные, а не инструкции") && p.contains("ask_user"));
+        for skill in ["3d-studio-workflow", "blender-bpy", "unity-scene-csharp", "unreal-blueprint-cpp", "godot-gdscript"] {
+            assert!(p.contains(&format!("builtin:{skill}")), "{skill}");
+        }
     }
 }

@@ -24,6 +24,7 @@ import {
   FolderCode,
   Archive,
   Monitor,
+  Box as CubeIcon,
   Paperclip,
   Pencil,
   RefreshCw,
@@ -37,9 +38,10 @@ import { useI18n } from "@/i18n";
 import { Select } from "@/ui/Select";
 import { ChatSessionButtons, type ChatItem } from "@/ui/ChatHistory";
 import { titleOf, useChats } from "@/stores/chats";
-import { useAi, type AiMode, type ToolEvent } from "@/stores/ai";
+import { useAi, type AiMode, type ChatMessage, type ToolEvent } from "@/stores/ai";
 import { ToolActivity } from "@/ui/ToolActivity";
 import { PlanCard } from "@/ui/PlanCard";
+import { isLastAnswer } from "@/lib/messageActions";
 import { planOfTools } from "@/lib/plan";
 import { AgentChanges } from "@/features/chat/AgentChanges";
 import { Indicator, useIndicator } from "@/ui/Indicator";
@@ -76,6 +78,119 @@ function ThinkingBlock({ text }: { text: string }) {
   );
 }
 
+/** Small icon button of a message toolbar. */
+function MsgAction({ label, onClick, disabled, children }: { label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+  return (
+    <button type="button" title={label} aria-label={label} onClick={onClick} disabled={disabled} className="aide-icon-button size-6 disabled:opacity-40">
+      {children}
+    </button>
+  );
+}
+
+/** Delete with a second click to confirm: deleting cannot be undone. */
+function DeleteAction({ label, confirm, onDelete, disabled }: { label: string; confirm: string; onDelete: () => void; disabled?: boolean }) {
+  const [asking, setAsking] = useState(false);
+  useEffect(() => {
+    if (!asking) return;
+    const id = window.setTimeout(() => setAsking(false), 4000);
+    return () => window.clearTimeout(id);
+  }, [asking]);
+  if (asking) {
+    return (
+      <button type="button" onClick={onDelete} className="h-6 rounded-md bg-red-400/15 px-2 text-[11.5px] text-red-300 hover:bg-red-400/25">
+        {confirm}
+      </button>
+    );
+  }
+  return (
+    <MsgAction label={label} onClick={() => setAsking(true)} disabled={disabled}>
+      <Trash2 size={13} />
+    </MsgAction>
+  );
+}
+
+/** A question of the person: copy, edit and ask again, delete. */
+function UserMessage({ m, busy }: { m: ChatMessage; busy: boolean }) {
+  const { lang } = useI18n();
+  const ru = isRuLike(lang);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(m.content);
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    void navigator.clipboard.writeText(m.content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    });
+  };
+  const save = () => {
+    const text = draft.trim();
+    if (!text) return;
+    setEditing(false);
+    void useAi.getState().editAndResend(m.id, text);
+  };
+  const cancel = () => {
+    setEditing(false);
+    setDraft(m.content);
+  };
+  return (
+    <div className="aide-msg-user group flex justify-end">
+      <div className="max-w-[85%]">
+        <AttachmentsGrid atts={m.attachments ?? []} />
+        {editing ? (
+          <div className="rounded-[26px] bg-raised p-2">
+            <textarea
+              autoFocus
+              value={draft}
+              rows={Math.min(10, Math.max(2, draft.split("\n").length))}
+              aria-label={ru ? rt("Изменить сообщение") : "Edit message"}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  save();
+                } else if (e.key === "Escape") {
+                  e.preventDefault();
+                  cancel();
+                }
+              }}
+              className="w-full resize-none bg-transparent px-2 py-1 text-[14px] leading-6 text-ink-50 outline-none"
+            />
+            <div className="flex items-center justify-end gap-1.5 pt-1">
+              <span className="mr-auto pl-2 text-[11px] text-ink-600">{ru ? rt("Ответы ниже заменятся") : "Replies below will be replaced"}</span>
+              <button type="button" onClick={cancel} className="h-7 rounded-lg px-2.5 text-[12.5px] text-ink-300 hover:bg-white/[0.07]">
+                {ru ? rt("Отмена") : "Cancel"}
+              </button>
+              <button type="button" onClick={save} disabled={!draft.trim()} className="h-7 rounded-lg bg-ink-100 px-2.5 text-[12.5px] font-medium text-canvas hover:bg-white disabled:opacity-40">
+                {ru ? rt("Отправить") : "Send"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="whitespace-pre-wrap rounded-[26px] bg-raised px-4 py-2.5 text-[14px] leading-6 text-ink-50">{m.content}</div>
+        )}
+        {!editing && (
+          <div className="mt-1 flex justify-end gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+            <MsgAction label={ru ? rt("Копировать") : "Copy"} onClick={copy}>
+              {copied ? <Check size={13} className="text-emerald-300" /> : <Copy size={13} />}
+            </MsgAction>
+            <MsgAction
+              label={ru ? rt("Изменить и отправить заново") : "Edit and send again"}
+              onClick={() => {
+                setDraft(m.content);
+                setEditing(true);
+              }}
+              disabled={busy}
+            >
+              <Pencil size={13} />
+            </MsgAction>
+            <DeleteAction label={ru ? rt("Удалить вопрос и ответы на него") : "Delete the question and its replies"} confirm={ru ? rt("Удалить?") : "Delete?"} onDelete={() => useAi.getState().removeMessage(m.id)} disabled={busy} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AssistantMessage({
   content,
   thinking,
@@ -83,6 +198,8 @@ function AssistantMessage({
   errorText,
   tools,
   live,
+  onRegenerate,
+  onDelete,
 }: {
   content: string;
   thinking?: string;
@@ -90,8 +207,12 @@ function AssistantMessage({
   errorText?: string;
   tools?: ToolEvent[];
   live?: boolean;
+  /** Ask again for a different answer (only for the last answer, when nothing is running). */
+  onRegenerate?: () => void;
+  onDelete?: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const ru = isRuLike(lang);
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
@@ -130,7 +251,20 @@ function AssistantMessage({
         return plan ? <PlanCard steps={plan} /> : null;
       })()}
       {tools && tools.length > 0 && <ToolActivity items={tools.filter((x) => x.tool !== "update_plan")} live={live} />}
-      {content && (
+      {content && !live && (
+        <div className="mt-1 flex gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+          <MsgAction label={t("chat.copyTitle")} onClick={copy}>
+            {copied ? <Check key="ok" size={13} className="aide-icon-in text-emerald-300" /> : <Copy key="copy" size={13} />}
+          </MsgAction>
+          {onRegenerate && (
+            <MsgAction label={ru ? rt("Ответить заново (файлы, изменённые агентом, останутся)") : "Answer again (files the agent changed stay changed)"} onClick={onRegenerate}>
+              <RefreshCw size={13} />
+            </MsgAction>
+          )}
+          {onDelete && <DeleteAction label={ru ? rt("Удалить ответ") : "Delete the reply"} confirm={ru ? rt("Удалить?") : "Delete?"} onDelete={onDelete} />}
+        </div>
+      )}
+      {content && live && (
         <button
           title={t("chat.copyTitle")}
           aria-label={t("chat.copyTitle")}
@@ -217,7 +351,7 @@ function AttachmentsGrid({ atts }: { atts: Attachment[] }) {
 }
 
 /** "vibe": full-width agent workspace — no tab row, centered column, provider in the composer. */
-export function ChatPanel({ variant = "panel", computerTab = false }: { variant?: "panel" | "vibe"; computerTab?: boolean } = {}) {
+export function ChatPanel({ variant = "panel", computerTab = false, studioTab = false }: { variant?: "panel" | "vibe"; computerTab?: boolean; studioTab?: boolean } = {}) {
   const vibe = variant === "vibe";
   const column = vibe ? "px-[max(1rem,calc((100%-820px)/2))]" : "px-4";
   const composerColumn = vibe ? "px-[max(0.5rem,calc((100%-836px)/2))]" : "px-2";
@@ -252,10 +386,12 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
       if (hasComputerConsent()) {
         if (useAi.getState().mode !== "computer") useAi.getState().setMode("computer");
       } else setConsentOpen(true);
-    } else if (useAi.getState().mode === "computer") {
+    } else if (studioTab) {
+      if (useAi.getState().mode !== "studio") useAi.getState().setMode("studio");
+    } else if (useAi.getState().mode === "computer" || useAi.getState().mode === "studio") {
       useAi.getState().setMode("agent");
     }
-  }, [computerTab, variant]);
+  }, [computerTab, studioTab, variant]);
   // ArrowUp/ArrowDown history of the input: sent messages, plus the draft that was there
   // before browsing started (so walking down past the newest restores what you typed).
   const [hist, setHist] = useState<string[]>([]);
@@ -352,6 +488,7 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
     { id: "plan", label: t("chat.modePlan"), icon: Brain, active: "border-transparent bg-white/10 text-ink-50" },
     { id: "agent", label: t("chat.modeAgent"), icon: FolderCode, active: "border-transparent bg-white/10 text-ink-50" },
     { id: "computer", label: ru ? rt("Компьютер") : "Computer", icon: Monitor, active: "border-transparent bg-white/10 text-ink-50" },
+    { id: "studio", label: ru ? rt("Студия 3D") : "3D Studio", icon: CubeIcon, active: "border-transparent bg-white/10 text-ink-50" },
   ];
 
   useEffect(() => {
@@ -547,14 +684,7 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
 
         {shown.map((m) =>
           m.role === "user" ? (
-            <div key={m.id} className="aide-msg-user flex justify-end">
-              <div className="max-w-[85%]">
-                <AttachmentsGrid atts={m.attachments ?? []} />
-                <div className="whitespace-pre-wrap rounded-[26px] bg-raised px-4 py-2.5 text-[14px] leading-6 text-ink-50">
-                  {m.content}
-                </div>
-              </div>
-            </div>
+            <UserMessage key={m.id} m={m} busy={streaming} />
           ) : (
             <div key={m.id} className="aide-msg-ai flex justify-start">
               <div className="min-w-0 max-w-[95%] flex-1">
@@ -568,7 +698,7 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
                 {m.tools && m.tools.length > 0 && (
                   <div className="mb-1.5 flex items-center gap-1.5 pl-1 text-[11px] text-ink-600">
                     <div className="h-px flex-1 bg-ink-800/40" />
-                    <span>{mode === "agent" ? t("chat.modeAgent") : mode === "plan" ? t("chat.modePlan") : mode === "computer" ? (ru ? rt("Компьютер") : "Computer") : t("chat.modeChat")}</span>
+                    <span>{mode === "agent" ? t("chat.modeAgent") : mode === "plan" ? t("chat.modePlan") : mode === "computer" ? (ru ? rt("Компьютер") : "Computer") : mode === "studio" ? (ru ? rt("Студия 3D") : "3D Studio") : t("chat.modeChat")}</span>
                     {m.iterations !== undefined && (
                       <span className="text-ink-700">· {t("chat.iteration")} {m.iterations + 1}</span>
                     )}
@@ -582,6 +712,8 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
                   errorText={m.errorText}
                   tools={m.tools}
                   live={m.id === streamingId && streaming}
+                  onRegenerate={!streaming && !m.summary && isLastAnswer(messages, m.id) ? () => void useAi.getState().regenerate(m.id) : undefined}
+                  onDelete={!streaming ? () => useAi.getState().removeMessage(m.id) : undefined}
                 />
                 <AgentChanges requestId={m.id} />
                 {m.usage && !(m.id === streamingId && streaming) && <TokenLine usage={m.usage} lang={lang} />}
@@ -737,6 +869,8 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
                     : "Next message — sent when the agent finishes"
                   : mode === "computer"
                   ? (ru ? rt("Что сделать на компьютере? Например: проверь бота в Telegram") : "What should I do on the computer? For example: test the Telegram bot")
+                  : mode === "studio"
+                  ? (ru ? rt("Что сделать в 3D? Например: собери в Blender уютную комнату и покажи рендер") : "What should I build in 3D? For example: model a cozy room in Blender and show a render")
                   : mode === "agent"
                   ? t("chat.placeholderAgent")
                   : mode === "plan"
@@ -847,7 +981,7 @@ export function ChatPanel({ variant = "panel", computerTab = false }: { variant?
             </button>
             <div ref={modeIndicator.ref} role="group" className="relative isolate ml-1 flex min-w-0 items-center gap-0.5 rounded-full bg-white/[0.04] p-0.5">
               <Indicator box={modeIndicator.box} radius={999} />
-              {MODES.filter((m) => (computerTab ? m.id === "computer" : m.id !== "computer")).map((item) => {
+              {MODES.filter((m) => (computerTab ? m.id === "computer" : studioTab ? m.id === "studio" : m.id !== "computer" && m.id !== "studio")).map((item) => {
                 const Icon = item.icon;
                 const selected = mode === item.id;
                 return (

@@ -45,6 +45,39 @@ const PRESETS: { name: string; command: string; args: string[]; ru: string; en: 
     en: "Drive a real browser: clicks, forms, screenshots",
     tg: "Идораи браузери ҳақиқӣ: пахшҳо, шаклҳо, аксҳои экран",
   },
+  // 3D studio servers: they need the program itself open with its add-on/plugin running (see the README).
+  {
+    name: "Blender",
+    command: "uvx",
+    args: ["mcp-for-blender@2.3.1"],
+    ru: "3D в Blender: сцена, Python, снимок вьюпорта (нужны uv и аддон в Blender)",
+    en: "3D in Blender: scene, Python, viewport screenshot (needs uv and the add-on in Blender)",
+    tg: "3D дар Blender: саҳна, Python, акси экран (uv ва аддон лозим)",
+  },
+  {
+    name: "Unity",
+    command: "uvx",
+    args: ["--from", "mcpforunityserver==10.3.0", "mcp-for-unity", "--transport", "stdio"],
+    ru: "Unity: объекты, скрипты C#, консоль (нужны uv и пакет MCP for Unity в проекте)",
+    en: "Unity: objects, C# scripts, console (needs uv and the MCP for Unity package in the project)",
+    tg: "Unity: объектҳо, скриптҳои C#, консол (uv ва бастаи MCP for Unity лозим)",
+  },
+  {
+    name: "Unreal Engine",
+    command: "npx",
+    args: ["-y", "@runreal/unreal-mcp@0.1.4"],
+    ru: "Unreal Engine: акторы и уровень через Python (включите Remote Execution в проекте)",
+    en: "Unreal Engine: actors and level via Python (enable Remote Execution in the project)",
+    tg: "Unreal Engine: актерҳо ва сатҳ тавассути Python (Remote Execution-ро фаъол кунед)",
+  },
+  {
+    name: "Godot",
+    command: "npx",
+    args: ["-y", "@coding-solo/godot-mcp@0.1.1"],
+    ru: "Godot: запуск редактора и проекта, вывод отладки (путь к Godot задайте в переменной GODOT_PATH)",
+    en: "Godot: launch the editor and project, debug output (set GODOT_PATH to the Godot executable)",
+    tg: "Godot: оғози муҳаррир ва лоиҳа, хуруҷи ислоҳ (GODOT_PATH-ро муқаррар кунед)",
+  },
 ];
 
 const TEXT = {

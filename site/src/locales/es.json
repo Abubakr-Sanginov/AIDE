@@ -284,5 +284,10 @@
   "v0-2-8.1": "Versión actual",
   "h-028.1": "Las claves de variables de entorno se encuentran solas",
   "v0-2-8.2": "Cuando la clave de un agente está escrita como [code]$NAME[/code], AIDE busca el valor en el entorno, en las variables de Windows (no hace falta reiniciar AIDE), en el bloque [code]env[/code] de la configuración del agente y en un archivo [code].env[/code].",
-  "v0-2-8.3": "Si el valor no está en ningún sitio, el mensaje de error indica dónde añadirlo."
+  "v0-2-8.3": "Si el valor no está en ningún sitio, el mensaje de error indica dónde añadirlo.",
+  "v0-2-9.1": "Versión actual",
+  "h-029.1": "Estudio 3D, acciones en mensajes, «Contexto» más claro",
+  "v0-2-9.2": "Un nuevo modo «Estudio 3D»: el agente trabaja con Blender, Unity, Unreal Engine y Godot a través de sus servidores MCP (ajustes preconfigurados), conoce buenas prácticas con habilidades integradas y muestra capturas del viewport y renders en una vista previa dentro de la aplicación.",
+  "v0-2-9.3": "Los mensajes del chat ahora tienen acciones: copiar, editar una pregunta y enviarla de nuevo, responder otra vez, eliminar.",
+  "v0-2-9.4": "La pestaña «Contexto» es más clara: una barra de colores con el llenado de la ventana del modelo y la lista de lo que la llena (mensajes, herramientas, MCP, prompt, habilidades, memoria y reglas del proyecto)."
 }

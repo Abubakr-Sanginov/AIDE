@@ -35,6 +35,7 @@ import { t } from "@/i18n/t";
 import { usePermissionGate } from "@/features/chat/PermissionGate";
 import { agentNotice } from "@/lib/notify";
 import { hasComputerConsent } from "@/lib/computerMode";
+import { isLastAnswer, questionOf, removeMessage as dropMessage, truncateBefore } from "@/lib/messageActions";
 
 export type AiMode = "chat" | AgentMode;
 
@@ -203,6 +204,12 @@ interface AiState {
   removeCustomProvider: (providerId: string) => void;
   send: (text: string) => Promise<void>;
   retry: () => Promise<void>;
+  /** Replace a question with new text, drop everything after it and ask again. */
+  editAndResend: (id: string, text: string) => Promise<void>;
+  /** Ask the same question again to get a different answer (only for the last answer). */
+  regenerate: (answerId: string) => Promise<void>;
+  /** Delete a message; deleting a question also deletes the answers that followed it. */
+  removeMessage: (id: string) => void;
   stop: () => void;
   clear: () => void;
   commit: (requestId: string, text: string) => void;
@@ -210,6 +217,17 @@ interface AiState {
   done: (requestId: string, iterations?: number, usage?: TokenUsage) => void;
   fail: (requestId: string, message: string) => void;
   toolEvent: (requestId: string, event: ToolEvent) => void;
+}
+
+/** Why a message cannot be sent right now (an error text for the chat), or null when it can. */
+function sendBlocker(s: Pick<AiState, "hasKey" | "model" | "mode">): string | null {
+  if (!navigator.onLine) return t("chat.offline");
+  if (!s.hasKey) return t("inlineEdit.noKey");
+  if (s.mode === "computer" && !hasComputerConsent()) {
+    return "Computer mode needs your consent: switch to the Computer tab and confirm. / Режим «Компьютер» нужно сначала подтвердить: переключитесь на вкладку «Компьютер».";
+  }
+  if (!s.model) return t("inlineEdit.noModels");
+  return null;
 }
 
 function modelKey(providerId: string) {
@@ -571,22 +589,9 @@ export const useAi = create<AiState>((set, get) => ({
     const s = get();
     const trimmed = text.trim();
     if (!trimmed || s.streaming) return;
-    if (!navigator.onLine) {
-      set({ error: t("chat.offline") });
-      return;
-    }
-    if (!s.hasKey) {
-      set({ error: t("inlineEdit.noKey") });
-      return;
-    }
-    if (s.mode === "computer" && !hasComputerConsent()) {
-      set({ error: "Computer mode needs your consent: switch to the Computer tab and confirm. / Режим «Компьютер» нужно сначала подтвердить: переключитесь на вкладку «Компьютер»." });
-      return;
-    }
-    if (!s.model) {
-      set({
-        error: t("inlineEdit.noModels"),
-      });
+    const blocker = sendBlocker(s);
+    if (blocker) {
+      set({ error: blocker });
       return;
     }
     const cfg = s.provider();
@@ -657,6 +662,37 @@ export const useAi = create<AiState>((set, get) => ({
     } catch (e) {
       get().fail(requestId, String(e));
     }
+  },
+
+  editAndResend: async (id, text) => {
+    const s = get();
+    if (s.streaming) return;
+    const m = s.messages.find((x) => x.id === id);
+    if (!m || m.role !== "user" || !text.trim()) return;
+    // Check first: if sending is impossible (no key, offline), the old question and its answers must not be lost.
+    const blocker = sendBlocker(s);
+    if (blocker) {
+      set({ error: blocker });
+      return;
+    }
+    // The attachments of the original question go along with the new one.
+    set({ messages: truncateBefore(s.messages, id), attachments: m.attachments ?? [], error: null });
+    persistMessages(get().messages);
+    await get().send(text);
+  },
+
+  regenerate: async (answerId) => {
+    const s = get();
+    if (s.streaming || !isLastAnswer(s.messages, answerId)) return;
+    const q = questionOf(s.messages, answerId);
+    if (q) await get().editAndResend(q.id, q.content);
+  },
+
+  removeMessage: (id) => {
+    const s = get();
+    if (s.streaming) return;
+    set({ messages: dropMessage(s.messages, id) });
+    persistMessages(get().messages);
   },
 
   retry: async () => {

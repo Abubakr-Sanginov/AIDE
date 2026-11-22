@@ -576,7 +576,7 @@ pub async fn add_from_agent(app: &AppHandle, args: &Value) -> Result<String, Str
     Ok(format!("Сервер «{}» добавлен, но ещё запускается; проверьте статус в Настройки → Серверы MCP.", a.name))
 }
 
-pub async fn call_tool(app: &AppHandle, qualified_name: &str, args: &Value) -> Result<String, String> {
+pub async fn call_tool(app: &AppHandle, qualified_name: &str, args: &Value) -> Result<(String, Vec<crate::agent_service::AiScreenshot>), String> {
     let (running, tool) = {
         let st = app.state::<McpState>();
         let list = st.0.lock().unwrap();
@@ -592,8 +592,16 @@ pub async fn call_tool(app: &AppHandle, qualified_name: &str, args: &Value) -> R
     };
     let arguments = if args.is_object() { args.clone() } else { json!({}) };
     let res = request(&running, "tools/call", json!({ "name": tool, "arguments": arguments }), CALL_TIMEOUT).await?;
+    parse_call_result(&res, &tool)
+}
+
+/// Ответ `tools/call` → текст для модели и проверенные картинки. Всё из ответа — недоверенные данные.
+fn parse_call_result(res: &Value, tool: &str) -> Result<(String, Vec<crate::agent_service::AiScreenshot>), String> {
+    let content = res["content"].as_array().cloned().unwrap_or_default();
+    // Картинки (снимки вьюпорта, рендеры): только проверенные PNG/JPEG/WebP/GIF, остальное не показываем.
+    let images = crate::studio::images_from_content(&content, tool);
     let mut text = String::new();
-    for item in res["content"].as_array().cloned().unwrap_or_default() {
+    for item in content {
         match item["type"].as_str() {
             Some("text") => {
                 text.push_str(item["text"].as_str().unwrap_or(""));
@@ -603,6 +611,7 @@ pub async fn call_tool(app: &AppHandle, qualified_name: &str, args: &Value) -> R
                 text.push_str(item["resource"]["text"].as_str().unwrap_or("[ресурс без текста]"));
                 text.push('\n');
             }
+            Some("image") if !images.is_empty() => {}
             Some(other) => text.push_str(&format!("[{other}: содержимое не показано]\n")),
             None => {}
         }
@@ -610,8 +619,10 @@ pub async fn call_tool(app: &AppHandle, qualified_name: &str, args: &Value) -> R
     let text = clip(text.trim(), MAX_RESULT_CHARS);
     if res["isError"].as_bool() == Some(true) {
         Err(if text.is_empty() { "инструмент вернул ошибку".into() } else { text })
+    } else if text.is_empty() && !images.is_empty() {
+        Ok((format!("(изображений: {}; они показаны пользователю в предпросмотре)", images.len()), images))
     } else {
-        Ok(if text.is_empty() { "(пустой результат)".into() } else { text })
+        Ok((if text.is_empty() { "(пустой результат)".into() } else { text }, images))
     }
 }
 
@@ -811,6 +822,31 @@ pub fn mcp_restart(app: AppHandle, id: String) -> Result<(), String> {
 #[cfg(test)]
 mod add_tests {
     use super::*;
+
+    #[test]
+    fn call_result_keeps_text_and_verified_images_only() {
+        let png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+        let res = json!({ "content": [
+            { "type": "text", "text": "Screenshot taken" },
+            { "type": "image", "data": png, "mimeType": "image/png" },
+            { "type": "image", "data": "PHN2Zz48L3N2Zz4=", "mimeType": "image/svg+xml" },
+        ] });
+        let (text, images) = parse_call_result(&res, "mcp__blender__get_viewport_screenshot").unwrap();
+        assert!(text.contains("Screenshot taken"));
+        assert_eq!(images.len(), 1);
+        assert_eq!(images[0].mime, "image/png");
+        // Только картинка: модель получает пояснение, а не пустую строку.
+        let only = json!({ "content": [{ "type": "image", "data": png, "mimeType": "image/png" }] });
+        let (text, images) = parse_call_result(&only, "t").unwrap();
+        assert_eq!(images.len(), 1);
+        assert!(text.contains("предпросмотре"));
+        // Ошибка инструмента остаётся ошибкой, подделка вместо картинки не проходит.
+        let bad = json!({ "isError": true, "content": [{ "type": "text", "text": "Blender is not running" }] });
+        assert_eq!(parse_call_result(&bad, "t").err().unwrap(), "Blender is not running");
+        let fake = json!({ "content": [{ "type": "image", "data": "PGh0bWw+PC9odG1sPg==", "mimeType": "image/png" }] });
+        let (text, images) = parse_call_result(&fake, "t").unwrap();
+        assert!(images.is_empty() && text.contains("не показано"));
+    }
 
     #[test]
     fn agent_add_accepts_only_known_launchers() {

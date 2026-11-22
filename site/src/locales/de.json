@@ -284,5 +284,10 @@
   "v0-2-8.1": "Aktuelle Version",
   "h-028.1": "Schlüssel aus Umgebungsvariablen werden selbst gefunden",
   "v0-2-8.2": "Steht ein Agentenschlüssel als [code]$NAME[/code], sucht AIDE den Wert in der Umgebung, in den Windows-Variablen (ein Neustart von AIDE ist nicht nötig), im Block [code]env[/code] der Agenteneinstellungen und in einer [code].env[/code]-Datei.",
-  "v0-2-8.3": "Ist der Wert nirgends zu finden, sagt die Fehlermeldung, wo er hinzugefügt werden kann."
+  "v0-2-8.3": "Ist der Wert nirgends zu finden, sagt die Fehlermeldung, wo er hinzugefügt werden kann.",
+  "v0-2-9.1": "Aktuelle Version",
+  "h-029.1": "3D-Studio, Nachrichtenaktionen, klarerer Kontext",
+  "v0-2-9.2": "Ein neuer Modus „3D-Studio“: Der Agent arbeitet über deren MCP-Server mit Blender, Unity, Unreal Engine und Godot (fertige Voreinstellungen in den Einstellungen), kennt bewährte Vorgehen aus eingebauten Skills und zeigt Viewport-Screenshots und Renderings in einer Vorschau direkt in der App.",
+  "v0-2-9.3": "Chat-Nachrichten haben jetzt Aktionen: kopieren, eine Frage bearbeiten und erneut senden, neu antworten, löschen.",
+  "v0-2-9.4": "Der Reiter „Kontext“ ist übersichtlicher: eine farbige Füllanzeige des Modellfensters und eine Liste dessen, was es füllt (Nachrichten, Werkzeuge, MCP, Prompt, Skills, Speicher und Projektregeln)."
 }

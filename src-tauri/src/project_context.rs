@@ -86,6 +86,26 @@ pub fn extra_prompt(app: &AppHandle) -> String {
     extra_prompt_limited(app, MAX_MEMORY_CHARS, MAX_RULES_CHARS)
 }
 
+/// Что именно уходит в запрос из памяти и правил проекта: (название, текст после сокращения). Нужно панели «Контекст».
+pub fn sent_parts(app: &AppHandle, compact: bool) -> Vec<(String, String)> {
+    let (memory_limit, rules_limit) = if compact { (1_200, 2_500) } else { (MAX_MEMORY_CHARS, MAX_RULES_CHARS) };
+    let mut out = Vec::new();
+    let memory = memory_get(app.clone());
+    if !memory.trim().is_empty() {
+        out.push(("memory.md".to_string(), cut_with_note(&memory, memory_limit, "заметки")));
+    }
+    if let Ok(root) = crate::fs_commands::workspace_root(&app.state::<crate::WorkspaceRoot>()) {
+        for name in RULE_FILES {
+            let Ok(p) = crate::fs_commands::resolve_existing(&root, name) else { continue };
+            let Ok(text) = fs::read_to_string(&p) else { continue };
+            if !text.trim().is_empty() {
+                out.push((name.to_string(), cut_with_note(&text, rules_limit, "правила")));
+            }
+        }
+    }
+    out
+}
+
 /// То же для небольших моделей с маленьким контекстом (локальные Ollama и LM Studio): правила и память короче.
 pub fn extra_prompt_compact(app: &AppHandle) -> String {
     extra_prompt_limited(app, 1_200, 2_500)

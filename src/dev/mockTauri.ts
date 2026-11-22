@@ -61,6 +61,10 @@ if (!("__TAURI_INTERNALS__" in window)) {
         ];
       }
       if (cmd === "import_agent_key") return null;
+      if (cmd === "context_breakdown") {
+        return { system_prompt: 3_100, tools: 6_400, tools_count: 27, mcp_tools: 4_800, mcp_count: 12, mcp_names: ["mcp__blender__get_scene_info", "mcp__blender__execute_code", "mcp__memory__create_entities"], mcp_instructions: 700, skills: 1_900, skills_count: 8, memory: 2_600, memory_files: [{ name: "AGENTS.md", tokens: 2_300 }, { name: "memory.md", tokens: 300 }] };
+      }
+      if (cmd === "git_branches") return [{ name: "main", current: true }];
       if (cmd === "list_agent_models") return ["glm-5.3-flash", "glm-5.3", "kimi-k3"];
       if (cmd === "scan_agent_accounts") {
         return [

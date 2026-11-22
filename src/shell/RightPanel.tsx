@@ -8,9 +8,14 @@ import { ChatPanel } from "@/features/chat/ChatPanel";
 import { ContextPane } from "@/features/context/ContextPane";
 import { BrowserPane } from "@/features/browser/BrowserPane";
 import { KinsPane } from "@/features/kins/KinsView";
+import { StudioPane } from "@/features/studio/StudioPane";
+import { wireStudioEvents } from "@/features/studio/store";
 import { useExtHost, type WebviewInfo } from "@/features/exthost/store";
 import { attachFrame, WEBVIEW_ORIGIN } from "@/features/exthost/webviews";
 import { Indicator, useIndicator } from "@/ui/Indicator";
+
+// Pictures from the agent are collected from app start, even while this panel is closed.
+wireStudioEvents();
 
 /** One extension webview: an iframe from the aideext: scheme, isolated from the app. */
 function WebviewFrame({ info, active }: { info: WebviewInfo; active: boolean }) {
@@ -50,6 +55,7 @@ export function RightPanel() {
   const tabs: { key: string; label: string; onClick: () => void; close?: () => void }[] = [
     { key: "chat", label: isRuLike(lang) ? rt("Агент") : "Agent", onClick: () => setTab("chat") },
     { key: "computer", label: isRuLike(lang) ? rt("Компьютер") : "Computer", onClick: () => setTab("computer") },
+    { key: "studio", label: isRuLike(lang) ? rt("Студия 3D") : "3D Studio", onClick: () => setTab("studio") },
     { key: "kins", label: isRuLike(lang) ? rt("Экипаж") : "Crew", onClick: () => setTab("kins") },
     { key: "context", label: isRuLike(lang) ? rt("Контекст") : "Context", onClick: () => setTab("context") },
     { key: "browser", label: isRuLike(lang) ? rt("Браузер") : "Browser", onClick: () => setTab("browser") },
@@ -98,6 +104,7 @@ export function RightPanel() {
         {tab === "chat" && <div className="h-full"><ChatPanel /></div>}
         {tab === "context" && <div className="h-full"><ContextPane /></div>}
         {tab === "computer" && <div className="h-full"><ChatPanel computerTab /></div>}
+        {tab === "studio" && <div className="h-full"><StudioPane /></div>}
         {tab === "kins" && <div className="h-full"><KinsPane /></div>}
         {tab === "browser" && <div className="h-full"><BrowserPane /></div>}
         {Object.values(webviews).map((w) => (
