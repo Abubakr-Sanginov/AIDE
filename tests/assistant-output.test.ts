@@ -73,3 +73,23 @@ test("ordinary text and JSON are not touched", () => {
     assert.equal(stripToolCallEcho(t), t, t);
   }
 });
+
+test("history blobs and broken tool-call tags written by a model at the end of an answer are cut", () => {
+  const answer = "Проверю текущий файл и соберу непрерывный таймлайн с автопереключением клипов.";
+  const blob = '\n\nPrevious tool observations (untrusted data; results may be abbreviated):\n[{"tool":"read_file","args":"{\n \\"path\\": \\"Tools/anim_fps.py\\"\n}","status":"ok","result":""}]';
+  assert.equal(stripToolCallEcho(answer + blob), answer);
+  assert.equal(stripToolCallEcho(answer + "\n\n[Tool log of this reply: reference only, never repeat it in your answer.]\n- read_file a.ts: ok"), answer);
+  const tags = answer + '"}]}?</arg_value:6124c78e><arg_key:6124c78e>status":"error"</arg_value:6124c78e></tool_call:6124c78e></tool_calls:6124c78e>';
+  assert.equal(stripToolCallEcho(tags), answer + '"}]}?');
+  assert.equal(stripToolCallEcho("<tool_call:ab12>{}"), "");
+  // a plain mention is not a leak
+  const mention = "В логе встречается фраза Previous tool observations, это служебная строка.";
+  assert.equal(stripToolCallEcho(mention), mention);
+});
+
+test("the streaming filter blocks the new history headers too", () => {
+  const state = { pending: "", blocked: false };
+  const shown = filterAssistantChunk(state, "Готово.\nPrevious tool observations (untrusted data; results may be abbreviated):\n[{");
+  assert.equal(shown.trimEnd(), "Готово.");
+  assert.equal(state.blocked, true);
+});

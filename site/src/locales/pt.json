@@ -293,5 +293,10 @@
   "v0-3-0.1": "Versão atual",
   "h-030.1": "O Estúdio 3D agora também está no Vibe",
   "v0-3-0.2": "O modo Vibe tem uma nova aba «Estúdio 3D» ao lado de Agente, Computador e Equipe: uma pré-visualização de capturas do viewport, renders e modelos acima do chat do estúdio.",
-  "v0-3-0.3": "No mais, a 0.3.0 inclui tudo da 0.2.x: o agente que planeja sozinho, ações nas mensagens, busca de chaves em variáveis de ambiente, os modos Computador e Estúdio 3D."
+  "v0-3-0.3": "No mais, a 0.3.0 inclui tudo da 0.2.x: o agente que planeja sozinho, ações nas mensagens, busca de chaves em variáveis de ambiente, os modos Computador e Estúdio 3D.",
+  "v0-3-1.1": "Versão atual",
+  "h-031.1": "O agente termina o trabalho",
+  "v0-3-1.2": "O texto sobrando no fim das respostas (uma lista de chamadas de ferramentas e restos de tags) sumiu: as respostas anteriores chegam ao modelo como linhas curtas, não como JSON, e o que ainda vazar é cortado.",
+  "v0-3-1.3": "Se o modelo parar com passos do plano pendentes, ou só prometer uma ação sem chamar uma ferramenta, ele é instruído a continuar.",
+  "v0-3-1.4": "A ferramenta de plano entende argumentos escritos de forma imprecisa, então há menos erros «invalid arguments»."
 }

@@ -1729,6 +1729,10 @@ async fn run_agent(
     let mut check_rounds: u32 = 0;
     // Сколько действий на компьютере выполнено за этот запуск (режим «Компьютер»).
     let mut computer_actions: u32 = 0;
+    // Есть ли в последнем плане агента невыполненные шаги и сколько раз его уже подталкивали продолжить.
+    let mut plan_pending = false;
+    let mut plan_nudges: u32 = 0;
+    let mut announce_nudges: u32 = 0;
     if checks_on {
         system.push_str(
             "\n\nПосле твоего итогового ответа AIDE сам запустит проверки проекта (типы, линтер, тесты). \
@@ -1784,6 +1788,36 @@ async fn run_agent(
         };
         total.add(response.usage);
         if response.tool_calls.is_empty() {
+            // Модель остановилась, а работа не закончена: план не доделан или она только пообещала действие
+            // («Проверю файл и соберу таймлайн.») и не вызвала инструмент. Слабые модели так делают часто.
+            // Подталкиваем ограниченное число раз, чтобы не зациклиться; в режиме «План» итог и есть план.
+            if request.mode != "plan" {
+                // Вопрос к пользователю в конце — это осознанная остановка: ждём ответа, а не подталкиваем.
+                let unfinished_plan = plan_pending && plan_nudges < 3 && !response.text.trim_end().ends_with('?');
+                let announced = !unfinished_plan && announce_nudges < 1 && crate::plan_tool::announces_action(&response.text);
+                if unfinished_plan || announced {
+                    if unfinished_plan {
+                        plan_nudges += 1;
+                    } else {
+                        announce_nudges += 1;
+                    }
+                    turns.push(Turn::Assistant {
+                        text: if response.text.trim().is_empty() { "…".into() } else { response.text },
+                        reasoning: response.reasoning,
+                        tools: Vec::new(),
+                    });
+                    turns.push(Turn::User {
+                        text: if unfinished_plan {
+                            "В плане остались невыполненные шаги. Не пересказывай и не обещай: вызови инструмент для следующего невыполненного шага. Если продолжать нельзя, назови причину и обнови план через update_plan.".into()
+                        } else {
+                            "Ты написал, что сделаешь действие, но не вызвал инструмент. Сделай это сейчас вызовом инструмента. Если всё уже готово, дай итоговый ответ без обещаний.".into()
+                        },
+                        attachments: Vec::new(),
+                    });
+                    ai_service::emit_chunk(app, &request.request_id, "\n\n");
+                    continue;
+                }
+            }
             // Итоговый ответ. Если были правки — сначала проверяем проект; ошибки возвращаем модели.
             if checks_on && !changed.is_empty() && check_rounds < crate::verify::MAX_ROUNDS {
                 let snapshot = std::mem::take(&mut changed);
@@ -1993,6 +2027,9 @@ async fn run_agent(
             let result: Result<(String, Vec<AiScreenshot>), String> = raw;
             match result {
                 Ok((result, images)) => {
+                    if call.name == "update_plan" {
+                        plan_pending = crate::plan_tool::has_pending(&result);
+                    }
                     // Картинки от MCP показываем и в панели предпросмотра (там своя копия: модель помнит только последние кадры).
                     if crate::mcp::is_mcp_tool(&call.name) {
                         crate::studio::emit_preview(app, &request.request_id, &call.name, &images);

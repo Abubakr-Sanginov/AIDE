@@ -293,5 +293,10 @@
   "v0-3-0.1": "Version actuelle",
   "h-030.1": "Le Studio 3D est maintenant aussi dans Vibe",
   "v0-3-0.2": "Le mode Vibe a un nouvel onglet « Studio 3D » à côté d’Agent, Ordinateur et Équipe : un aperçu des captures de viewport, des rendus et des modèles au-dessus du chat du studio.",
-  "v0-3-0.3": "Pour le reste, 0.3.0 reprend tout 0.2.x : l’agent qui planifie lui-même, les actions sur les messages, la recherche des clés dans les variables d’environnement, les modes Ordinateur et Studio 3D."
+  "v0-3-0.3": "Pour le reste, 0.3.0 reprend tout 0.2.x : l’agent qui planifie lui-même, les actions sur les messages, la recherche des clés dans les variables d’environnement, les modes Ordinateur et Studio 3D.",
+  "v0-3-1.1": "Version actuelle",
+  "h-031.1": "L’agent mène le travail à son terme",
+  "v0-3-1.2": "Le texte parasite à la fin des réponses (liste d’appels d’outils et bouts de balises) a disparu : les réponses précédentes parviennent au modèle sous forme de courtes lignes plutôt qu’en JSON, et ce qui fuit malgré tout est supprimé.",
+  "v0-3-1.3": "Si le modèle s’arrête alors qu’il reste des étapes au plan, ou promet seulement une action sans appeler d’outil, on lui dit de continuer.",
+  "v0-3-1.4": "L’outil de plan comprend des arguments mal formulés, d’où moins d’erreurs « invalid arguments »."
 }

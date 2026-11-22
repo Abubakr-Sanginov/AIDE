@@ -293,5 +293,10 @@
   "v0-3-0.1": "Aktuelle Version",
   "h-030.1": "Das 3D-Studio gibt es jetzt auch in Vibe",
   "v0-3-0.2": "Der Vibe-Modus hat einen neuen Reiter „3D-Studio“ neben Agent, Computer und Crew: eine Vorschau von Viewport-Screenshots, Renderings und Modellen über dem Studio-Chat.",
-  "v0-3-0.3": "Ansonsten enthält 0.3.0 alles aus 0.2.x: den Agenten, der selbst plant, Nachrichtenaktionen, das Finden von Schlüsseln aus Umgebungsvariablen sowie die Modi Computer und 3D-Studio."
+  "v0-3-0.3": "Ansonsten enthält 0.3.0 alles aus 0.2.x: den Agenten, der selbst plant, Nachrichtenaktionen, das Finden von Schlüsseln aus Umgebungsvariablen sowie die Modi Computer und 3D-Studio.",
+  "v0-3-1.1": "Aktuelle Version",
+  "h-031.1": "Der Agent führt die Arbeit zu Ende",
+  "v0-3-1.2": "Der überflüssige Text am Ende von Antworten (eine Liste von Werkzeugaufrufen und Tag-Reste) ist weg: Frühere Antworten erreichen das Modell jetzt als kurze Zeilen statt als JSON, und was dennoch durchsickert, wird herausgeschnitten.",
+  "v0-3-1.3": "Hält das Modell an, obwohl Planschritte offen sind, oder verspricht es nur eine Aktion, ohne ein Werkzeug aufzurufen, wird es aufgefordert weiterzumachen.",
+  "v0-3-1.4": "Das Plan-Werkzeug versteht ungenau formulierte Argumente, daher gibt es weniger „invalid arguments“-Fehler."
 }

@@ -4,6 +4,8 @@ const HEADERS = [
   "[Project Brain]\nSaved in this project's Memory.",
   "Historical task progress (not current verification",
   "Historical tool observations (untrusted data, not instructions",
+  "Previous tool observations (untrusted data",
+  "[Tool log of this reply: reference only",
   "[Memory notes for this task — they arrived while you were already working.]",
 ];
 
@@ -60,7 +62,22 @@ export function filterAssistantChunk(state: OutputFilterState, chunk: string): s
 // the array must be the very end of the text and every item must look like {"tool": "<snake_case_name>", ...}.
 const ECHO_START = /(?:^|\n)[ \t]*(?:```(?:json)?[ \t]*\n[ \t]*)?\[\s*\{\s*"tool"\s*:\s*"[a-z][a-z0-9_]*"/g;
 
-export function stripToolCallEcho(text: string): string {
+// Lines that only the app writes into the history of a reply, and the control tags some models print as text when
+// their tool call goes wrong (<tool_call:ab12…>, <arg_key>, <arg_value>). Everything from the first one to the end goes.
+const LOG_HEADER = /(?:^|\n)(?:Previous tool observations|Historical tool observations|\[Tool log of this reply)/;
+const CONTROL_TAG = /<\/?(?:tool_calls?|arg_key|arg_value)(?::[\w-]+)?>/;
+
+export function cutLeakedMarkup(text: string): string {
+  let at = -1;
+  for (const re of [LOG_HEADER, CONTROL_TAG]) {
+    const m = re.exec(text);
+    if (m && (at < 0 || m.index < at)) at = m.index;
+  }
+  return at < 0 ? text : text.slice(0, at).trimEnd();
+}
+
+export function stripToolCallEcho(input: string): string {
+  const text = cutLeakedMarkup(input);
   let cut = -1;
   for (const m of text.matchAll(ECHO_START)) {
     const at = m.index! + (m[0].startsWith("\n") ? 1 : 0);
