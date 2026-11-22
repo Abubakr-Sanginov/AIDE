@@ -280,5 +280,9 @@
   "h-027.1": "O agente faz o próprio plano",
   "v0-2-7.2": "Numa tarefa complexa o agente escreve primeiro um plano curto e marca os passos durante o trabalho. O plano aparece como um cartão no chat e na aba «Contexto».",
   "v0-2-7.3": "O botão do painel direito no Vibe e no «Design» agora tem um ícone de painel em vez de um globo e abre a última aba usada: por padrão «Contexto», com o plano.",
-  "v0-2-7.4": "O modo Plano continua disponível para quando você quer só um plano, sem alterar arquivos."
+  "v0-2-7.4": "O modo Plano continua disponível para quando você quer só um plano, sem alterar arquivos.",
+  "v0-2-8.1": "Versão atual",
+  "h-028.1": "Chaves de variáveis de ambiente são encontradas sozinhas",
+  "v0-2-8.2": "Quando a chave de um agente está escrita como [code]$NAME[/code], o AIDE procura o valor no ambiente, nas variáveis do Windows (não é preciso reiniciar o AIDE), no bloco [code]env[/code] das configurações do agente e num arquivo [code].env[/code].",
+  "v0-2-8.3": "Se o valor não estiver em lugar nenhum, a mensagem de erro indica onde adicioná-lo."
 }

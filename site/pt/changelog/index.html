@@ -68,8 +68,17 @@
       <p class="doc__lead" data-i18n="nav.12">Cada nova versão do editor aparece aqui.</p>
     </header>
 
+        <section class="release" id="v0-2-8" aria-labelledby="h-028">
+      <div class="release__meta mono"><span class="release__tag">v0.2.8</span><span data-i18n="v0-2-8.1">Versão atual</span></div>
+      <h2 id="h-028" data-i18n="h-028.1">Chaves de variáveis de ambiente são encontradas sozinhas</h2>
+      <ul class="doc__list">
+        <li data-i18n="v0-2-8.2">Quando a chave de um agente está escrita como <code>$NAME</code>, o AIDE procura o valor no ambiente, nas variáveis do Windows (não é preciso reiniciar o AIDE), no bloco <code>env</code> das configurações do agente e num arquivo <code>.env</code>.</li>
+        <li data-i18n="v0-2-8.3">Se o valor não estiver em lugar nenhum, a mensagem de erro indica onde adicioná-lo.</li>
+      </ul>
+    </section>
+
         <section class="release" id="v0-2-7" aria-labelledby="h-027">
-      <div class="release__meta mono"><span class="release__tag">v0.2.7</span><span data-i18n="v0-2-7.1">Versão atual</span></div>
+      <div class="release__meta mono"><span class="release__tag">v0.2.7</span></div>
       <h2 id="h-027" data-i18n="h-027.1">O agente faz o próprio plano</h2>
       <ul class="doc__list">
         <li data-i18n="v0-2-7.2">Numa tarefa complexa o agente escreve primeiro um plano curto e marca os passos durante o trabalho. O plano aparece como um cartão no chat e na aba «Contexto».</li>
@@ -148,7 +157,7 @@
 <footer class="foot foot--page">
   <div class="foot__row mono">
     <span data-i18n="foot.2">Um estúdio de IA no seu editor</span>
-    <span>v0.2.7 · Windows</span>
+    <span>v0.2.8 · Windows</span>
     <a href="../docs/" data-i18n="foot.4">Documentação</a>
     <a href="https://aide.victoryapp.online/en/terms/" data-page="terms" data-i18n="foot.6">Termos</a>
     <a href="https://aide.victoryapp.online/en/privacy/" data-page="privacy" data-i18n="foot.7">Privacidade</a>

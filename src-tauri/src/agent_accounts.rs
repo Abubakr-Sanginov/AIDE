@@ -693,6 +693,122 @@ pub(crate) fn split_env_ref(s: &str) -> Option<&str> {
     Some(name)
 }
 
+/// Годится ли найденное значение как ключ: не пустое, не слишком длинное, без переводов строк и не ссылка на другую переменную.
+fn usable_env_value(v: &str) -> Option<String> {
+    let t = v.trim();
+    if t.is_empty() || t.len() > 4096 || t.chars().any(char::is_control) || t.starts_with('$') {
+        return None;
+    }
+    Some(t.to_string())
+}
+
+/// Значение из переменных Windows (реестр): пользовательские, затем общие. Нужны, когда переменную задали уже после
+/// запуска AIDE или запустили его из места, где свежие переменные не видны: у самого процесса их нет.
+#[cfg(windows)]
+fn registry_env(name: &str) -> Option<String> {
+    use windows::core::HSTRING;
+    use windows::Win32::Foundation::ERROR_SUCCESS;
+    use windows::Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, RRF_RT_REG_EXPAND_SZ, RRF_RT_REG_SZ};
+    let value = HSTRING::from(name);
+    let places = [
+        (HKEY_CURRENT_USER, HSTRING::from("Environment")),
+        (HKEY_LOCAL_MACHINE, HSTRING::from("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment")),
+    ];
+    for (root, sub) in places {
+        let flags = RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ;
+        let mut size = 0u32;
+        unsafe {
+            if RegGetValueW(root, &sub, &value, flags, None, None, Some(&mut size)) != ERROR_SUCCESS || size == 0 || size > 16_384 {
+                continue;
+            }
+            let mut buf = vec![0u16; (size as usize) / 2 + 2];
+            let mut got = (buf.len() * 2) as u32;
+            if RegGetValueW(root, &sub, &value, flags, None, Some(buf.as_mut_ptr().cast()), Some(&mut got)) != ERROR_SUCCESS {
+                continue;
+            }
+            let units = (got as usize / 2).min(buf.len());
+            let text = String::from_utf16_lossy(&buf[..units]);
+            if let Some(v) = usable_env_value(text.trim_end_matches('\0')) {
+                return Some(v);
+            }
+        }
+    }
+    None
+}
+
+#[cfg(not(windows))]
+fn registry_env(_name: &str) -> Option<String> {
+    None
+}
+
+/// Переменная окружения: у процесса AIDE, затем в переменных Windows.
+pub(crate) fn lookup_env(name: &str) -> Option<String> {
+    split_env_ref(&format!("${name}"))?;
+    std::env::var(name).ok().and_then(|v| usable_env_value(&v)).or_else(|| registry_env(name))
+}
+
+/// Значение переменной из JSON настроек агента: блок вида {"env": {"NAME": "значение"}} в любом месте файла.
+fn env_from_json(v: &Value, name: &str, depth: usize) -> Option<String> {
+    if depth > 8 {
+        return None;
+    }
+    match v {
+        Value::Object(o) => {
+            if let Some(found) = o.get(name).and_then(Value::as_str).and_then(usable_env_value) {
+                return Some(found);
+            }
+            o.values().find_map(|x| env_from_json(x, name, depth + 1))
+        }
+        Value::Array(a) => a.iter().find_map(|x| env_from_json(x, name, depth + 1)),
+        _ => None,
+    }
+}
+
+/// Значение переменной из текста .env: строки «NAME=значение», «export NAME=значение», значение можно взять в кавычки.
+fn env_from_dotenv(text: &str, name: &str) -> Option<String> {
+    for line in text.lines() {
+        let line = line.trim();
+        let line = line.strip_prefix("export ").unwrap_or(line).trim_start();
+        let Some((k, v)) = line.split_once('=') else { continue };
+        if k.trim() != name {
+            continue;
+        }
+        let v = v.trim();
+        let v = if v.len() >= 2 && ((v.starts_with('"') && v.ends_with('"')) || (v.starts_with('\'') && v.ends_with('\''))) { &v[1..v.len() - 1] } else { v };
+        if let Some(found) = usable_env_value(v) {
+            return Some(found);
+        }
+    }
+    None
+}
+
+/// Значение переменной для ключа-ссылки `$NAME`: окружение процесса, переменные Windows, настройки самого агента
+/// (блок env в его файле) и файл .env рядом с этим файлом или в домашней папке. Ищется только эта одна переменная.
+pub(crate) fn resolve_env_ref(home: &Path, config_file: &Path, config: &Value, name: &str) -> Option<String> {
+    if let Some(v) = lookup_env(name) {
+        return Some(v);
+    }
+    if let Some(v) = env_from_json(config, name, 0) {
+        return Some(v);
+    }
+    let mut dirs: Vec<PathBuf> = Vec::new();
+    if let Some(p) = config_file.parent() {
+        dirs.push(p.to_path_buf());
+    }
+    dirs.push(home.to_path_buf());
+    for dir in dirs {
+        let path = dir.join(".env");
+        let small = fs::metadata(&path).map(|m| m.is_file() && m.len() <= MAX_FILE_BYTES).unwrap_or(false);
+        if !small {
+            continue;
+        }
+        if let Some(v) = fs::read_to_string(&path).ok().and_then(|t| env_from_dotenv(&t, name)) {
+            return Some(v);
+        }
+    }
+    None
+}
+
 pub fn classify_token(secret: &str) -> TokenClass {
     let ok = |kind, base_url| TokenClass { kind, base_url, blocked: None };
     let no = |reason| TokenClass { kind: "openai", base_url: None, blocked: Some(reason) };
@@ -1017,20 +1133,19 @@ pub fn import_key(home: &Path, candidate_id: &str, provider_id: &str, store: imp
     if !valid_provider_id(provider_id) {
         return Err("Некорректный идентификатор провайдера (agent-…)".into());
     }
-    let (_file, value, pointer) = resolve_candidate(home, candidate_id)?;
+    let (file, value, pointer) = resolve_candidate(home, candidate_id)?;
     let secret = value.pointer(&pointer).and_then(Value::as_str).map(str::trim).filter(|s| !s.is_empty()).ok_or("Значение не найдено: файл изменился?")?;
     // Ключ может быть ссылкой на переменную окружения ($NAME): подставляем её значение,
     // а не сохраняем имя переменной как будто это сам ключ.
     if let Some(name) = split_env_ref(secret) {
-        match std::env::var(name) {
-            Ok(v) if !v.trim().is_empty() => return store(provider_id, v.trim()),
-            _ => {
-                return Err(format!(
-                    "Ключ задан через переменную окружения ${name}, но она не установлена \
-                     в окружении AIDE. Задайте её или введите ключ вручную."
-                ));
-            }
-        }
+        return match resolve_env_ref(home, &file, &value, name) {
+            Some(v) => store(provider_id, &v),
+            None => Err(format!(
+                "Ключ задан через переменную ${name}, но её значение не найдено: ни в окружении AIDE, ни в переменных Windows, \
+                 ни в настройках агента, ни в файле .env. Задайте её в Windows (Параметры → Переменные среды): \
+                 перезапускать AIDE не нужно, затем повторите. Или введите ключ вручную."
+            )),
+        };
     }
     if let Some(reason) = classify_token(secret).blocked {
         return Err(reason.into());
@@ -1256,6 +1371,57 @@ mod tests {
         assert_eq!(split_env_ref("sk-ant-api03-abcdef"), None);
         assert_eq!(split_env_ref("$"), None);
         assert_eq!(split_env_ref("$has-dash"), None);
+    }
+
+    #[test]
+    fn env_values_come_from_the_agent_settings_and_dotenv_files() {
+        use serde_json::json;
+        let cfg = json!({ "model": "x", "env": { "T3_DEEPAI_TOKEN": "  sk-from-settings  ", "OTHER": "no" }, "nested": [{ "deep": { "ANOTHER": "yes" } }] });
+        assert_eq!(env_from_json(&cfg, "T3_DEEPAI_TOKEN", 0).as_deref(), Some("sk-from-settings"));
+        assert_eq!(env_from_json(&cfg, "ANOTHER", 0).as_deref(), Some("yes"));
+        assert_eq!(env_from_json(&cfg, "MISSING", 0), None);
+        // пустое значение, ссылка на другую переменную и значение с переводом строки не подходят
+        let bad = json!({ "env": { "A": "", "B": "$OTHER", "C": "x\ny" } });
+        for k in ["A", "B", "C"] {
+            assert_eq!(env_from_json(&bad, k, 0), None, "{k}");
+        }
+        let dotenv = "# comment\nOTHER=1\nexport T3_DEEPAI_TOKEN=\"sk-quoted\"\nSINGLE='sk-single'\nPLAIN = sk-plain \n";
+        assert_eq!(env_from_dotenv(dotenv, "T3_DEEPAI_TOKEN").as_deref(), Some("sk-quoted"));
+        assert_eq!(env_from_dotenv(dotenv, "SINGLE").as_deref(), Some("sk-single"));
+        assert_eq!(env_from_dotenv(dotenv, "PLAIN").as_deref(), Some("sk-plain"));
+        assert_eq!(env_from_dotenv(dotenv, "NOPE"), None);
+        assert_eq!(env_from_dotenv("T3_DEEPAI_TOKEN=\n", "T3_DEEPAI_TOKEN"), None);
+    }
+
+    #[test]
+    fn env_reference_search_order_and_limits() {
+        use serde_json::json;
+        let dir = std::env::temp_dir().join(format!("aide-envref-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(dir.join("cfg")).unwrap();
+        fs::write(dir.join("cfg").join(".env"), "AIDE_TEST_ENV_REF_A=from-dotenv\n").unwrap();
+        fs::write(dir.join(".env"), "AIDE_TEST_ENV_REF_B=from-home\n").unwrap();
+        let file = dir.join("cfg").join("auth.json");
+        let doc = json!({ "env": { "AIDE_TEST_ENV_REF_C": "from-json" } });
+        // файл .env рядом с настройками, затем в домашней папке, и блок env внутри самих настроек
+        assert_eq!(resolve_env_ref(&dir, &file, &doc, "AIDE_TEST_ENV_REF_A").as_deref(), Some("from-dotenv"));
+        assert_eq!(resolve_env_ref(&dir, &file, &doc, "AIDE_TEST_ENV_REF_B").as_deref(), Some("from-home"));
+        assert_eq!(resolve_env_ref(&dir, &file, &doc, "AIDE_TEST_ENV_REF_C").as_deref(), Some("from-json"));
+        assert_eq!(resolve_env_ref(&dir, &file, &doc, "AIDE_TEST_ENV_REF_NOPE"), None);
+        // некорректные имена не ищутся вовсе
+        assert_eq!(lookup_env("bad-name"), None);
+        assert_eq!(lookup_env(""), None);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_variables_are_read_from_the_registry() {
+        // TEMP есть в пользовательских переменных Windows практически всегда; читаем, ничего не записывая.
+        assert_eq!(registry_env("AIDE_SURELY_NOT_SET_9F3A"), None);
+        if let Some(v) = registry_env("TEMP") {
+            assert!(!v.contains('%'), "значение должно быть раскрыто: {v}");
+        }
     }
 
     #[test]

@@ -280,5 +280,9 @@
   "h-027.1": "L’agente fa il piano da solo",
   "v0-2-7.2": "Per un compito complesso l’agente scrive prima un breve piano e spunta i passi mentre lavora. Il piano appare come una scheda nella chat e nella scheda «Contesto».",
   "v0-2-7.3": "Il pulsante del pannello destro in Vibe e «Design» ora ha un’icona di pannello al posto del globo e apre l’ultima scheda usata: di default «Contesto», con il piano.",
-  "v0-2-7.4": "La modalità Piano resta per quando vuoi solo un piano, senza modificare file."
+  "v0-2-7.4": "La modalità Piano resta per quando vuoi solo un piano, senza modificare file.",
+  "v0-2-8.1": "Versione attuale",
+  "h-028.1": "Le chiavi dalle variabili d’ambiente si trovano da sole",
+  "v0-2-8.2": "Quando la chiave di un agente è scritta come [code]$NAME[/code], AIDE cerca il valore nell’ambiente, nelle variabili di Windows (non serve riavviare AIDE), nel blocco [code]env[/code] delle impostazioni dell’agente e in un file [code].env[/code].",
+  "v0-2-8.3": "Se il valore non si trova da nessuna parte, il messaggio di errore indica dove aggiungerlo."
 }

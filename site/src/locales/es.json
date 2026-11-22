@@ -280,5 +280,9 @@
   "h-027.1": "El agente hace su propio plan",
   "v0-2-7.2": "En una tarea compleja el agente escribe primero un plan corto y marca los pasos mientras trabaja. El plan se ve como una tarjeta en el chat y en la pestaña «Contexto».",
   "v0-2-7.3": "El botón del panel derecho en Vibe y «Diseño» ahora tiene un icono de panel en lugar de un globo y abre la última pestaña usada: por defecto «Contexto», con el plan.",
-  "v0-2-7.4": "El modo Plan sigue ahí para cuando solo quieres un plan sin cambios en los archivos."
+  "v0-2-7.4": "El modo Plan sigue ahí para cuando solo quieres un plan sin cambios en los archivos.",
+  "v0-2-8.1": "Versión actual",
+  "h-028.1": "Las claves de variables de entorno se encuentran solas",
+  "v0-2-8.2": "Cuando la clave de un agente está escrita como [code]$NAME[/code], AIDE busca el valor en el entorno, en las variables de Windows (no hace falta reiniciar AIDE), en el bloque [code]env[/code] de la configuración del agente y en un archivo [code].env[/code].",
+  "v0-2-8.3": "Si el valor no está en ningún sitio, el mensaje de error indica dónde añadirlo."
 }

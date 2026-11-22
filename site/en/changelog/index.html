@@ -68,8 +68,17 @@
       <p class="doc__lead" data-i18n="nav.12">Every new version of the editor shows up here.</p>
     </header>
 
+        <section class="release" id="v0-2-8" aria-labelledby="h-028">
+      <div class="release__meta mono"><span class="release__tag">v0.2.8</span><span data-i18n="v0-2-8.1">Current version</span></div>
+      <h2 id="h-028" data-i18n="h-028.1">Keys from environment variables are found on their own</h2>
+      <ul class="doc__list">
+        <li data-i18n="v0-2-8.2">When an agent key is written as <code>$NAME</code>, AIDE looks for the value in the environment, in the Windows variables (no AIDE restart needed), in the <code>env</code> block of the agent's settings and in a <code>.env</code> file.</li>
+        <li data-i18n="v0-2-8.3">If the value is nowhere to be found, the error message tells you where to add it.</li>
+      </ul>
+    </section>
+
         <section class="release" id="v0-2-7" aria-labelledby="h-027">
-      <div class="release__meta mono"><span class="release__tag">v0.2.7</span><span data-i18n="v0-2-7.1">Current version</span></div>
+      <div class="release__meta mono"><span class="release__tag">v0.2.7</span></div>
       <h2 id="h-027" data-i18n="h-027.1">The agent plans on its own</h2>
       <ul class="doc__list">
         <li data-i18n="v0-2-7.2">For a complex task the agent first writes a short plan and ticks off steps as it works. The plan shows as a card in the chat and in the Context tab.</li>
@@ -148,7 +157,7 @@
 <footer class="foot foot--page">
   <div class="foot__row mono">
     <span data-i18n="foot.2">An AI studio in your editor</span>
-    <span>v0.2.7 · Windows</span>
+    <span>v0.2.8 · Windows</span>
     <a href="../docs/" data-i18n="foot.4">Docs</a>
     <a href="https://aide.victoryapp.online/en/terms/" data-page="terms" data-i18n="foot.6">Terms</a>
     <a href="https://aide.victoryapp.online/en/privacy/" data-page="privacy" data-i18n="foot.7">Privacy</a>

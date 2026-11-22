@@ -280,5 +280,9 @@
   "h-027.1": "Der Agent plant selbst",
   "v0-2-7.2": "Bei einer komplexen Aufgabe schreibt der Agent zuerst einen kurzen Plan und hakt die Schritte während der Arbeit ab. Der Plan erscheint als Karte im Chat und im Reiter „Kontext“.",
   "v0-2-7.3": "Die Schaltfläche des rechten Bereichs in Vibe und „Design“ zeigt jetzt ein Bereichssymbol statt eines Globus und öffnet den zuletzt benutzten Reiter: standardmäßig „Kontext“ mit dem Plan.",
-  "v0-2-7.4": "Der Plan-Modus bleibt für den Fall, dass nur ein Plan ohne Dateiänderungen gewünscht ist."
+  "v0-2-7.4": "Der Plan-Modus bleibt für den Fall, dass nur ein Plan ohne Dateiänderungen gewünscht ist.",
+  "v0-2-8.1": "Aktuelle Version",
+  "h-028.1": "Schlüssel aus Umgebungsvariablen werden selbst gefunden",
+  "v0-2-8.2": "Steht ein Agentenschlüssel als [code]$NAME[/code], sucht AIDE den Wert in der Umgebung, in den Windows-Variablen (ein Neustart von AIDE ist nicht nötig), im Block [code]env[/code] der Agenteneinstellungen und in einer [code].env[/code]-Datei.",
+  "v0-2-8.3": "Ist der Wert nirgends zu finden, sagt die Fehlermeldung, wo er hinzugefügt werden kann."
 }

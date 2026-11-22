@@ -385,10 +385,11 @@ pub(crate) fn api_key(provider_id: &str) -> Result<String, String> {
             // Ключ из хранилища может оказаться ссылкой на переменную окружения
             // (например, "$T3_DEEPAI_TOKEN") — подставляем реальное значение.
             if let Some(name) = crate::agent_accounts::split_env_ref(&key) {
-                match std::env::var(name) {
-                    Ok(v) if !v.trim().is_empty() => Ok(v.trim().to_string()),
-                    _ => Err(format!(
-                        "Переменная окружения ${name} не задана — невозможно получить ключ провайдера."
+                // Окружение процесса и переменные Windows (их могли задать уже после запуска AIDE).
+                match crate::agent_accounts::lookup_env(name) {
+                    Some(v) => Ok(v),
+                    None => Err(format!(
+                        "Переменная окружения ${name} не задана — невозможно получить ключ провайдера. Задайте её в Windows (Параметры → Переменные среды) или введите ключ заново."
                     )),
                 }
             } else {

@@ -68,8 +68,17 @@
       <p class="doc__lead" data-i18n="nav.12">Hier erscheint jede neue Version des Editors.</p>
     </header>
 
+        <section class="release" id="v0-2-8" aria-labelledby="h-028">
+      <div class="release__meta mono"><span class="release__tag">v0.2.8</span><span data-i18n="v0-2-8.1">Aktuelle Version</span></div>
+      <h2 id="h-028" data-i18n="h-028.1">Schlüssel aus Umgebungsvariablen werden selbst gefunden</h2>
+      <ul class="doc__list">
+        <li data-i18n="v0-2-8.2">Steht ein Agentenschlüssel als <code>$NAME</code>, sucht AIDE den Wert in der Umgebung, in den Windows-Variablen (ein Neustart von AIDE ist nicht nötig), im Block <code>env</code> der Agenteneinstellungen und in einer <code>.env</code>-Datei.</li>
+        <li data-i18n="v0-2-8.3">Ist der Wert nirgends zu finden, sagt die Fehlermeldung, wo er hinzugefügt werden kann.</li>
+      </ul>
+    </section>
+
         <section class="release" id="v0-2-7" aria-labelledby="h-027">
-      <div class="release__meta mono"><span class="release__tag">v0.2.7</span><span data-i18n="v0-2-7.1">Aktuelle Version</span></div>
+      <div class="release__meta mono"><span class="release__tag">v0.2.7</span></div>
       <h2 id="h-027" data-i18n="h-027.1">Der Agent plant selbst</h2>
       <ul class="doc__list">
         <li data-i18n="v0-2-7.2">Bei einer komplexen Aufgabe schreibt der Agent zuerst einen kurzen Plan und hakt die Schritte während der Arbeit ab. Der Plan erscheint als Karte im Chat und im Reiter „Kontext“.</li>
@@ -148,7 +157,7 @@
 <footer class="foot foot--page">
   <div class="foot__row mono">
     <span data-i18n="foot.2">Ein KI-Studio in Ihrem Editor</span>
-    <span>v0.2.7 · Windows</span>
+    <span>v0.2.8 · Windows</span>
     <a href="../docs/" data-i18n="foot.4">Dokumentation</a>
     <a href="https://aide.victoryapp.online/en/terms/" data-page="terms" data-i18n="foot.6">Bedingungen</a>
     <a href="https://aide.victoryapp.online/en/privacy/" data-page="privacy" data-i18n="foot.7">Datenschutz</a>
