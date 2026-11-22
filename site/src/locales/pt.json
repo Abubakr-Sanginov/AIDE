@@ -289,5 +289,9 @@
   "h-029.1": "Estúdio 3D, ações nas mensagens, «Contexto» mais claro",
   "v0-2-9.2": "Um novo modo «Estúdio 3D»: o agente trabalha com Blender, Unity, Unreal Engine e Godot por meio dos servidores MCP deles (predefinições prontas nas configurações), conhece boas práticas com habilidades integradas e mostra capturas do viewport e renders numa pré-visualização dentro do aplicativo.",
   "v0-2-9.3": "As mensagens do chat agora têm ações: copiar, editar uma pergunta e enviar de novo, responder de novo, excluir.",
-  "v0-2-9.4": "A aba «Contexto» ficou mais clara: uma barra colorida de preenchimento da janela do modelo e a lista do que a preenche (mensagens, ferramentas, MCP, prompt, habilidades, memória e regras do projeto)."
+  "v0-2-9.4": "A aba «Contexto» ficou mais clara: uma barra colorida de preenchimento da janela do modelo e a lista do que a preenche (mensagens, ferramentas, MCP, prompt, habilidades, memória e regras do projeto).",
+  "v0-3-0.1": "Versão atual",
+  "h-030.1": "O Estúdio 3D agora também está no Vibe",
+  "v0-3-0.2": "O modo Vibe tem uma nova aba «Estúdio 3D» ao lado de Agente, Computador e Equipe: uma pré-visualização de capturas do viewport, renders e modelos acima do chat do estúdio.",
+  "v0-3-0.3": "No mais, a 0.3.0 inclui tudo da 0.2.x: o agente que planeja sozinho, ações nas mensagens, busca de chaves em variáveis de ambiente, os modos Computador e Estúdio 3D."
 }

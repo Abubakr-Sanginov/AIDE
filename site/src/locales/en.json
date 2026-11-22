@@ -494,5 +494,9 @@
   "h-029.1": "3D Studio, message actions, a clearer Context tab",
   "v0-2-9.2": "A new \"3D Studio\" mode: the agent works with Blender, Unity, Unreal Engine and Godot through their MCP servers (ready presets in settings), knows good practice from built-in skills and shows viewport screenshots and renders in a preview inside the app.",
   "v0-2-9.3": "Chat messages now have actions: copy, edit a question and send it again, answer again, delete.",
-  "v0-2-9.4": "The Context tab is clearer: a coloured fill bar for the model window and a list of what fills it (messages, tools, MCP, prompt, skills, memory and project rules)."
+  "v0-2-9.4": "The Context tab is clearer: a coloured fill bar for the model window and a list of what fills it (messages, tools, MCP, prompt, skills, memory and project rules).",
+  "v0-3-0.1": "Current version",
+  "h-030.1": "3D Studio is now in Vibe too",
+  "v0-3-0.2": "Vibe mode has a new \"3D Studio\" tab next to Agent, Computer and Crew: a preview of viewport screenshots, renders and models above the studio chat.",
+  "v0-3-0.3": "Otherwise 0.3.0 includes everything from 0.2.x: the agent that plans on its own, message actions, finding keys from environment variables, the Computer and 3D Studio modes."
 }

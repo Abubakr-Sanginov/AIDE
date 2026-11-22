@@ -289,5 +289,9 @@
   "h-029.1": "Studio 3D, actions sur les messages, « Contexte » plus clair",
   "v0-2-9.2": "Un nouveau mode « Studio 3D » : l’agent travaille avec Blender, Unity, Unreal Engine et Godot via leurs serveurs MCP (préréglages prêts dans les réglages), connaît les bonnes pratiques grâce aux compétences intégrées et affiche captures de viewport et rendus dans un aperçu directement dans l’application.",
   "v0-2-9.3": "Les messages du chat ont désormais des actions : copier, modifier une question et la renvoyer, répondre à nouveau, supprimer.",
-  "v0-2-9.4": "L’onglet « Contexte » est plus lisible : une barre colorée de remplissage de la fenêtre du modèle et la liste de ce qui la remplit (messages, outils, MCP, prompt, compétences, mémoire et règles du projet)."
+  "v0-2-9.4": "L’onglet « Contexte » est plus lisible : une barre colorée de remplissage de la fenêtre du modèle et la liste de ce qui la remplit (messages, outils, MCP, prompt, compétences, mémoire et règles du projet).",
+  "v0-3-0.1": "Version actuelle",
+  "h-030.1": "Le Studio 3D est maintenant aussi dans Vibe",
+  "v0-3-0.2": "Le mode Vibe a un nouvel onglet « Studio 3D » à côté d’Agent, Ordinateur et Équipe : un aperçu des captures de viewport, des rendus et des modèles au-dessus du chat du studio.",
+  "v0-3-0.3": "Pour le reste, 0.3.0 reprend tout 0.2.x : l’agent qui planifie lui-même, les actions sur les messages, la recherche des clés dans les variables d’environnement, les modes Ordinateur et Studio 3D."
 }

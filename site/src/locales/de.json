@@ -289,5 +289,9 @@
   "h-029.1": "3D-Studio, Nachrichtenaktionen, klarerer Kontext",
   "v0-2-9.2": "Ein neuer Modus „3D-Studio“: Der Agent arbeitet über deren MCP-Server mit Blender, Unity, Unreal Engine und Godot (fertige Voreinstellungen in den Einstellungen), kennt bewährte Vorgehen aus eingebauten Skills und zeigt Viewport-Screenshots und Renderings in einer Vorschau direkt in der App.",
   "v0-2-9.3": "Chat-Nachrichten haben jetzt Aktionen: kopieren, eine Frage bearbeiten und erneut senden, neu antworten, löschen.",
-  "v0-2-9.4": "Der Reiter „Kontext“ ist übersichtlicher: eine farbige Füllanzeige des Modellfensters und eine Liste dessen, was es füllt (Nachrichten, Werkzeuge, MCP, Prompt, Skills, Speicher und Projektregeln)."
+  "v0-2-9.4": "Der Reiter „Kontext“ ist übersichtlicher: eine farbige Füllanzeige des Modellfensters und eine Liste dessen, was es füllt (Nachrichten, Werkzeuge, MCP, Prompt, Skills, Speicher und Projektregeln).",
+  "v0-3-0.1": "Aktuelle Version",
+  "h-030.1": "Das 3D-Studio gibt es jetzt auch in Vibe",
+  "v0-3-0.2": "Der Vibe-Modus hat einen neuen Reiter „3D-Studio“ neben Agent, Computer und Crew: eine Vorschau von Viewport-Screenshots, Renderings und Modellen über dem Studio-Chat.",
+  "v0-3-0.3": "Ansonsten enthält 0.3.0 alles aus 0.2.x: den Agenten, der selbst plant, Nachrichtenaktionen, das Finden von Schlüsseln aus Umgebungsvariablen sowie die Modi Computer und 3D-Studio."
 }
