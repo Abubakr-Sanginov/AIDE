@@ -10,6 +10,7 @@ import { grantComputerConsent, hasComputerConsent } from "@/lib/computerMode";
 import { applyVoiceControl } from "@/features/voice/voiceControl";
 import { SlashMenu } from "@/features/chat/SlashMenu";
 import { fillPrompt, filterItems, loadProjectCommands, skillCommands, type SlashItem } from "@/features/chat/slash";
+import { cleanScenario, scenarioPrompt } from "@/lib/scenario";
 import { useSkills } from "@/features/design/skills/store";
 import { useWorkspace } from "@/stores/workspace";
 import {
@@ -545,7 +546,7 @@ export function ChatPanel({ variant = "panel", computerTab = false, studioTab = 
     return () => { live = false; };
   }, [slashActive, root]);
   const skills = useSkills((x) => x.skills);
-  const BUILTIN_NAMES = ["new", "clear", "chat", "plan", "agent", "compact", "explain", "bugs", "tests"];
+  const BUILTIN_NAMES = ["new", "clear", "chat", "plan", "agent", "compact", "scenario", "explain", "bugs", "tests"];
   const slashItems: SlashItem[] = [
     { name: "new", desc: ru ? rt("Новый чат") : "New chat", source: "builtin", action: "new" },
     { name: "clear", desc: ru ? rt("Очистить этот чат") : "Clear this chat", source: "builtin", action: "clear" },
@@ -553,6 +554,12 @@ export function ChatPanel({ variant = "panel", computerTab = false, studioTab = 
     { name: "plan", desc: ru ? rt("Режим: план без изменений файлов") : "Mode: plan, no file changes", source: "builtin", action: "plan" },
     { name: "agent", desc: ru ? rt("Режим: агент сам правит проект") : "Mode: the agent edits the project", source: "builtin", action: "agent" },
     { name: "compact", desc: ru ? rt("Сжать переписку в резюме и освободить контекст") : "Compact the conversation into a summary", source: "builtin", action: "compact" },
+    {
+      name: "scenario",
+      desc: ru ? rt("Пройти сценарий и дать отчёт: /scenario что проверить") : "Walk through a scenario and report: /scenario what to check",
+      source: "builtin",
+      needsArgs: true,
+    },
     { name: "explain", desc: t("chat.suggestExplain"), source: "builtin", prompt: t("chat.suggestExplain") },
     { name: "bugs", desc: t("chat.suggestBugs"), source: "builtin", prompt: t("chat.suggestBugs") },
     { name: "tests", desc: t("chat.suggestTests"), source: "builtin", prompt: t("chat.suggestTests") },
@@ -567,7 +574,18 @@ export function ChatPanel({ variant = "panel", computerTab = false, studioTab = 
     else if (item.action === "clear") clear();
     else if (item.action === "compact") void useAi.getState().compact();
     else if (item.action) setMode(item.action);
-    else if (item.prompt) {
+    else if (item.name === "scenario" && item.source === "builtin") {
+      const scenario = cleanScenario(args);
+      if (!scenario) {
+        // Nothing to walk through yet: wait for the scenario text.
+        setInput("/scenario ");
+        inputRef.current?.focus();
+        return;
+      }
+      const text = scenarioPrompt(scenario, mode);
+      if (streaming) queueText(text);
+      else void send(text);
+    } else if (item.prompt) {
       const text = fillPrompt(item.prompt, args).trim();
       if (streaming) queueText(text);
       else void send(text);
@@ -579,7 +597,7 @@ export function ChatPanel({ variant = "panel", computerTab = false, studioTab = 
     const row = slashRows[i];
     if (!row) return;
     // Commands that need no text run right away; templates wait for arguments (Enter again sends).
-    if (row.item.action || row.item.source === "builtin") runSlash(row.item, "");
+    if (row.item.action || (row.item.source === "builtin" && !row.item.needsArgs)) runSlash(row.item, "");
     else {
       setInput("/" + row.item.name + " ");
       inputRef.current?.focus();

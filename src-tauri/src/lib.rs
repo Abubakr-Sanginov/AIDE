@@ -10,6 +10,7 @@ mod browser_view;
 mod agent_accounts;
 mod browser_viewport;
 mod computer;
+mod computer_log;
 mod plan_tool;
 mod mcp;
 mod studio;
@@ -539,6 +540,8 @@ pub fn run() {
             local_models::local_probe,
             agent_service::context_breakdown,
             agent_accounts::scan_agent_accounts,
+            computer_log::computer_log_list,
+            computer_log::computer_log_clear,
             agent_accounts::list_agent_keys,
             agent_accounts::import_agent_key,
             agent_accounts::list_agent_models,

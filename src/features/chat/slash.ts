@@ -11,6 +11,8 @@ export interface SlashItem {
   action?: "new" | "clear" | "chat" | "plan" | "agent" | "compact";
   /** Prompt text for "project" commands and the preset prompts (`$ARGUMENTS` is replaced by what follows the name). */
   prompt?: string;
+  /** A builtin command that needs text after its name: picking it only fills "/name " into the input. */
+  needsArgs?: boolean;
 }
 
 const MAX_FILE_CHARS = 20_000;

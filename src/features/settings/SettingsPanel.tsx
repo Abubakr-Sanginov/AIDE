@@ -2,6 +2,7 @@ import { rt } from "@/i18n/tgMap";
 import { isRuLike } from "@/i18n/ruLike";
 import { useEffect, useState, type ReactNode } from "react";
 import {
+  ScrollText,
   BadgeCheck,
   Bell,
   Bot,
@@ -42,6 +43,7 @@ import { LspSection } from "@/features/settings/LspSection";
 import { LocalModelsSection } from "@/features/settings/LocalModelsSection";
 import { NotificationsSection } from "@/features/settings/NotificationsSection";
 import { UpdatesSection } from "@/features/settings/UpdatesSection";
+import { ComputerLogSection } from "@/features/settings/ComputerLogSection";
 import { VoiceControlSection } from "@/features/settings/VoiceControlSection";
 import { AgentAccountsSection } from "@/features/settings/AgentAccountsSection";
 import { CodeIndexSection } from "@/features/settings/CodeIndexSection";
@@ -119,7 +121,7 @@ export function Btn({
 
 /* ── Navigation ────────────────────────────────────────────── */
 
-type PageId = "agent" | "memory" | "rules" | "voice" | "mcp" | "skills" | "extensions" | "appearance" | "terminal" | "hotkeys" | "lsp" | "local" | "index" | "notifications" | "updates" | "accounts";
+type PageId = "agent" | "memory" | "rules" | "voice" | "mcp" | "skills" | "extensions" | "appearance" | "terminal" | "hotkeys" | "lsp" | "local" | "index" | "notifications" | "updates" | "accounts" | "computerlog";
 
 interface NavItem {
   id: PageId;
@@ -156,6 +158,7 @@ const NAV: { id: string; ru: string; en: string; items: NavItem[] }[] = [
       { id: "terminal", ru: "Терминал", en: "Terminal", keys: "шелл powershell cmd bash shell", icon: SquareTerminal },
       { id: "lsp", ru: "Языковые серверы", en: "Language servers", keys: "lsp автодополнение completion typescript rust python go clangd ошибки errors", icon: Braces },
       { id: "notifications", ru: "Уведомления", en: "Notifications", keys: "уведомления звук тихие часы push notifications sound quiet", icon: Bell },
+      { id: "computerlog", ru: "Журнал «Компьютера»", en: "Computer log", keys: "журнал компьютер действия клики мышь история log computer actions history", icon: ScrollText },
       { id: "updates", ru: "Обновления", en: "Updates", keys: "обновление версия update version upgrade", icon: Download },
       { id: "hotkeys", ru: "Горячие клавиши", en: "Hotkeys", keys: "shortcuts клавиши сочетания", icon: Keyboard },
     ],
@@ -180,6 +183,7 @@ const TITLES: Record<PageId, { ru: [string, string]; en: [string, string] }> = {
   local: { ru: ["Локальные модели", "Ollama и LM Studio: модели на вашем компьютере, без ключа и интернета."], en: ["Local models", "Ollama and LM Studio: models on your computer, no key and no internet."] },
   notifications: { ru: ["Уведомления", "О чём и когда AIDE сообщает, пока вы в другом окне."], en: ["Notifications", "What AIDE tells you about, and when, while you are in another window."] },
   accounts: { ru: ["Подписки ИИ", "Какие ИИ-агенты есть на этом компьютере и на каком тарифе каждый."], en: ["AI subscriptions", "Which AI agents are on this computer and which plan each one has."] },
+  computerlog: { ru: ["Журнал «Компьютера»", "Что агент делал мышью и клавиатурой, когда и чем закончилось."], en: ["Computer log", "What the agent did with the mouse and keyboard, when, and how it ended."] },
   updates: { ru: ["Обновления", "Версия AIDE и поиск новой версии."], en: ["Updates", "AIDE version and checking for a new one."] },
   lsp: { ru: ["Языковые серверы", "Подсказки по типам, переход к определению и ошибки в коде."], en: ["Language servers", "Type-aware completion, go to definition and errors in the code."] },
 };
@@ -764,6 +768,7 @@ export function SettingsPage() {
           {page === "local" && <LocalModelsSection />}
           {page === "notifications" && <NotificationsSection />}
           {page === "updates" && <UpdatesSection />}
+          {page === "computerlog" && <ComputerLogSection />}
           {page === "accounts" && <AgentAccountsSection />}
           {page === "index" && <CodeIndexSection />}
           {page === "skills" && (

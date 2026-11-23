@@ -60,6 +60,15 @@ if (!("__TAURI_INTERNALS__" in window)) {
           { id: "~\\.genspark\\config.json|/oauth/token", file: "~\\.genspark\\config.json", field: "oauth.token", preview: "sk-a… (60 симв.)", kind: "anthropic", base_url: null, blocked: "Токен подписки Claude: его можно использовать только в Claude Code" },
         ];
       }
+      if (cmd === "computer_log_list") {
+        const now = Date.now();
+        return [
+          { ts: now - 5000, tool: "computer_click", summary: "клик left ×1 в (640, 360)", ok: true, note: "" },
+          { ts: now - 9000, tool: "computer_type", summary: "ввод текста, 12 симв.", ok: true, note: "" },
+          { ts: now - 15000, tool: "computer_click", summary: "клик left ×1 в (2, 2)", ok: false, note: "Левый верхний угол экрана зарезервирован под аварийную остановку" },
+        ];
+      }
+      if (cmd === "computer_log_clear") return null;
       if (cmd === "import_agent_key") return null;
       if (cmd === "context_breakdown") {
         return { system_prompt: 3_100, tools: 6_400, tools_count: 27, mcp_tools: 4_800, mcp_count: 12, mcp_names: ["mcp__blender__get_scene_info", "mcp__blender__execute_code", "mcp__memory__create_entities"], mcp_instructions: 700, skills: 1_900, skills_count: 8, memory: 2_600, memory_files: [{ name: "AGENTS.md", tokens: 2_300 }, { name: "memory.md", tokens: 300 }] };

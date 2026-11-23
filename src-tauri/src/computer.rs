@@ -218,10 +218,15 @@ fn text<'a>(args: &'a Value, key: &str) -> Result<&'a str, String> {
 
 /// Выполняет инструмент и возвращает текст результата и снимок экрана после действия.
 pub async fn agent_tool(name: &str, args: &Value) -> Result<(String, Vec<AiScreenshot>), String> {
-    let (name, args) = (name.to_string(), args.clone());
-    tauri::async_runtime::spawn_blocking(move || run_tool(&name, &args))
+    let summary = crate::computer_log::summarize(name, args);
+    let (tool, args) = (name.to_string(), args.clone());
+    let result = tauri::async_runtime::spawn_blocking(move || run_tool(&tool, &args))
         .await
-        .map_err(|e| format!("инструмент завершился аварийно: {e}"))?
+        .map_err(|e| format!("инструмент завершился аварийно: {e}"))
+        .and_then(|r| r);
+    // Журнал действий: что агент сделал с компьютером (введённый текст в него не попадает).
+    crate::computer_log::record(name, summary, &result);
+    result
 }
 
 #[cfg(not(windows))]
