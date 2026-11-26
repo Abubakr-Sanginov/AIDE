@@ -336,6 +336,10 @@ pub fn agent_chat(
     if !["plan", "agent", "computer", "studio"].contains(&request.mode.as_str()) {
         return Err("Неизвестный режим: ожидался plan, agent, computer или studio".into());
     }
+    // Qoder сам является агентом со своими инструментами: цикл AIDE ему не нужен.
+    if request.kind == crate::qoder::KIND {
+        return crate::qoder::agent_chat(app, &cancels, request);
+    }
     let key = ai_service::api_key(&request.provider_id)?;
     let cancel = Arc::new(AtomicBool::new(false));
     cancels

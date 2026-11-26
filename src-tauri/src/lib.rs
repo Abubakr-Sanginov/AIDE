@@ -8,6 +8,7 @@ mod terminal;
 mod browse;
 mod browser_view;
 mod agent_accounts;
+mod qoder;
 mod browser_viewport;
 mod computer;
 mod computer_log;
@@ -541,6 +542,9 @@ pub fn run() {
             local_models::local_probe,
             agent_service::context_breakdown,
             agent_accounts::scan_agent_accounts,
+            qoder::qoder_status,
+            qoder::qoder_set_token,
+            qoder::qoder_clear_token,
             computer_log::computer_log_list,
             computer_log::computer_log_clear,
             agent_accounts::list_agent_keys,

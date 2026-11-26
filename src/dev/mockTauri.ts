@@ -70,6 +70,8 @@ if (!("__TAURI_INTERNALS__" in window)) {
       }
       if (cmd === "computer_log_clear") return null;
       if (cmd === "import_agent_key") return null;
+      if (cmd === "qoder_status") return { cli: null, desktop: true, token_saved: false, token_env: false };
+      if (cmd === "qoder_set_token" || cmd === "qoder_clear_token") return null;
       if (cmd === "context_breakdown") {
         return { system_prompt: 3_100, tools: 6_400, tools_count: 27, mcp_tools: 4_800, mcp_count: 12, mcp_names: ["mcp__blender__get_scene_info", "mcp__blender__execute_code", "mcp__memory__create_entities"], mcp_instructions: 700, skills: 1_900, skills_count: 8, memory: 2_600, memory_files: [{ name: "AGENTS.md", tokens: 2_300 }, { name: "memory.md", tokens: 300 }] };
       }

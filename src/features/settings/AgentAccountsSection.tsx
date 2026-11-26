@@ -5,6 +5,7 @@ import { useI18n } from "@/i18n";
 import { Btn, Row, Section } from "@/features/settings/SettingsPanel";
 import { BLOCKED_AGENTS, accountsApi, type AgentAccount } from "@/api/accounts";
 import { ConnectAgentKey } from "@/features/settings/ConnectAgentKey";
+import { useAi } from "@/stores/ai";
 
 const TEXT = {
   en: {
@@ -28,6 +29,9 @@ const TEXT = {
     showMore: (n: number) => `Show ${n} more without a sign-in found`,
     hideMore: "Hide them",
     locked: "its sign-in only works inside its own app",
+    useQoder: "Use the Qoder subscription",
+    qoderPicked: "Qoder is now the AI provider. Open Settings → Agent to check the Qoder CLI and the sign-in.",
+    viaCli: "through the official Qoder CLI",
   },
   ru: {
     title: "ИИ-агенты на этом компьютере",
@@ -50,6 +54,9 @@ const TEXT = {
     showMore: (n: number) => `Показать ещё ${n} без найденного входа`,
     hideMore: "Скрыть их",
     locked: "его вход работает только в его приложении",
+    useQoder: "Использовать подписку Qoder",
+    qoderPicked: "Провайдер ИИ теперь Qoder. Откройте «Настройки → Агент», чтобы проверить Qoder CLI и вход.",
+    viaCli: "через официальный Qoder CLI",
   },
   tg: {
     title: "Агентҳои ИИ дар ин компютер",
@@ -72,6 +79,9 @@ const TEXT = {
     showMore: (n: number) => `Нишон додани ${n} дигар бе воридшавии ёфтшуда`,
     hideMore: "Пинҳон кардан",
     locked: "воридшавии ӯ танҳо дар барномаи худаш кор мекунад",
+    useQoder: "Истифодаи обунаи Qoder",
+    qoderPicked: "Акнун провайдери ИИ Qoder аст. Барои санҷиши Qoder CLI ва воридшавӣ «Танзимот → Агент»-ро кушоед.",
+    viaCli: "тавассути Qoder CLI-и расмӣ",
   },
 };
 
@@ -144,7 +154,19 @@ export function AgentAccountsSection() {
             }
           >
             <div className="flex flex-col items-end gap-1.5">
-              {a.signed_in &&
+              {a.id === "qoder" ? (
+                <>
+                  <Btn
+                    onClick={() => {
+                      useAi.getState().setProvider("qoder");
+                      setNotice(L.qoderPicked);
+                    }}
+                  >
+                    {L.useQoder}
+                  </Btn>
+                  <span className="max-w-[260px] text-right text-[11.5px] text-ink-500">{L.viaCli}</span>
+                </>
+              ) : a.signed_in &&
                 (BLOCKED_AGENTS.includes(a.id) ? (
                   <span className="max-w-[260px] text-right text-[11.5px] text-ink-500">{L.locked}</span>
                 ) : (

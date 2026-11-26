@@ -606,14 +606,15 @@ pub async fn scan_agent_accounts() -> Result<Vec<AgentAccount>, String> {
 // Человек может взять ключ или токен, который сохранил какой-то агент, и подключить его в AIDE как провайдера ИИ.
 // Само значение секрета при этом не покидает Rust: интерфейс получает только описание («поле, длина, куда
 // похоже»), а запись в хранилище ключей Windows делает команда `import_agent_key`.
-// Claude Code, Codex, Gemini CLI и Qoder исключены: их вход привязан к их приложениям и вне них не работает.
+// Claude Code, Codex, Gemini CLI и Qoder исключены: их сохранённый вход как ключ не берётся.
+// Подписка Qoder подключается отдельно, через официальный Qoder CLI (qoder.rs).
 
 /// Агенты, чей вход нельзя использовать вне их собственных приложений.
 const BLOCKED_AGENTS: &[&str] = &["claude-code", "codex", "gemini", "qoder"];
 /// Папки (и файлы в домашней), по которым запрет проверяется ещё и по пути, а не только по имени агента.
 const BLOCKED_PATHS: &[&str] = &[".claude", ".claude.json", ".codex", ".gemini", ".qoder", "com.qoder.app.stable", "qoder"];
 const MAX_CANDIDATES: usize = 20;
-const BLOCKED_NOTE: &str = "Вход Claude Code, Codex, Gemini CLI и Qoder привязан к их приложениям и вне них не работает: такой токен нельзя использовать как ключ в AIDE.";
+const BLOCKED_NOTE: &str = "Вход Claude Code, Codex, Gemini CLI и Qoder привязан к их приложениям: такой токен нельзя использовать как ключ в AIDE. Подписка Qoder подключается провайдером «Qoder» через официальный Qoder CLI.";
 
 #[derive(Serialize, Clone, Debug, PartialEq)]
 pub struct KeyCandidate {

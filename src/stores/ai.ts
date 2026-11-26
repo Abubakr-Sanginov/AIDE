@@ -11,6 +11,8 @@ import {
 } from "@/lib/localProviders";
 import { modelSelection, normalizeModelId } from "@/lib/modelSelection";
 import { CONTINUE_REQUEST, resumeContent } from "@/lib/agentResume";
+import { mergeToolEvent } from "@/lib/toolEvents";
+import { qoderApi } from "@/api/qoder";
 import { filterAssistantChunk, stripToolCallEcho, visibleAssistantOutput, type OutputFilterState } from "@/lib/assistantOutput";
 import {
   ai,
@@ -75,6 +77,8 @@ export const BUILTIN_PROVIDERS: ProviderConfig[] = [
   // On this computer, no key. The address can be changed in Settings (another port).
   { id: "ollama", name: "Ollama", kind: "openai", baseUrl: LOCAL_DEFAULTS.ollama },
   { id: "lmstudio", name: "LM Studio", kind: "openai", baseUrl: LOCAL_DEFAULTS.lmstudio },
+  // The Qoder subscription, through the official Qoder CLI (no API address, no key kept by this store).
+  { id: "qoder", name: "Qoder", kind: "qoder", baseUrl: "" },
 ];
 
 /** Built-in providers with the user's saved address for local servers (a non-default port). */
@@ -436,7 +440,9 @@ export const useAi = create<AiState>((set, get) => ({
       return;
     }
     try {
-      const hasKey = await ai.hasApiKey(providerId);
+      // Qoder is ready when its CLI is installed; the sign-in belongs to the CLI and is checked by listing models.
+      const hasKey =
+        get().provider().kind === "qoder" ? Boolean((await qoderApi.status()).cli) : await ai.hasApiKey(providerId);
       if (get().providerId !== providerId) return;
       set({ hasKey });
       if (hasKey) void get().refreshModels();
@@ -528,7 +534,9 @@ export const useAi = create<AiState>((set, get) => ({
     try {
       const models = await ai.listModels(cfg.id, cfg.kind, cfg.baseUrl, authOf(cfg.id), uaOf(cfg.id));
       const auth =
-        authOf(cfg.id) === "bearer"
+        cfg.kind === "qoder"
+          ? "Qoder CLI"
+          : authOf(cfg.id) === "bearer"
           ? "Bearer"
           : cfg.kind === "anthropic"
             ? "x-api-key"
@@ -887,11 +895,8 @@ export const useAi = create<AiState>((set, get) => ({
       messages: s.messages.map((m) => {
         if (m.id !== requestId) return m;
         const tools = m.tools ?? [];
-        const last = tools[tools.length - 1];
-        if (last && last.tool === event.tool && last.args === event.args) {
-          return { ...m, tools: [...tools.slice(0, -1), event] };
-        }
-        return { ...m, tools: [...tools, event], retryStatus: undefined };
+        const next = mergeToolEvent(tools, event);
+        return next.length === tools.length ? { ...m, tools: next } : { ...m, tools: next, retryStatus: undefined };
       }),
     }));
     persistMessages(get().messages);
