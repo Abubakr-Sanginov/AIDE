@@ -269,7 +269,9 @@ mod tests {
     fn tmp(tag: &str) -> PathBuf {
         let d = std::env::temp_dir().join(format!("aide-studio-{tag}-{}-{}", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
         fs::create_dir_all(&d).unwrap();
-        d
+        // Как открытый проект в приложении: корень канонический. Иначе тест падает там, где временная папка задана
+        // коротким именем (C:\Users\RUNNER~1\… в CI) или через ссылку.
+        crate::strip_verbatim(d.canonicalize().unwrap())
     }
 
     #[test]
