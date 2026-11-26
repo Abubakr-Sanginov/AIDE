@@ -88,9 +88,9 @@ pub(crate) fn find_cli_in(path_dirs: &[PathBuf], home_dirs: &[PathBuf]) -> Optio
 fn find_cli(home: &Path) -> Option<Cli> {
     let path_dirs: Vec<PathBuf> = std::env::var_os("PATH").map(|p| std::env::split_paths(&p).collect()).unwrap_or_default();
     let mut own = vec![
-        home.join(".local/bin"),
-        home.join(".qoder/bin/qodercli"),
-        home.join(".qoder/local"),
+        home.join(".local").join("bin"),
+        home.join(".qoder").join("bin").join("qodercli"),
+        home.join(".qoder").join("local"),
     ];
     let mut extra = path_dirs;
     if cfg!(windows) {
@@ -172,7 +172,10 @@ pub(crate) fn valid_model(model: &str) -> bool {
 
 pub(crate) fn cli_args(mode: Mode, model: Option<&str>) -> Result<Vec<String>, String> {
     // Режим разрешений задаём явно: в настройках пользователя может стоять «без вопросов», а решать должен AIDE.
-    let mut args: Vec<String> = ["--acp", "--permission-mode", "default"].map(String::from).to_vec();
+    // Настройки только пользователя и никаких MCP: открытый проект не должен через свои .qoder и .mcp.json
+    // добавлять разрешения, хуки и серверы, то есть запускать команды в обход окна разрешений.
+    let mut args: Vec<String> =
+        ["--acp", "--permission-mode", "default", "--setting-sources", "user", "--strict-mcp-config"].map(String::from).to_vec();
     if let Some(m) = model {
         if !valid_model(m) {
             return Err("Недопустимое имя модели Qoder".into());
@@ -727,7 +730,7 @@ fn empty_dir(app: &AppHandle) -> Result<PathBuf, String> {
 fn locate() -> Result<Cli, String> {
     let home = dirs_next::home_dir().ok_or("Не удалось определить домашнюю папку")?;
     find_cli(&home).ok_or_else(|| {
-        "Qoder CLI не найден. Приложения Qoder для этого недостаточно: установите официальный CLI (в PowerShell: irm https://qoder.com/install.ps1 | iex), выполните «qodercli login» и перезапустите AIDE.".into()
+        "Qoder CLI не найден. Приложения Qoder для этого недостаточно: установите официальный CLI (в PowerShell: irm https://qoder.com/install.ps1 | iex), затем в новом окне терминала выполните «qodercli login».".into()
     })
 }
 
@@ -942,9 +945,11 @@ mod tests {
     #[test]
     fn arguments_fix_the_permission_mode_and_reject_flag_like_models() {
         let chat = cli_args(Mode::Chat, Some("auto")).unwrap();
-        assert_eq!(chat, ["--acp", "--permission-mode", "default", "--model", "auto", "--tools", ""]);
+        let base = ["--acp", "--permission-mode", "default", "--setting-sources", "user", "--strict-mcp-config"];
+        assert_eq!(chat[..base.len()], base);
+        assert_eq!(chat[base.len()..], ["--model", "auto", "--tools", ""]);
         assert!(cli_args(Mode::Plan, None).unwrap().contains(&"--disallowed-tools".to_string()));
-        assert_eq!(cli_args(Mode::Agent, None).unwrap(), ["--acp", "--permission-mode", "default"]);
+        assert_eq!(cli_args(Mode::Agent, None).unwrap(), base);
         for bad in ["--yolo", "-m", "a\nb", "a;b", "x&calc", ""] {
             assert!(cli_args(Mode::Agent, Some(bad)).is_err(), "{bad:?}");
         }
@@ -1079,6 +1084,36 @@ mod tests {
 
     fn block<F: Future>(f: F) -> F::Output {
         tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(f)
+    }
+
+    /// С настоящим CLI этого компьютера: поиск, запуск с нашими аргументами и начало сессии. Запрос к модели не
+    /// отправляется. `cargo test --lib live_qoder -- --ignored --nocapture`
+    #[test]
+    #[ignore]
+    fn live_qoder_handshake() {
+        block(async {
+            let home = dirs_next::home_dir().unwrap();
+            let cli = find_cli(&home).expect("Qoder CLI не установлен");
+            println!("CLI: {}", cli.found_at.display());
+            let cwd = temp("live");
+            for mode in [Mode::Chat, Mode::Plan, Mode::Agent] {
+                let (mut process, (reader, writer)) = spawn(&cli, &cli_args(mode, None).unwrap(), &cwd).unwrap();
+                let mut acp = Acp::new(reader, writer, Arc::new(AtomicBool::new(false)));
+                match acp.open(&cwd, &mut Quiet).await {
+                    Ok((init, session)) => println!(
+                        "{mode:?}: вход есть; изображения: {}; модели из сессии: {:?}",
+                        init["agentCapabilities"]["promptCapabilities"]["image"],
+                        models_from_session(&session)
+                    ),
+                    Err(e) => {
+                        let message = explain(&e);
+                        println!("{mode:?}: {message}");
+                        assert!(message.contains("qodercli login"), "{message}\n{}", process.error_tail().await);
+                    }
+                }
+                process.stop().await;
+            }
+        });
     }
 
     #[test]
