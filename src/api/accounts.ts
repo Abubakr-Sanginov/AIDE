@@ -30,10 +30,10 @@ export interface KeyCandidate {
 }
 
 /** Agents whose sign-in only works inside their own app. */
-export const BLOCKED_AGENTS = ["claude-code", "codex", "gemini"];
+export const BLOCKED_AGENTS = ["claude-code", "codex", "gemini", "qoder"];
 
 export const accountsApi = {
-  /** Keys found in an agent's files (not for Claude Code, Codex and Gemini CLI). */
+  /** Keys found in an agent's files (not for Claude Code, Codex, Gemini CLI or Qoder). */
   keys: (agentId: string) => invoke<KeyCandidate[]>("list_agent_keys", { agentId }),
   /** The backend reads the chosen key and puts it into the Windows credential store under `providerId` ("agent-…"). */
   importKey: (candidateId: string, providerId: string) => invoke<void>("import_agent_key", { candidateId, providerId }),

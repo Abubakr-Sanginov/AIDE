@@ -13,6 +13,7 @@
 
 use std::collections::HashSet;
 use std::fs;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use base64::Engine;
@@ -375,6 +376,16 @@ fn read_json(path: &Path, limit: u64) -> Option<Value> {
     serde_json::from_str(&fs::read_to_string(path).ok()?).ok()
 }
 
+/// Qoder uses Electron safeStorage: the header proves a login exists without decrypting it.
+fn has_qoder_login(dir: &Path) -> bool {
+    let path = dir.join("auth.v1.dat");
+    let Ok(meta) = fs::symlink_metadata(&path) else { return false };
+    if !meta.is_file() || meta.len() <= 16 || meta.len() > MAX_FILE_BYTES { return false; }
+    let Ok(mut file) = fs::File::open(&path) else { return false };
+    let mut header = [0u8; 3];
+    file.read_exact(&mut header).is_ok() && matches!(&header, b"v10" | b"v11")
+}
+
 /// Файлы входа в папке агента (сама папка и подпапки на один уровень вглубь).
 fn cred_files(dir: &Path) -> Vec<PathBuf> {
     let mut candidates: Vec<PathBuf> = Vec::new();
@@ -407,6 +418,7 @@ fn cred_files(dir: &Path) -> Vec<PathBuf> {
 /// Факты из файлов входа в папке агента.
 fn scan_dir(dir: &Path, files_read: &mut usize) -> Facts {
     let mut total = Facts::default();
+    total.has_secret |= has_qoder_login(dir);
     for f in cred_files(dir) {
         if *files_read >= 400 {
             break;
@@ -594,14 +606,14 @@ pub async fn scan_agent_accounts() -> Result<Vec<AgentAccount>, String> {
 // Человек может взять ключ или токен, который сохранил какой-то агент, и подключить его в AIDE как провайдера ИИ.
 // Само значение секрета при этом не покидает Rust: интерфейс получает только описание («поле, длина, куда
 // похоже»), а запись в хранилище ключей Windows делает команда `import_agent_key`.
-// Claude Code, Codex и Gemini CLI исключены: их вход привязан к их приложениям и вне них не работает.
+// Claude Code, Codex, Gemini CLI и Qoder исключены: их вход привязан к их приложениям и вне них не работает.
 
 /// Агенты, чей вход нельзя использовать вне их собственных приложений.
-const BLOCKED_AGENTS: &[&str] = &["claude-code", "codex", "gemini"];
+const BLOCKED_AGENTS: &[&str] = &["claude-code", "codex", "gemini", "qoder"];
 /// Папки (и файлы в домашней), по которым запрет проверяется ещё и по пути, а не только по имени агента.
-const BLOCKED_PATHS: &[&str] = &[".claude", ".claude.json", ".codex", ".gemini"];
+const BLOCKED_PATHS: &[&str] = &[".claude", ".claude.json", ".codex", ".gemini", ".qoder", "com.qoder.app.stable", "qoder"];
 const MAX_CANDIDATES: usize = 20;
-const BLOCKED_NOTE: &str = "Вход Claude Code, Codex и Gemini CLI привязан к их приложениям и вне них не работает: такой токен нельзя использовать как ключ в AIDE.";
+const BLOCKED_NOTE: &str = "Вход Claude Code, Codex, Gemini CLI и Qoder привязан к их приложениям и вне них не работает: такой токен нельзя использовать как ключ в AIDE.";
 
 #[derive(Serialize, Clone, Debug, PartialEq)]
 pub struct KeyCandidate {
@@ -970,9 +982,9 @@ fn is_blocked_path(home: &Path, file: &Path) -> bool {
     }
 }
 
-/// Агент, вход которого использовать нельзя: из списка и всё, что называется claude… (приложение, данные, CLI).
+/// Агент, вход которого использовать нельзя: из списка и всё, что называется claude… или qoder… (приложение, данные, CLI).
 pub fn agent_blocked(id: &str) -> bool {
-    BLOCKED_AGENTS.contains(&id) || id.starts_with("found-claude") || id == "found-codex" || id == "found-gemini"
+    BLOCKED_AGENTS.contains(&id) || id.starts_with("found-claude") || id.starts_with("found-qoder") || id == "found-codex" || id == "found-gemini"
 }
 
 /// Папки агента по его id (известный — по списку, найденный общим способом — по имени папки).
@@ -1319,7 +1331,8 @@ mod tests {
         fs::create_dir_all(home.join("AppData/Roaming/com.qoder.app.stable")).unwrap();
         fs::create_dir_all(home.join("AppData/Local/Qoder")).unwrap();
         fs::write(home.join(".qoder/settings.json"), br#"{"theme":"dark"}"#).unwrap();
-        fs::write(home.join("AppData/Roaming/com.qoder.app.stable/auth.v1.dat"), [0u8, 1, 2, 3]).unwrap();
+        fs::write(home.join("AppData/Roaming/com.qoder.app.stable/auth.v1.dat"), b"v10encrypted-test-data").unwrap();
+        fs::write(home.join("AppData/Roaming/com.qoder.app.stable/auth.machine-id"), b"0123456789abcdef0123456789abcdef012345").unwrap();
 
         let list = scan(&home);
         let matches: Vec<_> = list.iter().filter(|a| a.id == "qoder").collect();
@@ -1327,8 +1340,20 @@ mod tests {
         let qoder = matches[0];
         assert!(qoder.known);
         assert_eq!(qoder.name, "Qoder");
-        assert_eq!(qoder.location, "~\\.qoder");
+        assert_eq!(qoder.location, "~\\AppData\\Roaming\\com.qoder.app.stable");
+        assert!(qoder.signed_in, "{list:#?}");
+        assert!(qoder.plan.is_none() && qoder.account.is_none(), "encrypted login stays opaque");
+        assert!(agent_blocked("qoder") && agent_blocked("found-qoder"));
+        assert!(list_keys(&home, "qoder").is_err());
         assert!(is_ai_name("com.qoder.app.stable"));
+
+        let auth = home.join("AppData/Roaming/com.qoder.app.stable/auth.v1.dat");
+        for invalid in [b"v10short".as_slice(), b"not-an-encrypted-login".as_slice(), b"".as_slice()] {
+            fs::write(&auth, invalid).unwrap();
+            let list = scan(&home);
+            let qoder = list.iter().find(|a| a.id == "qoder").expect("Qoder");
+            assert!(!qoder.signed_in, "invalid auth file must not imply login: {list:#?}");
+        }
         let _ = fs::remove_dir_all(&home);
     }
 

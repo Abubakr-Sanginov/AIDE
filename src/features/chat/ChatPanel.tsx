@@ -633,16 +633,14 @@ export function ChatPanel({ variant = "panel", computerTab = false, studioTab = 
       {!vibe && (
       <div className="flex h-10 shrink-0 items-center justify-end gap-2 px-2">
         <div className="flex min-w-0 items-center gap-1">
-          {hasKey && (
-            <Select
-              title={t("settings.provider")}
-              value={providerId}
-              onChange={setProvider}
-              options={providers.map((p) => ({ value: p.id, label: p.name }))}
-              className="max-w-[160px] text-[13px] text-ink-300"
-              menuMinWidth={200}
-            />
-          )}
+          <Select
+            title={t("settings.provider")}
+            value={providerId}
+            onChange={setProvider}
+            options={providers.map((p) => ({ value: p.id, label: p.name }))}
+            className="max-w-[160px] text-[13px] text-ink-300"
+            menuMinWidth={200}
+          />
           <SessionButtons />
           {messages.length > 0 && (
             <button
@@ -1048,16 +1046,14 @@ export function ChatPanel({ variant = "panel", computerTab = false, studioTab = 
             </div>
           </div>
           <div className="mt-1.5 flex min-w-0 items-center gap-0.5 border-t border-white/[0.06] px-0.5 pt-1.5">
-            {vibe && hasKey && (
-              <Select
-                title={t("settings.provider")}
-                value={providerId}
-                onChange={setProvider}
-                options={providers.map((p) => ({ value: p.id, label: p.name }))}
-                className="min-w-0 max-w-32"
-                menuMinWidth={200}
-              />
-            )}
+            <Select
+              title={t("settings.provider")}
+              value={providerId}
+              onChange={setProvider}
+              options={providers.map((p) => ({ value: p.id, label: p.name }))}
+              className="min-w-0 max-w-32"
+              menuMinWidth={200}
+            />
             {hasKey && models.length > 0 && (
               <Select
                 title={t("settings.model")}

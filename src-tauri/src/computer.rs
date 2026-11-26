@@ -12,6 +12,8 @@
 //!
 //! Работает на Windows (GDI + SendInput). На других системах инструменты возвращают понятную ошибку.
 
+use std::path::Path;
+
 use serde_json::Value;
 
 use crate::agent_service::AiScreenshot;
@@ -204,13 +206,24 @@ pub fn validate_open_target(target: &str) -> Result<(), String> {
     if t.is_empty() || t.chars().count() > 500 || t.chars().any(char::is_control) {
         return Err("Некорректная цель для запуска".into());
     }
+    let is_link = t.find("://").is_some();
     if let Some(i) = t.find("://") {
         let scheme = t[..i].to_lowercase();
         if scheme != "http" && scheme != "https" {
             return Err("Ссылки открываются только по http и https".into());
         }
     }
+    if !is_link && t.chars().any(|c| matches!(c, '|' | '<' | '>' | '^')) {
+        return Err("Цель для запуска не должна содержать перенаправления ввода-вывода".into());
+    }
+    if is_bare_app_name(t) && t.contains('&') {
+        return Err("Имя программы не должно содержать команды".into());
+    }
     Ok(())
+}
+
+fn display_open_target(target: &str) -> &str {
+    if target.contains("://") { target.split(['?', '#']).next().unwrap_or(target) } else { target }
 }
 
 fn num(args: &Value, key: &str) -> Result<f64, String> {
@@ -219,6 +232,35 @@ fn num(args: &Value, key: &str) -> Result<f64, String> {
 
 fn text<'a>(args: &'a Value, key: &str) -> Result<&'a str, String> {
     args.get(key).and_then(Value::as_str).ok_or_else(|| format!("не хватает аргумента «{key}»"))
+}
+
+fn is_bare_app_name(target: &str) -> bool {
+    let path = Path::new(target);
+    if path.components().count() != 1 { return false; }
+    path.extension().is_none_or(|ext| ["exe", "com", "lnk"].iter().any(|known| ext.eq_ignore_ascii_case(known)))
+}
+
+fn app_name_key(name: &str) -> String {
+    name.chars().flat_map(char::to_lowercase).filter(|c| c.is_alphanumeric()).collect()
+}
+
+fn shortcut_score(query: &str, file_name: &str) -> Option<u8> {
+    let path = Path::new(file_name);
+    if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("lnk")) { return None; }
+    let query = app_name_key(query);
+    let name = app_name_key(path.file_stem()?.to_str()?);
+    if query.len() < 3 || name.len() < 3 { return None; }
+    if query == name { Some(0) }
+    else if name.starts_with(&query) || query.starts_with(&name) { Some(1) }
+    else { None }
+}
+
+pub(crate) fn open_arg<'a>(args: &'a Value) -> Result<&'a str, String> {
+    match args.get("target") {
+        Some(Value::String(target)) => Ok(target),
+        None | Some(Value::Null) => args.get("app_name").and_then(Value::as_str).ok_or_else(|| "не хватает аргумента «target»".into()),
+        _ => text(args, "target"),
+    }
 }
 
 /* ───────────── выполнение ───────────── */
@@ -318,11 +360,11 @@ fn run_tool(name: &str, args: &Value) -> Result<(String, Vec<AiScreenshot>), Str
             shot_after(format!("Нажато {}.", text(args, "keys")?))
         }
         "computer_open" => {
-            let target = text(args, "target")?;
+            let target = open_arg(args)?;
             validate_open_target(target)?;
             win::open_target(target)?;
             sleep(Duration::from_millis(1500));
-            shot_after(format!("Запущено: {target}"))
+            shot_after(format!("Запущено: {}", display_open_target(target)))
         }
         _ => Err("Неизвестный инструмент компьютера".into()),
     }
@@ -330,8 +372,10 @@ fn run_tool(name: &str, args: &Value) -> Result<(String, Vec<AiScreenshot>), Str
 
 #[cfg(windows)]
 mod win {
+    use std::os::windows::fs::MetadataExt;
+    use std::path::{Path, PathBuf};
     use std::sync::Mutex;
-    use std::{thread::sleep, time::Duration};
+    use std::{fs, thread::sleep, time::Duration};
 
     use base64::Engine;
     use windows::core::{w, BOOL, PCWSTR};
@@ -356,9 +400,12 @@ mod win {
         GA_ROOT, GWL_EXSTYLE, SM_CXSCREEN, SM_CYSCREEN, SW_RESTORE, SW_SHOWNORMAL, WS_EX_TOOLWINDOW,
     };
 
-    use super::{map_point, shot_size, AiScreenshot, Combo, ShotInfo, CORNER, FAILSAFE_MSG};
+    use super::{app_name_key, is_bare_app_name, map_point, shortcut_score, shot_size, AiScreenshot, Combo, ShotInfo, CORNER, FAILSAFE_MSG};
 
     static LAST_SHOT: Mutex<Option<ShotInfo>> = Mutex::new(None);
+    const MAX_SHORTCUT_ENTRIES: usize = 5000;
+    const MAX_SHORTCUT_DEPTH: usize = 6;
+    const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
 
     fn screen() -> (u32, u32) {
         unsafe { (GetSystemMetrics(SM_CXSCREEN).max(1) as u32, GetSystemMetrics(SM_CYSCREEN).max(1) as u32) }
@@ -673,15 +720,59 @@ mod win {
         Ok(format!("Окно «{}» выведено на передний план.", found.title.chars().take(100).collect::<String>()))
     }
 
-    pub fn open_target(target: &str) -> Result<(), String> {
-        let wide: Vec<u16> = target.trim().encode_utf16().chain(std::iter::once(0)).collect();
+    fn shell_execute(target: &str) -> Result<(), String> {
+        let wide: Vec<u16> = target.encode_utf16().chain(std::iter::once(0)).collect();
         let r = unsafe { ShellExecuteW(None, w!("open"), PCWSTR(wide.as_ptr()), PCWSTR::null(), PCWSTR::null(), SW_SHOWNORMAL) };
-        // Значение больше 32 — успех (так устроен ShellExecute).
-        if (r.0 as isize) > 32 {
-            Ok(())
-        } else {
-            Err(format!("Не удалось запустить «{target}»"))
+        if (r.0 as isize) > 32 { Ok(()) } else { Err(format!("Не удалось запустить «{target}»")) }
+    }
+
+    fn collect_shortcuts(dir: &Path, depth: usize, query: &str, root_index: usize, remaining: &mut usize, found: &mut Vec<(u8, usize, PathBuf)>) {
+        if depth > MAX_SHORTCUT_DEPTH || *remaining == 0 { return; }
+        let Ok(entries) = fs::read_dir(dir) else { return };
+        let mut entries: Vec<_> = entries.take(*remaining).filter_map(Result::ok).collect();
+        entries.sort_by_key(|e| e.file_name().to_string_lossy().to_lowercase());
+        for entry in entries {
+            if *remaining == 0 { return; }
+            *remaining -= 1;
+            let path = entry.path();
+            let Ok(meta) = fs::symlink_metadata(&path) else { continue };
+            if meta.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 { continue; }
+            if meta.is_dir() {
+                collect_shortcuts(&path, depth + 1, query, root_index, remaining, found);
+            } else if meta.is_file() {
+                if let Some(score) = path.file_name().and_then(|n| n.to_str()).and_then(|n| shortcut_score(query, n)) {
+                    found.push((score, root_index, path));
+                }
+            }
         }
+    }
+
+    pub(super) fn find_shortcut(roots: &[PathBuf], target: &str) -> Option<PathBuf> {
+        if !is_bare_app_name(target) { return None; }
+        let query = Path::new(target).file_stem()?.to_str()?;
+        if app_name_key(query).len() < 3 { return None; }
+        let mut remaining = MAX_SHORTCUT_ENTRIES;
+        let mut found = Vec::new();
+        for (root_index, root) in roots.iter().enumerate() {
+            collect_shortcuts(root, 0, query, root_index, &mut remaining, &mut found);
+        }
+        found.sort_by(|a, b| (a.0, a.1).cmp(&(b.0, b.1)).then_with(|| a.2.cmp(&b.2)));
+        found.into_iter().next().map(|(_, _, path)| path)
+    }
+
+    pub(super) fn start_menu_shortcut(target: &str) -> Option<PathBuf> {
+        let roots = ["APPDATA", "ProgramData"].into_iter().filter_map(std::env::var_os)
+            .map(PathBuf::from).map(|root| root.join("Microsoft/Windows/Start Menu/Programs")).collect::<Vec<_>>();
+        find_shortcut(&roots, target)
+    }
+
+    pub fn open_target(target: &str) -> Result<(), String> {
+        let target = target.trim();
+        if shell_execute(target).is_ok() { return Ok(()); }
+        if let Some(shortcut) = start_menu_shortcut(target) {
+            if shell_execute(&shortcut.to_string_lossy()).is_ok() { return Ok(()); }
+        }
+        Err(format!("Не удалось запустить «{}». Укажи имя из меню «Пуск» или полный путь к программе", super::display_open_target(target)))
     }
 }
 
@@ -765,12 +856,56 @@ mod tests {
         assert!(validate_text(&"я".repeat(501)).is_err());
         assert!(validate_text(&"я".repeat(500)).is_ok());
         assert!(validate_text("a\u{0}b").is_err() && validate_text("a\u{1b}b").is_err());
-        for ok in ["https://web.telegram.org", "http://localhost:3000", "notepad", "C:\\Program Files\\App\\app.exe"] {
+        for ok in ["https://web.telegram.org", "http://localhost:3000", "notepad", "Telegram Desktop", "C:\\Program Files\\App\\app.exe", "D:\\Apps\\A&B\\app.exe"] {
             assert!(validate_open_target(ok).is_ok(), "{ok}");
         }
-        for bad in ["", "   ", "file:///C:/Windows", "javascript://x", "ms-settings://x", "a\nb", &"h".repeat(501)] {
+        for bad in ["", "   ", "file:///C:/Windows", "javascript://x", "ms-settings://x", "a\nb", "notepad & calc", "Telegram | calc", "app > out.txt", &"h".repeat(501)] {
             assert!(validate_open_target(bad).is_err(), "{bad}");
         }
+    }
+
+    #[test]
+    fn displayed_launch_targets_hide_url_queries_and_fragments() {
+        assert_eq!(display_open_target("https://example.com/path?token=secret#fragment"), "https://example.com/path");
+        assert_eq!(display_open_target("https://example.com/path#fragment"), "https://example.com/path");
+        assert_eq!(display_open_target("D:\\Apps\\App\\app.exe"), "D:\\Apps\\App\\app.exe");
+    }
+
+    #[test]
+    fn open_call_accepts_target_and_the_common_app_name_alias() {
+        assert_eq!(open_arg(&serde_json::json!({"target": "Telegram"})).unwrap(), "Telegram");
+        assert_eq!(open_arg(&serde_json::json!({"app_name": "Telegram"})).unwrap(), "Telegram");
+        assert_eq!(open_arg(&serde_json::json!({"target": "notepad", "app_name": "calc"})).unwrap(), "notepad");
+        assert!(open_arg(&serde_json::json!({})).is_err());
+        assert!(open_arg(&serde_json::json!({"target": 42})).is_err());
+    }
+
+    #[test]
+    fn shortcut_matching_prefers_exact_names_and_ignores_other_files() {
+        assert_eq!(shortcut_score("Telegram", "Telegram.lnk"), Some(0));
+        assert_eq!(shortcut_score("telegram", "TELEGRAM.LNK"), Some(0));
+        assert_eq!(shortcut_score("Telegram", "Telegram Desktop.lnk"), Some(1));
+        assert_eq!(shortcut_score("Google Chrome", "Google Chrome.lnk"), Some(0));
+        assert_eq!(shortcut_score("Telegram", "Firefox.lnk"), None);
+        assert_eq!(shortcut_score("Telegram", "Telegram.exe"), None);
+        assert_eq!(shortcut_score("ab", "abc.lnk"), None);
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn start_menu_search_finds_nested_shortcuts_without_launching_them() {
+        let unique = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+        let root = std::env::temp_dir().join(format!("aide-shortcuts-{}-{unique}", std::process::id()));
+        let nested = root.join("Telegram Desktop");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::write(nested.join("Telegram.lnk"), b"fixture").unwrap();
+        std::fs::write(nested.join("Firefox.lnk"), b"fixture").unwrap();
+        let roots = vec![root.clone()];
+        assert_eq!(win::find_shortcut(&roots, "Telegram"), Some(nested.join("Telegram.lnk")));
+        assert_eq!(win::find_shortcut(&roots, "telegram.exe"), Some(nested.join("Telegram.lnk")));
+        assert!(win::find_shortcut(&roots, "Missing App").is_none());
+        assert!(win::find_shortcut(&roots, "C:\\Telegram.exe").is_none());
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(not(windows))]
@@ -781,6 +916,14 @@ mod tests {
     }
 
     /// Живая проверка на этом компьютере (запуск вручную: cargo test --lib computer::tests::live -- --ignored).
+    #[cfg(windows)]
+    #[test]
+    #[ignore]
+    fn live_telegram_shortcut_resolution() {
+        let shortcut = win::start_menu_shortcut("Telegram").expect("ярлык Telegram в меню «Пуск»");
+        assert!(shortcut.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("lnk")));
+    }
+
     #[cfg(windows)]
     #[test]
     #[ignore]

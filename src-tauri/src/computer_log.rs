@@ -67,7 +67,10 @@ pub fn summarize(tool: &str, args: &Value) -> String {
         "computer_scroll" => format!("прокрутка в {} (dx={}, dy={})", at("x", "y"), num("dx").unwrap_or(0), num("dy").unwrap_or(0)),
         "computer_type" => format!("ввод текста, {} симв.", text("text").chars().count()),
         "computer_key" => format!("клавиши {}", cut(text("keys"), 40)),
-        "computer_open" => format!("запуск {}", cut(&strip_query(text("target")), 120)),
+        "computer_open" => {
+            let target = crate::computer::open_arg(args).unwrap_or("");
+            format!("запуск {}", cut(&strip_query(target), 120))
+        }
         other => cut(other, 40),
     }
 }
@@ -170,6 +173,7 @@ mod tests {
         let s = summarize("computer_open", &json!({"target": "https://x.example/path?token=SECRET#frag"}));
         assert_eq!(s, "запуск https://x.example/path");
         assert!(!s.contains("SECRET"));
+        assert_eq!(summarize("computer_open", &json!({"app_name": "Telegram"})), "запуск Telegram");
     }
 
     #[test]
