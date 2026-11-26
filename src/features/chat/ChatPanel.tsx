@@ -1046,14 +1046,17 @@ export function ChatPanel({ variant = "panel", computerTab = false, studioTab = 
             </div>
           </div>
           <div className="mt-1.5 flex min-w-0 items-center gap-0.5 border-t border-white/[0.06] px-0.5 pt-1.5">
-            <Select
-              title={t("settings.provider")}
-              value={providerId}
-              onChange={setProvider}
-              options={providers.map((p) => ({ value: p.id, label: p.name }))}
-              className="min-w-0 max-w-32"
-              menuMinWidth={200}
-            />
+            {/* In the side panel the provider is chosen in the top row; a second copy here only got squeezed to nothing. */}
+            {vibe && (
+              <Select
+                title={t("settings.provider")}
+                value={providerId}
+                onChange={setProvider}
+                options={providers.map((p) => ({ value: p.id, label: p.name }))}
+                className="min-w-[4.5rem] max-w-32"
+                menuMinWidth={200}
+              />
+            )}
             {hasKey && models.length > 0 && (
               <Select
                 title={t("settings.model")}

@@ -222,7 +222,11 @@ function AppInner() {
   return (
     <div
       className="aide-shell flex h-screen flex-col overflow-hidden text-ink-200"
-      onPointerDownCapture={() => void invoke("bv_focus_main").catch(() => {})}
+      // Only when the keyboard is elsewhere (the embedded browser took it). Moving focus on every press blurs the
+      // window, which closes an open dropdown before the click on its option arrives (portals bubble to here too).
+      onPointerDownCapture={() => {
+        if (!document.hasFocus()) void invoke("bv_focus_main").catch(() => {});
+      }}
     >
       <TitleBar />
       {/* One stable box around the switchable views: switching IDE / Design / Vibe / Settings animates it. */}

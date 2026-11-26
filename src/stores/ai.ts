@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { providerSlug, validateCustomProvider } from "@/lib/customProvider";
+import { mergeProviders, providerSlug, validateCustomProvider } from "@/lib/customProvider";
 import {
   LOCAL_DEFAULTS,
   LOCAL_URLS_KEY,
@@ -286,7 +286,7 @@ function loadMessages(): ChatMessage[] {
 }
 
 export const useAi = create<AiState>((set, get) => ({
-  providers: withLocalUrls([...BUILTIN_PROVIDERS, ...loadCustomProviders()]),
+  providers: mergeProviders(withLocalUrls(BUILTIN_PROVIDERS), loadCustomProviders()),
   // The former "Claude Code key" provider is gone: those users continue on the regular Anthropic one.
   providerId: ((v) => (v === "claude-code" ? "anthropic" : v || "openai"))(localStorage.getItem(KEY_PROVIDER)),
   hasKey: false,
@@ -576,8 +576,10 @@ export const useAi = create<AiState>((set, get) => ({
   },
 
   removeCustomProvider: (providerId) => {
-    const providers = get().providers.filter((p) => p.id !== providerId);
-    saveCustomProviders(providers.filter((p) => p.custom));
+    const rest = get().providers.filter((p) => p.id !== providerId);
+    saveCustomProviders(rest.filter((p) => p.custom));
+    // Removing an entry that replaced a built-in provider brings the built-in one back.
+    const providers = mergeProviders(withLocalUrls(BUILTIN_PROVIDERS), rest.filter((p) => p.custom));
     set({ providers });
     void ai.deleteApiKey(providerId).catch(() => {});
     if (get().providerId === providerId) {
