@@ -28,8 +28,8 @@ pub(crate) const KIND: &str = "qoder";
 /// Имя записи в хранилище ключей. Точка не разрешена в id своих провайдеров, поэтому чужой ключ сюда не попадёт.
 const TOKEN_ENTRY: &str = "qoder.pat";
 const TOKEN_ENV: &str = "QODER_PERSONAL_ACCESS_TOKEN";
-/// Уровни моделей из документации Qoder: на случай, если CLI не перечислит модели сам.
-const DOC_MODELS: [&str; 4] = ["auto", "ultimate", "performance", "efficient"];
+/// Если CLI не перечислит модели сам, остаётся выбор самого Qoder.
+const AUTO_MODEL: &str = "Auto";
 
 const MAX_LINE_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_PROMPT_HISTORY_CHARS: usize = 200_000;
@@ -162,33 +162,19 @@ pub(crate) enum Mode {
     Agent,
 }
 
-/// Имя модели уходит аргументом командной строки: только буквы, цифры и обычные разделители, без ведущего «-».
-pub(crate) fn valid_model(model: &str) -> bool {
-    !model.is_empty()
-        && model.len() <= 128
-        && !model.starts_with('-')
-        && model.chars().all(|c| c.is_ascii_alphanumeric() || "._-:/ ()".contains(c))
-}
-
-pub(crate) fn cli_args(mode: Mode, model: Option<&str>) -> Result<Vec<String>, String> {
+/// Аргументы запуска. Модель выбирается уже внутри сессии (`Acp::set_model`), в командную строку она не попадает.
+pub(crate) fn cli_args(mode: Mode) -> Vec<String> {
     // Режим разрешений задаём явно: в настройках пользователя может стоять «без вопросов», а решать должен AIDE.
     // Настройки только пользователя и никаких MCP: открытый проект не должен через свои .qoder и .mcp.json
     // добавлять разрешения, хуки и серверы, то есть запускать команды в обход окна разрешений.
     let mut args: Vec<String> =
         ["--acp", "--permission-mode", "default", "--setting-sources", "user", "--strict-mcp-config"].map(String::from).to_vec();
-    if let Some(m) = model {
-        if !valid_model(m) {
-            return Err("Недопустимое имя модели Qoder".into());
-        }
-        args.push("--model".into());
-        args.push(m.into());
-    }
     match mode {
         Mode::Chat => args.extend(["--tools".into(), String::new()]),
         Mode::Plan => args.extend(["--disallowed-tools".into(), "Bash,Write,Edit".into()]),
         Mode::Agent => {}
     }
-    Ok(args)
+    args
 }
 
 /// Убирает токен из текста, который увидит пользователь (например, из stderr CLI).
@@ -435,6 +421,27 @@ impl<R: AsyncBufRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Acp<R, W> {
         Ok((init, session))
     }
 
+    /// Выбирает модель в открытой сессии. Неизвестная модель — ошибка, а не молчаливая замена на другую.
+    pub async fn set_model<H: Host>(&mut self, session: &Value, wanted: &str, host: &mut H) -> Result<(), RpcError> {
+        if wanted.is_empty() || (wanted == AUTO_MODEL && session_models(session).is_empty()) {
+            return Ok(());
+        }
+        let id = model_id(session, wanted)
+            .ok_or_else(|| RpcError::local(format!("Модели «{wanted}» нет в вашем аккаунте Qoder: обновите список моделей")))?;
+        if session["models"]["currentModelId"].as_str() == Some(id.as_str()) {
+            return Ok(());
+        }
+        let sid = self.session.clone().ok_or_else(|| RpcError::local("нет сессии Qoder"))?;
+        let params = json!({ "sessionId": sid, "configId": "model", "value": id });
+        let reply = self.call("session/set_config_option", params, START_TIMEOUT, host).await?;
+        // Проверяем, что CLI действительно переключился: иначе запрос ушёл бы на другую, возможно более дорогую модель.
+        let now = reply["configOptions"].as_array().and_then(|o| o.iter().find(|o| o["id"] == "model")).and_then(|o| o["currentValue"].as_str());
+        match now {
+            Some(now) if now != id => Err(RpcError::local(format!("Qoder CLI не переключился на модель «{wanted}»"))),
+            _ => Ok(()),
+        }
+    }
+
     pub async fn prompt<H: Host>(&mut self, blocks: Vec<Value>, host: &mut H) -> Result<String, RpcError> {
         let session = self.session.clone().ok_or_else(|| RpcError::local("нет сессии Qoder"))?;
         let idle = Duration::from_secs(ai_service::STREAM_IDLE_SECS);
@@ -447,22 +454,49 @@ impl<R: AsyncBufRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Acp<R, W> {
     }
 }
 
-/// Модели из ответа session/new, если CLI их перечисляет.
-pub(crate) fn models_from_session(session: &Value) -> Vec<String> {
-    let ids = |list: &Value, key: &str| -> Vec<String> {
+/// Имя модели для списка в AIDE: «Auto (default)» → «Auto». Имена с пробелами не годятся как id, тогда берётся id.
+fn model_label<'a>(id: &'a str, name: Option<&'a str>) -> &'a str {
+    let name = name.map(|n| n.trim_end_matches(" (default)").trim()).unwrap_or("");
+    if name.is_empty() || name.len() > 128 || name.chars().any(|c| c.is_whitespace() || c.is_control()) {
+        id
+    } else {
+        name
+    }
+}
+
+/// Модели из ответа session/new: (id в протоколе, имя в списке).
+pub(crate) fn session_models(session: &Value) -> Vec<(String, String)> {
+    let pairs = |list: &Value, key: &str| -> Vec<(String, String)> {
         list.as_array()
-            .map(|a| a.iter().filter_map(|m| m[key].as_str()).filter(|m| valid_model(m)).map(String::from).collect())
+            .map(|a| {
+                a.iter()
+                    .filter_map(|m| {
+                        let id = m[key].as_str().filter(|i| !i.is_empty())?;
+                        Some((id.to_string(), model_label(id, m["name"].as_str()).to_string()))
+                    })
+                    .collect()
+            })
             .unwrap_or_default()
     };
-    let listed = ids(&session["models"]["availableModels"], "modelId");
+    let listed = pairs(&session["models"]["availableModels"], "modelId");
     if !listed.is_empty() {
         return listed;
     }
     session["configOptions"]
         .as_array()
         .and_then(|o| o.iter().find(|o| o["category"] == "model" || o["id"] == "model"))
-        .map(|o| ids(&o["options"], "value"))
+        .map(|o| pairs(&o["options"], "value"))
         .unwrap_or_default()
+}
+
+/// Id модели по тому, что выбрано в AIDE (имя из списка или id, введённый вручную).
+pub(crate) fn model_id(session: &Value, wanted: &str) -> Option<String> {
+    let models = session_models(session);
+    models
+        .iter()
+        .find(|(id, label)| id == wanted || label == wanted)
+        .or_else(|| models.iter().find(|(id, label)| id.eq_ignore_ascii_case(wanted) || label.eq_ignore_ascii_case(wanted)))
+        .map(|(id, _)| id.clone())
 }
 
 /* ───────────── запрос ───────────── */
@@ -738,13 +772,13 @@ fn locate() -> Result<Cli, String> {
 pub(crate) async fn list_models(app: &AppHandle) -> Result<Vec<String>, String> {
     let cli = locate()?;
     let cwd = empty_dir(app)?;
-    let (mut process, (reader, writer)) = spawn(&cli, &cli_args(Mode::Chat, None)?, &cwd)?;
+    let (mut process, (reader, writer)) = spawn(&cli, &cli_args(Mode::Chat), &cwd)?;
     let mut acp = Acp::new(reader, writer, Arc::new(AtomicBool::new(false)));
     let opened = acp.open(&cwd, &mut Quiet).await;
     let result = match opened {
         Ok((_, session)) => {
-            let listed = models_from_session(&session);
-            Ok(if listed.is_empty() { DOC_MODELS.map(String::from).to_vec() } else { listed })
+            let listed: Vec<String> = session_models(&session).into_iter().map(|(_, label)| label).collect();
+            Ok(if listed.is_empty() { vec![AUTO_MODEL.to_string()] } else { listed })
         }
         Err(e) => Err(with_tail(explain(&e), &mut process).await),
     };
@@ -780,8 +814,7 @@ struct Job {
 
 async fn run(app: &AppHandle, job: Job, cancel: Arc<AtomicBool>) -> Result<u32, String> {
     let cli = locate()?;
-    let model = Some(job.model.as_str()).filter(|m| !m.is_empty());
-    let (mut process, (reader, writer)) = spawn(&cli, &cli_args(job.mode, model)?, &job.cwd)?;
+    let (mut process, (reader, writer)) = spawn(&cli, &cli_args(job.mode), &job.cwd)?;
     let mut host = AppHost {
         app: app.clone(),
         request_id: job.request_id.clone(),
@@ -792,7 +825,8 @@ async fn run(app: &AppHandle, job: Job, cancel: Arc<AtomicBool>) -> Result<u32, 
     };
     let mut acp = Acp::new(reader, writer, cancel);
     let result = async {
-        let (init, _) = acp.open(&job.cwd, &mut host).await?;
+        let (init, session) = acp.open(&job.cwd, &mut host).await?;
+        acp.set_model(&session, &job.model, &mut host).await?;
         let images = init["agentCapabilities"]["promptCapabilities"]["image"].as_bool().unwrap_or(false);
         let text = prompt_text(&job.system, job.context.as_deref(), &job.history, &job.instruction);
         let mut attachments: Vec<&Attachment> = job.attachments.iter().collect();
@@ -943,16 +977,13 @@ mod tests {
     }
 
     #[test]
-    fn arguments_fix_the_permission_mode_and_reject_flag_like_models() {
-        let chat = cli_args(Mode::Chat, Some("auto")).unwrap();
+    fn arguments_fix_the_permission_mode_and_ignore_project_settings() {
         let base = ["--acp", "--permission-mode", "default", "--setting-sources", "user", "--strict-mcp-config"];
+        assert_eq!(cli_args(Mode::Agent), base);
+        let chat = cli_args(Mode::Chat);
         assert_eq!(chat[..base.len()], base);
-        assert_eq!(chat[base.len()..], ["--model", "auto", "--tools", ""]);
-        assert!(cli_args(Mode::Plan, None).unwrap().contains(&"--disallowed-tools".to_string()));
-        assert_eq!(cli_args(Mode::Agent, None).unwrap(), base);
-        for bad in ["--yolo", "-m", "a\nb", "a;b", "x&calc", ""] {
-            assert!(cli_args(Mode::Agent, Some(bad)).is_err(), "{bad:?}");
-        }
+        assert_eq!(chat[base.len()..], ["--tools", ""]);
+        assert!(cli_args(Mode::Plan).contains(&"--disallowed-tools".to_string()));
     }
 
     #[test]
@@ -994,12 +1025,18 @@ mod tests {
     }
 
     #[test]
-    fn models_come_from_the_session_when_listed() {
-        let a = json!({ "models": { "availableModels": [{ "modelId": "auto" }, { "modelId": "--bad" }] } });
-        assert_eq!(models_from_session(&a), ["auto"]);
-        let b = json!({ "configOptions": [{ "id": "model", "options": [{ "value": "efficient" }] }] });
-        assert_eq!(models_from_session(&b), ["efficient"]);
-        assert!(models_from_session(&json!({ "sessionId": "s" })).is_empty());
+    fn models_are_listed_by_name_and_chosen_by_id() {
+        let a = json!({ "models": { "availableModels": [
+            { "modelId": "auto", "name": "Auto (default)" }, { "modelId": "gmodel", "name": "GLM-5.3" }, { "modelId": "x1", "name": "My Own Model" },
+        ] } });
+        let labels: Vec<String> = session_models(&a).into_iter().map(|m| m.1).collect();
+        assert_eq!(labels, ["Auto", "GLM-5.3", "x1"]);
+        assert_eq!(model_id(&a, "GLM-5.3").as_deref(), Some("gmodel"));
+        assert_eq!(model_id(&a, "auto").as_deref(), Some("auto"));
+        assert_eq!(model_id(&a, "--yolo"), None);
+        let b = json!({ "configOptions": [{ "id": "model", "options": [{ "value": "efficient", "name": "Efficient" }] }] });
+        assert_eq!(model_id(&b, "Efficient").as_deref(), Some("efficient"));
+        assert!(session_models(&json!({ "sessionId": "s" })).is_empty());
     }
 
     #[test]
@@ -1097,14 +1134,20 @@ mod tests {
             println!("CLI: {}", cli.found_at.display());
             let cwd = temp("live");
             for mode in [Mode::Chat, Mode::Plan, Mode::Agent] {
-                let (mut process, (reader, writer)) = spawn(&cli, &cli_args(mode, None).unwrap(), &cwd).unwrap();
+                let (mut process, (reader, writer)) = spawn(&cli, &cli_args(mode), &cwd).unwrap();
                 let mut acp = Acp::new(reader, writer, Arc::new(AtomicBool::new(false)));
                 match acp.open(&cwd, &mut Quiet).await {
-                    Ok((init, session)) => println!(
-                        "{mode:?}: вход есть; изображения: {}; модели из сессии: {:?}",
-                        init["agentCapabilities"]["promptCapabilities"]["image"],
-                        models_from_session(&session)
-                    ),
+                    Ok((init, session)) => {
+                        println!(
+                            "{mode:?}: вход есть; изображения: {}; модели из сессии: {:?}",
+                            init["agentCapabilities"]["promptCapabilities"]["image"],
+                            session_models(&session)
+                        );
+                        // Выбор модели по имени из списка; запрос к модели не отправляется.
+                        let other = session_models(&session).pop().expect("список моделей пуст").1;
+                        acp.set_model(&session, &other, &mut Quiet).await.unwrap_or_else(|e| panic!("{}", explain(&e)));
+                        println!("{mode:?}: модель переключена на {other}");
+                    }
                     Err(e) => {
                         let message = explain(&e);
                         println!("{mode:?}: {message}");
@@ -1113,6 +1156,118 @@ mod tests {
                 }
                 process.stop().await;
             }
+        });
+    }
+
+    /// Хозяин для живой проверки: запоминает вопросы и ответ, разрешает всё или ничего, может нажать «Стоп».
+    #[derive(Default)]
+    struct Live {
+        allow: bool,
+        stop_on_text: Option<Arc<AtomicBool>>,
+        text: String,
+        asked: Vec<String>,
+        tools: Vec<String>,
+        translator: Translator,
+    }
+
+    impl Host for Live {
+        fn update(&mut self, update: &Value) {
+            match self.translator.push(update) {
+                Some(Out::Text(t)) => {
+                    self.text.push_str(&t);
+                    if let Some(stop) = &self.stop_on_text {
+                        stop.store(true, Ordering::Relaxed);
+                    }
+                }
+                Some(Out::Tool(row)) => self.tools.push(format!("{} [{}]", row.tool, row.status)),
+                _ => {}
+            }
+        }
+        async fn permit(&mut self, call: &Value) -> Result<bool, String> {
+            self.asked.push(format!("{}: {}", call["kind"].as_str().unwrap_or("?"), call["title"].as_str().unwrap_or("?")));
+            Ok(self.allow)
+        }
+    }
+
+    async fn live_run(cli: &Cli, args: &[String], cwd: &Path, ask: &str, allow: bool, stop: bool) -> (Result<String, String>, Live) {
+        let model = std::env::var("AIDE_QODER_MODEL").unwrap_or_else(|_| "Qwen3.8-Flash".into());
+        let cancel = Arc::new(AtomicBool::new(false));
+        let (process, (reader, writer)) = spawn(cli, args, cwd).unwrap();
+        let mut acp = Acp::new(reader, writer, cancel.clone());
+        let mut host = Live { allow, stop_on_text: stop.then(|| cancel.clone()), ..Live::default() };
+        let result = async {
+            let (_, session) = acp.open(cwd, &mut host).await?;
+            acp.set_model(&session, &model, &mut host).await?;
+            acp.prompt(vec![json!({ "type": "text", "text": ask })], &mut host).await
+        }
+        .await
+        .map_err(|e| explain(&e));
+        process.stop().await;
+        println!("  итог: {result:?}\n  вопросы: {:?}\n  инструменты: {:?}\n  ответ: {}", host.asked, host.tools, ai_service::truncate(&host.text, 300));
+        (result, host)
+    }
+
+    /// Настоящие короткие запросы (тратят немного кредитов) в пустой временной папке.
+    /// `cargo test --lib live_qoder_prompts -- --ignored --nocapture`
+    #[test]
+    #[ignore]
+    fn live_qoder_prompts() {
+        block(async {
+            let cli = find_cli(&dirs_next::home_dir().unwrap()).expect("Qoder CLI не установлен");
+            let dir = temp("prompts");
+            let write = "Создай в текущей папке файл hello.txt с текстом hi. Используй инструмент записи файла. Ответь одной фразой.";
+            let file = dir.join("hello.txt");
+            let mut failures: Vec<&str> = Vec::new();
+
+            println!("== чат");
+            let (r, h) = live_run(&cli, &cli_args(Mode::Chat), &dir, write, true, false).await;
+            if r.is_err() || h.text.is_empty() { failures.push("чат не ответил"); }
+            if file.exists() { failures.push("чат изменил файлы"); let _ = fs::remove_file(&file); }
+
+            println!("== план");
+            let (r, _) = live_run(&cli, &cli_args(Mode::Plan), &dir, write, false, false).await;
+            if r.is_err() { failures.push("план не ответил"); }
+            if file.exists() { failures.push("план изменил файлы"); let _ = fs::remove_file(&file); }
+
+            println!("== агент, отказ");
+            let (_, h) = live_run(&cli, &cli_args(Mode::Agent), &dir, write, false, false).await;
+            if h.asked.is_empty() { failures.push("агент не спросил разрешения на запись"); }
+            if file.exists() { failures.push("после отказа файл создан"); let _ = fs::remove_file(&file); }
+
+            println!("== агент, разрешение");
+            let (_, h) = live_run(&cli, &cli_args(Mode::Agent), &dir, write, true, false).await;
+            if h.asked.is_empty() { failures.push("агент не спросил разрешения (при разрешении)"); }
+            if !file.exists() { failures.push("после разрешения файла нет"); }
+            let _ = fs::remove_file(&file);
+
+            println!("== агент, команда, отказ");
+            let ask = "Выполни в терминале команду: echo hi > marker.txt . Используй инструмент запуска команд. Ответь одной фразой.";
+            let (_, h) = live_run(&cli, &cli_args(Mode::Agent), &dir, ask, false, false).await;
+            if h.asked.is_empty() { failures.push("команда без вопроса"); }
+            if dir.join("marker.txt").exists() { failures.push("команда выполнена после отказа"); }
+
+            println!("== настройки проекта: разрешения и хук");
+            let project = temp("project");
+            fs::create_dir_all(project.join(".qoder")).unwrap();
+            let hook = json!([{ "matcher": "*", "hooks": [{ "type": "command", "command": "echo x > hook.txt" }] }]);
+            let settings = json!({ "permissions": { "allow": ["Write", "Edit", "Bash"] }, "hooks": { "SessionStart": hook, "UserPromptSubmit": hook } });
+            fs::write(project.join(".qoder").join("settings.json"), settings.to_string()).unwrap();
+            let (_, h) = live_run(&cli, &cli_args(Mode::Agent), &project, write, false, false).await;
+            if h.asked.is_empty() { failures.push("разрешения проекта подействовали"); }
+            if project.join("hello.txt").exists() { failures.push("файл создан по разрешению проекта"); }
+            if project.join("hook.txt").exists() { failures.push("хук проекта выполнен"); }
+            println!("== контроль: те же настройки проекта без --setting-sources");
+            let control: Vec<String> = ["--acp", "--permission-mode", "default"].map(String::from).to_vec();
+            let (_, h) = live_run(&cli, &control, &project, write, false, false).await;
+            println!("  контроль: хук выполнен = {}, файл создан = {}, вопросов = {}", project.join("hook.txt").exists(), project.join("hello.txt").exists(), h.asked.len());
+
+            println!("== стоп");
+            let (r, _) = live_run(&cli, &cli_args(Mode::Chat), &dir, "Перечисли числа от 1 до 300 по одному в строке.", false, true).await;
+            if r != Err("canceled".to_string()) { failures.push("стоп не сработал"); }
+
+            let _ = fs::remove_dir_all(dir);
+            let _ = fs::remove_dir_all(project);
+            assert!(failures.is_empty(), "{failures:#?}");
         });
     }
 
