@@ -450,6 +450,21 @@ pub fn bv_visible(app: AppHandle, visible: bool) -> Result<(), String> {
     if let Some(wv) = app.get_webview(&label) {
         if visible { wv.show() } else { wv.hide() }.map_err(|e| e.to_string())?;
     }
+    if !visible {
+        focus_main(&app);
+    }
+    Ok(())
+}
+
+fn focus_main(app: &AppHandle) {
+    if let Some(wv) = app.get_webview("main") {
+        let _ = wv.set_focus();
+    }
+}
+
+#[tauri::command]
+pub fn bv_focus_main(app: AppHandle) -> Result<(), String> {
+    focus_main(&app);
     Ok(())
 }
 
@@ -474,6 +489,7 @@ pub fn bv_close(app: AppHandle) {
     if let Some(wv) = app.get_webview(&label) {
         let _ = wv.close();
     }
+    focus_main(&app);
     // Очистить состояние вкладок, чтобы пересоздание начиналось с чистого листа.
     let state = app.state::<BrowserTabs>();
     let mut guard = state.0.lock().unwrap();
@@ -916,6 +932,8 @@ pub fn bv_close_tab(app: AppHandle, tab_id: String) -> Result<(), String> {
         if let Some(wv) = app.get_webview(&l) {
             let _ = wv.show();
         }
+    } else {
+        focus_main(&app);
     }
     emit_tabs(&app);
     Ok(())

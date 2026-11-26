@@ -490,6 +490,7 @@ pub fn run() {
             browser_view::bv_bounds,
             browser_view::bv_info,
             browser_view::bv_visible,
+            browser_view::bv_focus_main,
             browser_view::bv_navigate,
             browser_view::bv_action,
             browser_view::bv_close,

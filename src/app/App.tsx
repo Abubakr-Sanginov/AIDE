@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { fs } from "@/api/fs";
 import { I18nProvider, useI18n } from "@/i18n";
@@ -219,7 +220,10 @@ function AppInner() {
   }, []);
 
   return (
-    <div className="aide-shell flex h-screen flex-col overflow-hidden text-ink-200">
+    <div
+      className="aide-shell flex h-screen flex-col overflow-hidden text-ink-200"
+      onPointerDownCapture={() => void invoke("bv_focus_main").catch(() => {})}
+    >
       <TitleBar />
       {/* One stable box around the switchable views: switching IDE / Design / Vibe / Settings animates it. */}
       <div className="aide-vt-main flex min-h-0 flex-1 flex-col">
