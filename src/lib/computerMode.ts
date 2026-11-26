@@ -1,6 +1,7 @@
 // "Computer" mode: the agent looks at the screen and uses the mouse and keyboard. Before the first use the person has to
 // read what that means and agree. This flag is a convenience (do not ask every time), not a security boundary: the real
-// limits (confirmations, no control of AIDE's own window, the corner failsafe, the action limit) are enforced by the backend.
+// limits (permission mode, no mouse/keyboard control of AIDE, the corner failsafe, the action limit) are enforced by the backend.
+// Full mode intentionally allows arbitrary terminal commands with AIDE's permissions.
 
 const KEY = "aide.computerConsent";
 

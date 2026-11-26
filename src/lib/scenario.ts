@@ -24,7 +24,7 @@ export function scenarioPrompt(scenario: string, mode: string): string {
   if (mode === "computer") {
     return [
       `Пройди сценарий на компьютере и составь отчёт. Сценарий:\n${scenario}`,
-      "Порядок: начни со снимка экрана (computer_screenshot); если нужной программы нет на экране, найди её через computer_windows и выведи вперёд (computer_focus_window) или запусти (computer_open).",
+      "Порядок: начни со снимка экрана (computer_screenshot); если нужной программы нет на экране, найди её через computer_windows и выведи вперёд (computer_focus_window) или запусти через computer_open / run_terminal_command (Windows: start \"\" notepad).",
       "Выполняй сценарий по шагам: один шаг, потом снимок и сверка с ожидаемым. Если шаг не получился, попробуй один другой способ и зафиксируй неудачу.",
       "Не делай необратимого (отправка реальным людям, удаление, покупки, пароли) без вопроса через ask_user.",
       REPORT,

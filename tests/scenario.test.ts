@@ -16,7 +16,7 @@ test("agent mode walks the built-in browser, computer mode the real screen", () 
   }
   assert.ok(!web.includes("computer_screenshot"));
   const pc = scenarioPrompt("написать боту /start", "computer");
-  for (const needle of ["написать боту /start", "computer_screenshot", "computer_focus_window", "ask_user", "Ничего не исправляй", "Статус"]) {
+  for (const needle of ["написать боту /start", "computer_screenshot", "computer_focus_window", "computer_open", "run_terminal_command", "ask_user", "Ничего не исправляй", "Статус"]) {
     assert.ok(pc.includes(needle), needle);
   }
   assert.ok(!pc.includes("browser_open"));

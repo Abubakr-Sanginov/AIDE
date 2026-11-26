@@ -292,6 +292,7 @@ struct Known {
 const KNOWN: &[Known] = &[
     Known { id: "claude-code", name: "Claude Code", dirs: &[".claude"] },
     Known { id: "codex", name: "Codex (OpenAI)", dirs: &[".codex", ".config/codex"] },
+    Known { id: "qoder", name: "Qoder", dirs: &[".qoder", "AppData/Roaming/com.qoder.app.stable", "AppData/Roaming/Qoder", "AppData/Local/Qoder"] },
     Known { id: "gemini", name: "Gemini CLI", dirs: &[".gemini"] },
     Known { id: "copilot", name: "GitHub Copilot", dirs: &[".config/github-copilot", "AppData/Local/github-copilot", ".copilot"] },
     Known { id: "opencode", name: "OpenCode", dirs: &[".local/share/opencode", ".config/opencode", "AppData/Roaming/opencode", ".opencode"] },
@@ -335,7 +336,7 @@ const AI_WORDS: &[&str] = &[
     "ai", "llm", "gpt", "agent", "agents", "copilot", "assistant", "claude", "codex", "gemini", "cursor", "windsurf", "cline",
     "aider", "kimi", "qwen", "mistral", "deepseek", "grok", "perplexity", "genspark", "accio", "codebuddy", "cagent", "dust", "droid",
     "opencode", "antigravity", "openrouter", "anthropic", "openai", "chatgpt", "crush", "goose", "zed", "tabnine", "codeium", "continue",
-    "autoclaw", "openclaw", "zcode", "hermes", "bigmodel", "zai", "glm", "kiro", "trae", "sharrowkin",
+    "autoclaw", "openclaw", "zcode", "hermes", "bigmodel", "zai", "glm", "kiro", "trae", "sharrowkin", "qoder",
 ];
 
 fn name_tokens(name: &str) -> Vec<String> {
@@ -1307,6 +1308,27 @@ mod tests {
             assert!(!dump.contains(secret), "секрет в ответе: {secret}");
         }
         assert!(!dump.contains("boss@corp.com"), "почта не замаскирована");
+        let _ = fs::remove_dir_all(&home);
+    }
+
+    #[test]
+    fn qoder_desktop_is_found_by_its_data_directories() {
+        let home = std::env::temp_dir().join(format!("aide-qoder-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&home);
+        fs::create_dir_all(home.join(".qoder")).unwrap();
+        fs::create_dir_all(home.join("AppData/Roaming/com.qoder.app.stable")).unwrap();
+        fs::create_dir_all(home.join("AppData/Local/Qoder")).unwrap();
+        fs::write(home.join(".qoder/settings.json"), br#"{"theme":"dark"}"#).unwrap();
+        fs::write(home.join("AppData/Roaming/com.qoder.app.stable/auth.v1.dat"), [0u8, 1, 2, 3]).unwrap();
+
+        let list = scan(&home);
+        let matches: Vec<_> = list.iter().filter(|a| a.id == "qoder").collect();
+        assert_eq!(matches.len(), 1, "{list:#?}");
+        let qoder = matches[0];
+        assert!(qoder.known);
+        assert_eq!(qoder.name, "Qoder");
+        assert_eq!(qoder.location, "~\\.qoder");
+        assert!(is_ai_name("com.qoder.app.stable"));
         let _ = fs::remove_dir_all(&home);
     }
 
