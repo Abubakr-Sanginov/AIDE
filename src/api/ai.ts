@@ -1,7 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
-export type ProviderKind = "openai" | "anthropic" | "google";
+/** "qoder" is not an HTTP API: the backend runs the user's Qoder CLI. */
+export type ProviderKind = "openai" | "anthropic" | "google" | "qoder";
 
 export interface ProviderConfig {
   id: string;

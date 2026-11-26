@@ -452,12 +452,17 @@ pub(crate) async fn ensure_ok(resp: reqwest::Response, what: &str) -> Result<req
 
 #[tauri::command]
 pub async fn list_models(
+    app: AppHandle,
     kind: String,
     base_url: String,
     provider_id: String,
     auth: Option<String>,
     user_agent: Option<String>,
 ) -> Result<Vec<String>, String> {
+    // Подписка Qoder работает через его CLI: ни адреса API, ни ключа у AIDE здесь нет.
+    if kind == crate::qoder::KIND {
+        return crate::qoder::list_models(&app).await;
+    }
     let key = api_key(&provider_id)?;
     let client = new_client()?;
     let ids = match kind.as_str() {
@@ -606,6 +611,9 @@ pub fn chat(
     cancels: State<AiCancels>,
     request: ChatRequest,
 ) -> Result<(), String> {
+    if request.kind == crate::qoder::KIND {
+        return crate::qoder::chat(app, &cancels, request);
+    }
     let key = api_key(&request.provider_id)?;
     let cancel = Arc::new(AtomicBool::new(false));
     cancels

@@ -46,6 +46,7 @@ import { UpdatesSection } from "@/features/settings/UpdatesSection";
 import { ComputerLogSection } from "@/features/settings/ComputerLogSection";
 import { VoiceControlSection } from "@/features/settings/VoiceControlSection";
 import { AgentAccountsSection } from "@/features/settings/AgentAccountsSection";
+import { QoderProviderRow } from "@/features/settings/QoderProviderRow";
 import { CodeIndexSection } from "@/features/settings/CodeIndexSection";
 import { isLocalProvider } from "@/lib/localProviders";
 import { MemorySection, RulesSection } from "@/features/settings/ContextSections";
@@ -56,13 +57,15 @@ import { invoke } from "@tauri-apps/api/core";
 import { refreshWhisper } from "@/features/kins/voice";
 import type { CliToolInfo, ProviderConfig, ProviderKind } from "@/api/ai";
 
-const KIND_NAMES: Record<ProviderKind, string> = {
+/** Kinds a custom provider can have: Qoder is built in only. */
+type ApiKind = Exclude<ProviderKind, "qoder">;
+const KIND_NAMES: Record<ApiKind, string> = {
   openai: "OpenAI-compatible",
   anthropic: "Anthropic",
   google: "Google Gemini",
 };
 
-const KIND_DEFAULTS: Record<ProviderKind, string> = {
+const KIND_DEFAULTS: Record<ApiKind, string> = {
   openai: "https://api.openai.com/v1",
   anthropic: "https://api.anthropic.com",
   google: "https://generativelanguage.googleapis.com",
@@ -354,7 +357,7 @@ export function SettingsPage() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [id, setId] = useState("");
-  const [kind, setKind] = useState<ProviderKind>("openai");
+  const [kind, setKind] = useState<ApiKind>("openai");
   const [baseUrl, setBaseUrl] = useState(KIND_DEFAULTS.openai);
   const [customKey, setCustomKey] = useState("");
   const [cliToolsList, setCliToolsList] = useState<CliToolInfo[]>([]);
@@ -509,7 +512,7 @@ export function SettingsPage() {
           {page === "agent" && (
             <>
         <Section title={t("settings.provider")}>
-          <Row title={t("settings.provider")} hint={selected ? `${KIND_NAMES[selected.kind]} · ${selected.baseUrl}` : undefined}>
+          <Row title={t("settings.provider")} hint={selected ? (selected.kind === "qoder" ? "Qoder CLI (ACP)" : `${KIND_NAMES[selected.kind]} · ${selected.baseUrl}`) : undefined}>
             <div className="flex items-center gap-2">
               <Select
                 variant="field"
@@ -562,11 +565,11 @@ export function SettingsPage() {
                 variant="field"
                 value={kind}
                 onChange={(v) => {
-                  const k = v as ProviderKind;
+                  const k = v as ApiKind;
                   setKind(k);
                   if (baseUrl === KIND_DEFAULTS[kind]) setBaseUrl(KIND_DEFAULTS[k]);
                 }}
-                options={(Object.keys(KIND_NAMES) as ProviderKind[]).map((k) => ({ value: k, label: `API: ${KIND_NAMES[k]}` }))}
+                options={(Object.keys(KIND_NAMES) as ApiKind[]).map((k) => ({ value: k, label: `API: ${KIND_NAMES[k]}` }))}
               />
               <input value={baseUrl} placeholder={t("settings.baseUrl")} onChange={(e) => setBaseUrl(e.target.value)} className={inputClass} />
               <input
@@ -594,7 +597,9 @@ export function SettingsPage() {
             </div>
           )}
 
-          {isLocalProvider(providerId) ? (
+          {selected?.kind === "qoder" ? (
+            <QoderProviderRow />
+          ) : isLocalProvider(providerId) ? (
             <Row
               title={`${t("settings.apiKey")} ${selected?.name ?? ""}`}
               hint={ru ? rt("Не нужен: модель работает на вашем компьютере. Список моделей и запуск серверов — на странице «Локальные модели».") : "Not needed: the model runs on your computer. Models and how to start the servers are on the “Local models” page."}
