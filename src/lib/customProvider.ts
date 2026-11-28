@@ -4,6 +4,17 @@ export function providerSlug(name: string): string {
   return slug.length >= 2 ? slug : "custom";
 }
 
+/**
+ * Built-in providers plus the saved custom ones, one entry per id. A key imported from another tool can bring
+ * a provider with a built-in id and its own address: it takes the built-in's place, otherwise the list shows both
+ * and choosing the second one silently selects the first.
+ */
+export function mergeProviders<T extends { id: string }>(builtin: readonly T[], custom: readonly T[]): T[] {
+  const byId = new Map<string, T>();
+  for (const p of [...builtin, ...custom]) byId.set(p.id, p);
+  return [...byId.values()];
+}
+
 export function validateCustomProvider<T extends { id: string; name: string; baseUrl: string; kind: string }>(
   cfg: T, existing: readonly { id: string }[],
 ): T {
